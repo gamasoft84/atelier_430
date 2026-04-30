@@ -1,36 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎨 Atelier 430
 
-## Getting Started
+> Galería digital privada para administrar y vender un inventario curado de 430 obras de arte.
 
-First, run the development server:
+**Proyecto bajo:** Gamasoft IA Technologies S.A.S.
+
+---
+
+## 📋 Sobre el proyecto
+
+Atelier 430 es una plataforma web que permite:
+
+- 🖼️ Catálogo público elegante con filtros y búsqueda
+- 🛠️ Panel admin para gestionar inventario completo
+- 🤖 Generación automática de títulos y descripciones con IA (Claude)
+- 📤 Carga masiva de obras (Excel + ZIP) o individual
+- ❤️ Sistema de wishlist sin registro
+- 📧 Newsletter de nuevas obras
+- 📄 Catálogo PDF descargable
+- 📱 Generador de posts para redes sociales
+- 💬 Cierre de ventas vía WhatsApp
+
+---
+
+## 🛠️ Stack Tecnológico
+
+- **Frontend:** Next.js 14 (App Router) + TypeScript + Tailwind CSS
+- **UI:** shadcn/ui + Sora + Playfair Display
+- **Backend:** Supabase (PostgreSQL + Auth)
+- **Storage:** Cloudinary
+- **IA:** Anthropic Claude API (claude-sonnet-4-5)
+- **Email:** Resend
+- **Deploy:** Vercel
+
+---
+
+## 🚀 Setup inicial
+
+### Requisitos
+- Node.js 20+
+- npm 10+
+- Cuentas en: Supabase, Cloudinary, Anthropic, Resend, Vercel
+
+### Instalación
 
 ```bash
+# Clonar repositorio
+git clone <repo-url>
+cd atelier430
+
+# Instalar dependencias
+npm install
+
+# Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus credenciales
+
+# Ejecutar migraciones de Supabase
+npm run db:setup
+
+# Iniciar en desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Estructura del proyecto
 
-## Learn More
+```
+atelier430/
+├── app/                  # Rutas Next.js (App Router)
+│   ├── (public)/         # Rutas públicas
+│   ├── admin/            # Panel admin protegido
+│   └── api/              # API routes
+├── components/           # Componentes React
+│   ├── public/           # Componentes públicos
+│   ├── admin/            # Componentes admin
+│   ├── ui/               # shadcn/ui base
+│   └── shared/           # Compartidos
+├── lib/                  # Utilidades y clientes
+├── types/                # Tipos TypeScript
+├── hooks/                # Custom hooks
+├── public/               # Assets estáticos
+└── docs/                 # Documentación del proyecto
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎯 Scripts disponibles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run start` | Servidor de producción |
+| `npm run lint` | Linter ESLint |
+| `npm run typecheck` | Verificar tipos TypeScript |
+| `npm run db:setup` | Crear tablas en Supabase |
+| `npm run db:reset` | Reset de base de datos (dev) |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔐 Variables de entorno
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ver `.env.example` para la lista completa.
+
+**Críticas:**
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `ANTHROPIC_API_KEY`
+- `RESEND_API_KEY`
+
+---
+
+## 📚 Documentación
+
+- [`docs/design-system.md`](./docs/design-system.md) — Especificación técnica completa
+- [`docs/photography-guide.md`](./docs/photography-guide.md) — Guía de fotografía de obras
+- [`CLAUDE.md`](./CLAUDE.md) — Contexto para Claude Code
+
+---
+
+## 📝 Licencia
+
+Propiedad privada. Todos los derechos reservados.
+**Gamasoft IA Technologies S.A.S.** © 2026
