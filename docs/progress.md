@@ -37,12 +37,33 @@
 
 ---
 
-## Fase 1 — Autenticación y layout admin ⏳
+## Fase 1 — Autenticación y layout admin ✅ (2026-04-30)
 
-- [ ] Login admin funcional (Supabase Auth)
-- [ ] Layout admin con sidebar
-- [ ] Dashboard esqueleto
-- [ ] Rutas protegidas verificadas
+### Completado
+
+- [x] `app/admin/login/page.tsx` — página de login (fondo cream, card centrada)
+- [x] `components/admin/LoginForm.tsx` — formulario con react-hook-form + zod, error handling
+- [x] `app/admin/(protected)/layout.tsx` — layout protegido (verifica sesión, redirige si no autenticado)
+- [x] `components/admin/AdminSidebar.tsx` — sidebar carbon-900 con 5 secciones y estado activo gold-500
+- [x] `components/admin/AdminHeader.tsx` — header con email admin y botón de logout
+- [x] `app/admin/(protected)/dashboard/page.tsx` — bienvenida + 4 cards de métricas + acciones rápidas
+- [x] Páginas stub: obras, ventas, newsletter, configuración
+- [x] `app/admin/page.tsx` — redirect automático a /admin/dashboard
+- [x] Estructura de rutas: `(protected)` route group para separar login del layout protegido
+
+### Arquitectura de autenticación
+- Middleware (`middleware.ts`) como primera línea de defensa → redirige a `/admin/login` si no hay sesión
+- Layout protegido como segunda verificación → doble seguridad
+- Login page fuera del route group `(protected)` → sin bucle de redirección
+- Logout: `supabase.auth.signOut()` desde cliente → redirect a `/admin/login`
+
+### Cómo probar
+1. `npm run dev`
+2. Abrir `http://localhost:3000/admin/login`
+3. Ingresar credenciales de Supabase Auth
+4. Verificar redirect a `/admin/dashboard`
+5. Probar navegación en sidebar
+6. Probar logout
 
 ---
 
