@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { Toaster } from "@/components/ui/sonner"
 import AdminSidebar from "@/components/admin/AdminSidebar"
 import AdminHeader from "@/components/admin/AdminHeader"
 
@@ -26,6 +27,7 @@ export default async function ProtectedAdminLayout({
           {children}
         </main>
       </div>
+      <Toaster position="top-right" richColors />
     </div>
   )
 }
