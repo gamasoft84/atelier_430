@@ -1,26 +1,129 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* =============================================
+   ATELIER 430 — Design Tokens
+   ============================================= */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Atelier 430 — Brand colors */
+  --gold-500: #B8860B;
+  --gold-400: #DAA520;
+  --gold-100: #F5E6C8;
+  --carbon-900: #0F0F0F;
+  --carbon-800: #1A1A1A;
+  --carbon-700: #2D2D2D;
+  --stone-600: #57534E;
+  --stone-400: #A8A29E;
+  --stone-200: #E7E5E4;
+  --stone-100: #F5F5F4;
+  --cream: #FAF7F0;
+
+  /* Status */
+  --success: #15803D;
+  --warning: #B45309;
+  --error: #991B1B;
+  --info: #1E40AF;
+
+  /* Category badge colors */
+  --cat-religiosa: #7C2D12;
+  --cat-nacional: #166534;
+  --cat-europea: #1E3A8A;
+  --cat-moderna: #581C87;
+
+  /* shadcn/ui semantic variables (light mode) */
+  --background: #FAF7F0;
+  --foreground: #0F0F0F;
+  --card: #FFFFFF;
+  --card-foreground: #0F0F0F;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F0F0F;
+  --primary: #B8860B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F5F5F4;
+  --secondary-foreground: #0F0F0F;
+  --muted: #F5F5F4;
+  --muted-foreground: #57534E;
+  --accent: #F5E6C8;
+  --accent-foreground: #0F0F0F;
+  --destructive: #991B1B;
+  --destructive-foreground: #FFFFFF;
+  --border: #E7E5E4;
+  --input: #E7E5E4;
+  --ring: #B8860B;
+  --radius: 0.5rem;
 }
 
 @theme inline {
+  /* shadcn semantic mappings */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Atelier 430 custom Tailwind colors */
+  --color-gold-500: var(--gold-500);
+  --color-gold-400: var(--gold-400);
+  --color-gold-100: var(--gold-100);
+  --color-carbon-900: var(--carbon-900);
+  --color-carbon-800: var(--carbon-800);
+  --color-carbon-700: var(--carbon-700);
+  --color-stone-600: var(--stone-600);
+  --color-stone-400: var(--stone-400);
+  --color-stone-200: var(--stone-200);
+  --color-stone-100: var(--stone-100);
+  --color-cream: var(--cream);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  --color-cat-religiosa: var(--cat-religiosa);
+  --color-cat-nacional: var(--cat-nacional);
+  --color-cat-europea: var(--cat-europea);
+  --color-cat-moderna: var(--cat-moderna);
+
+  /* Typography */
+  --font-sans: var(--font-sora);
+  --font-display: var(--font-playfair);
+
+  /* Border radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+
+  /* Custom shadows */
+  --shadow-artwork: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* =============================================
+   Base styles
+   ============================================= */
+
+* {
+  border-color: var(--border);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

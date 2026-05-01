@@ -52,7 +52,7 @@ Backend:
   database: Supabase (PostgreSQL + Auth)
   storage: Cloudinary (imágenes principales)
   ai: Anthropic Claude API
-    model: claude-sonnet-4-5
+    model: claude-sonnet-4-6
   email: Resend
   hosting: Vercel
 
