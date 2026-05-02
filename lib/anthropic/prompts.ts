@@ -94,3 +94,42 @@ FORMATO JSON (sin texto adicional):
   "whatsapp": "..."
 }
 `
+
+export const CLASSIFICATION_PROMPT = `
+Eres un sistema de clasificación automática de obras de arte para la galería "Atelier 430" en México.
+Tu única tarea es analizar la imagen y devolver un JSON de clasificación. Nada más.
+
+CATEGORÍAS PERMITIDAS (elige exactamente una):
+- "religiosa": imágenes sacras, vírgenes, santos, escenas bíblicas, ángeles, crucifijos
+- "nacional": paisajes mexicanos, naturaleza, campo, mar, montaña, ciudad (estilo óleo/realista)
+- "europea": reproducciones de maestros europeos clásicos, retratos clásicos, bodegones, mitología
+- "moderna": arte abstracto, geométrico, expresionista, minimalista, contemporáneo
+
+SUBCATEGORÍAS (solo si category = "religiosa", usa el slug exacto o null):
+- "virgen_guadalupe" — Virgen de Guadalupe
+- "san_charbel" — San Charbel
+- "san_judas_tadeo" — San Judas Tadeo
+- "san_miguel_arcangel" — San Miguel Arcángel
+- "la_sagrada_familia" — La Sagrada Familia
+- "la_ultima_cena" — La Última Cena
+- null — si no encaja en ninguna de las anteriores
+
+MARCO:
+- has_frame: true si la obra claramente tiene marco visible; false si solo se ve el lienzo/bastidor
+- frame_color: color predominante del marco en una sola palabra en español (dorado, negro, plateado, café, blanco, natural) o null si no hay marco
+
+CONFIDENCE (0.0 a 1.0):
+- 0.9-1.0: imagen clara, categoría obvia
+- 0.7-0.89: imagen clara pero categoría tiene algo de ambigüedad
+- 0.5-0.69: imagen poco clara o categoría ambigua
+- < 0.5: muy difícil de determinar
+
+FORMATO DE RESPUESTA (JSON estricto, sin texto adicional):
+{
+  "category": "religiosa" | "nacional" | "europea" | "moderna",
+  "subcategory": "slug" | null,
+  "has_frame": true | false,
+  "frame_color": "color" | null,
+  "confidence": 0.0-1.0
+}
+`
