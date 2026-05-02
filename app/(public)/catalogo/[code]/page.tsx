@@ -1,0 +1,228 @@
+import { notFound } from "next/navigation"
+import Link from "next/link"
+import type { Metadata } from "next"
+import ArtworkGallery from "@/components/public/ArtworkGallery"
+import WhatsAppButton from "@/components/public/WhatsAppButton"
+import ShareButton from "@/components/public/ShareButton"
+import RelatedArtworks from "@/components/public/RelatedArtworks"
+import {
+  getArtworkByCode,
+  getRelatedArtworks,
+  getShowPrices,
+} from "@/lib/supabase/queries/public"
+
+// ─── Metadata ──────────────────────────────────────────────────────────────
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ code: string }>
+}): Promise<Metadata> {
+  const { code } = await params
+  const artwork = await getArtworkByCode(code)
+  if (!artwork) return { title: "Obra no encontrada" }
+
+  return {
+    title: artwork.title,
+    description: artwork.description ?? undefined,
+  }
+}
+
+// ─── Labels ────────────────────────────────────────────────────────────────
+
+const CATEGORY_LABEL: Record<string, string> = {
+  religiosa: "Religiosa",
+  nacional:  "Nacional",
+  europea:   "Europea",
+  moderna:   "Moderna",
+}
+
+const TECHNIQUE_LABEL: Record<string, string> = {
+  oleo:      "Óleo sobre tela",
+  impresion: "Impresión",
+  mixta:     "Técnica mixta",
+  acrilico:  "Acrílico",
+}
+
+// ─── Status badge ──────────────────────────────────────────────────────────
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "sold") {
+    return (
+      <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-carbon-900 text-cream">
+        VENDIDA
+      </span>
+    )
+  }
+  if (status === "reserved") {
+    return (
+      <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+        RESERVADA
+      </span>
+    )
+  }
+  return null
+}
+
+// ─── Breadcrumb ────────────────────────────────────────────────────────────
+
+function Breadcrumb({
+  category,
+  title,
+}: {
+  category: string
+  title: string
+}) {
+  return (
+    <nav className="flex items-center gap-1.5 text-xs text-stone-400 mb-6">
+      <Link href="/" className="hover:text-stone-600 transition-colors">Inicio</Link>
+      <span>/</span>
+      <Link href="/catalogo" className="hover:text-stone-600 transition-colors">Catálogo</Link>
+      <span>/</span>
+      <Link
+        href={`/catalogo?categoria=${category}`}
+        className="hover:text-stone-600 transition-colors capitalize"
+      >
+        {CATEGORY_LABEL[category] ?? category}
+      </Link>
+      <span>/</span>
+      <span className="text-stone-600 line-clamp-1">{title}</span>
+    </nav>
+  )
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────
+
+export default async function ArtworkDetailPage({
+  params,
+}: {
+  params: Promise<{ code: string }>
+}) {
+  const { code } = await params
+  const [artwork, showPrices] = await Promise.all([
+    getArtworkByCode(code),
+    getShowPrices(),
+  ])
+
+  if (!artwork) notFound()
+
+  const related = await getRelatedArtworks(artwork.category, artwork.id)
+
+  const dimensions =
+    artwork.width_cm && artwork.height_cm
+      ? `${artwork.width_cm} × ${artwork.height_cm} cm`
+      : artwork.width_cm
+        ? `${artwork.width_cm} cm de ancho`
+        : artwork.height_cm
+          ? `${artwork.height_cm} cm de alto`
+          : null
+
+  const isSold = artwork.status === "sold"
+  const images = artwork.images ?? []
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <Breadcrumb category={artwork.category} title={artwork.title} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+        {/* Left: Gallery */}
+        <div className={isSold ? "opacity-70" : ""}>
+          <ArtworkGallery images={images} title={artwork.title} />
+        </div>
+
+        {/* Right: Info */}
+        <div className="space-y-5">
+          {/* Category + status */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs uppercase tracking-widest text-stone-400 font-medium">
+              {CATEGORY_LABEL[artwork.category]}
+            </span>
+            <StatusBadge status={artwork.status} />
+          </div>
+
+          {/* Title */}
+          <h1 className="font-display text-3xl sm:text-4xl text-carbon-900 leading-tight">
+            {artwork.title}
+          </h1>
+
+          {/* Code */}
+          <p className="text-xs text-stone-400 font-mono">{artwork.code}</p>
+
+          {/* Price */}
+          {showPrices && !isSold ? (
+            artwork.show_price && artwork.price ? (
+              <div className="space-y-0.5">
+                <p className="text-2xl font-bold text-carbon-900">
+                  ${artwork.price.toLocaleString("es-MX")}
+                  <span className="text-sm font-normal text-stone-400 ml-1">MXN</span>
+                </p>
+                {artwork.original_price && artwork.original_price > artwork.price && (
+                  <p className="text-sm text-stone-400 line-through">
+                    ${artwork.original_price.toLocaleString("es-MX")} MXN
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-stone-500">Consultar precio por WhatsApp</p>
+            )
+          ) : null}
+
+          {/* Specs */}
+          {(dimensions || artwork.technique || artwork.has_frame) && (
+            <div className="flex flex-wrap gap-2">
+              {dimensions && (
+                <span className="px-3 py-1.5 rounded-lg bg-stone-100 text-xs text-stone-600">
+                  {dimensions}
+                </span>
+              )}
+              {artwork.technique && (
+                <span className="px-3 py-1.5 rounded-lg bg-stone-100 text-xs text-stone-600">
+                  {TECHNIQUE_LABEL[artwork.technique] ?? artwork.technique}
+                </span>
+              )}
+              {artwork.has_frame && (
+                <span className="px-3 py-1.5 rounded-lg bg-stone-100 text-xs text-stone-600">
+                  {[artwork.frame_color, artwork.frame_material, "con marco"]
+                    .filter(Boolean)
+                    .join(" ")}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Description */}
+          {artwork.description && (
+            <p className="text-sm text-stone-600 leading-relaxed">{artwork.description}</p>
+          )}
+
+          {/* CTAs */}
+          {!isSold && (
+            <div className="space-y-3 pt-2">
+              <WhatsAppButton
+                code={artwork.code}
+                title={artwork.title}
+                widthCm={artwork.width_cm}
+                heightCm={artwork.height_cm}
+                price={artwork.price}
+                showPrice={showPrices && artwork.show_price}
+              />
+              <ShareButton title={artwork.title} />
+            </div>
+          )}
+
+          {isSold && (
+            <div className="space-y-3 pt-2">
+              <p className="text-sm text-stone-500 text-center">
+                Esta obra ya fue vendida. Contáctanos para ver obras similares.
+              </p>
+              <ShareButton title={artwork.title} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Related artworks */}
+      <RelatedArtworks artworks={related} showPrice={showPrices} />
+    </div>
+  )
+}
