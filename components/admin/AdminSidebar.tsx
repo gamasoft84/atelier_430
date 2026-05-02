@@ -5,15 +5,25 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   ImageIcon,
+  FileSpreadsheet,
   ShoppingBag,
   Mail,
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const navItems = [
+type NavItem = {
+  href: string
+  label: string
+  icon: React.ElementType
+  sub?: boolean
+  exactMatch?: boolean
+}
+
+const navItems: NavItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/obras", label: "Obras", icon: ImageIcon },
+  { href: "/admin/obras", label: "Obras", icon: ImageIcon, exactMatch: true },
+  { href: "/admin/obras/importar", label: "Importar masivo", icon: FileSpreadsheet, sub: true },
   { href: "/admin/ventas", label: "Ventas", icon: ShoppingBag },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
@@ -21,6 +31,16 @@ const navItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname()
+
+  const isActive = (item: NavItem) => {
+    if (item.exactMatch) {
+      return pathname === item.href || (
+        pathname.startsWith(item.href + "/") &&
+        !pathname.startsWith("/admin/obras/importar")
+      )
+    }
+    return pathname === item.href || pathname.startsWith(item.href + "/")
+  }
 
   return (
     <aside className="w-60 flex-shrink-0 bg-carbon-900 flex flex-col h-full">
@@ -34,21 +54,22 @@ export default function AdminSidebar() {
 
       {/* Navegación */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || pathname.startsWith(href + "/")
+        {navItems.map((item) => {
+          const active = isActive(item)
           return (
             <Link
-              key={href}
-              href={href}
+              key={item.href}
+              href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-150",
-                isActive
+                "flex items-center gap-3 rounded-md text-sm font-medium transition-colors duration-150",
+                item.sub ? "px-3 py-2 pl-8" : "px-3 py-2.5",
+                active
                   ? "bg-gold-500/15 text-gold-400"
                   : "text-white/55 hover:text-white hover:bg-white/6"
               )}
             >
-              <Icon size={17} strokeWidth={isActive ? 2 : 1.75} />
-              {label}
+              <item.icon size={item.sub ? 15 : 17} strokeWidth={active ? 2 : 1.75} />
+              {item.label}
             </Link>
           )
         })}
