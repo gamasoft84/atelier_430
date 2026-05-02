@@ -60,7 +60,7 @@ export type ArtworkPublic = Omit<
 >
 
 export interface ArtworkFormData {
-  code: string
+  code?: string
   title: string
   description: string
   category: ArtworkCategory
