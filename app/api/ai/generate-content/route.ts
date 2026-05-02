@@ -16,6 +16,7 @@ const bodySchema = z.object({
   has_frame: z.boolean().optional(),
   frame_material: z.string().optional(),
   frame_color: z.string().optional(),
+  cost: z.coerce.number().positive().optional(),
 })
 
 // ─── Error message helpers ─────────────────────────────────────────────────

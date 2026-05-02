@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -17,6 +17,7 @@ import ImageUploader from "@/components/admin/ImageUploader"
 import { createArtwork, updateArtwork } from "@/app/actions/artworks"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES, SOLD_CHANNELS } from "@/lib/constants"
 import type { Artwork } from "@/types/artwork"
+import type { PriceSuggestion } from "@/types/api"
 import type { UploadedImage } from "@/hooks/useImageUpload"
 
 // ─── Schema ───────────────────────────────────────────────────────────────
@@ -46,11 +47,39 @@ type ArtworkFormValues = z.infer<typeof artworkSchema>
 
 // ─── Subcategory options ──────────────────────────────────────────────────
 
-const SUBCATEGORIES: Record<string, string[]> = {
-  religiosa: ["Virgen de Guadalupe", "San Charbel", "Sagrado Corazón", "Última Cena", "Ángeles", "Santos", "Otra"],
-  nacional: ["Paisaje rural", "Paisaje marino", "Paisaje urbano", "Puente", "Montaña", "Bosque", "Otro"],
-  europea: ["Paisaje clásico", "Retrato", "Bodegón", "Mitología", "Arquitectura", "Otro"],
-  moderna: ["Abstracto", "Geométrico", "Expresionista", "Minimalista", "Otro"],
+const SUBCATEGORIES: Record<string, Array<{ value: string; label: string }>> = {
+  religiosa: [
+    { value: "virgen_guadalupe",   label: "Virgen de Guadalupe" },
+    { value: "san_charbel",        label: "San Charbel" },
+    { value: "san_judas_tadeo",    label: "San Judas Tadeo" },
+    { value: "san_miguel_arcangel",label: "San Miguel Arcángel" },
+    { value: "la_sagrada_familia", label: "La Sagrada Familia" },
+    { value: "la_ultima_cena",     label: "La Última Cena" },
+  ],
+  nacional: [
+    { value: "Paisaje rural",   label: "Paisaje rural" },
+    { value: "Paisaje marino",  label: "Paisaje marino" },
+    { value: "Paisaje urbano",  label: "Paisaje urbano" },
+    { value: "Puente",          label: "Puente" },
+    { value: "Montaña",         label: "Montaña" },
+    { value: "Bosque",          label: "Bosque" },
+    { value: "Otro",            label: "Otro" },
+  ],
+  europea: [
+    { value: "Paisaje clásico", label: "Paisaje clásico" },
+    { value: "Retrato",         label: "Retrato" },
+    { value: "Bodegón",         label: "Bodegón" },
+    { value: "Mitología",       label: "Mitología" },
+    { value: "Arquitectura",    label: "Arquitectura" },
+    { value: "Otro",            label: "Otro" },
+  ],
+  moderna: [
+    { value: "Abstracto",     label: "Abstracto" },
+    { value: "Geométrico",    label: "Geométrico" },
+    { value: "Expresionista", label: "Expresionista" },
+    { value: "Minimalista",   label: "Minimalista" },
+    { value: "Otro",          label: "Otro" },
+  ],
 }
 
 const STEP_LABELS = ["Imágenes", "Datos básicos", "Contenido", "Precio", "Publicar"]
@@ -94,6 +123,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiGenerated, setAiGenerated] = useState(false)
+  const [aiPriceSuggestion, setAiPriceSuggestion] = useState<PriceSuggestion | null>(null)
+  const [priceFromAI, setPriceFromAI] = useState(false)
 
   // Stable upload session ID — never changes for this form instance
   const uploadId = useMemo(
@@ -129,6 +160,17 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const watchCategory = form.watch("category")
   const watchHasFrame = form.watch("has_frame")
 
+  // Auto-fill defaults when switching to "religiosa" in create mode
+  useEffect(() => {
+    if (mode !== "create" || watchCategory !== "religiosa") return
+    const { width_cm, height_cm, technique } = form.getValues()
+    if (!width_cm)  form.setValue("width_cm", 55)
+    if (!height_cm) form.setValue("height_cm", 65)
+    if (!technique) form.setValue("technique", "impresion")
+    if (!form.getValues("has_frame")) form.setValue("has_frame", true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchCategory, mode])
+
   const handleImagesChange = useCallback((imgs: UploadedImage[]) => {
     setImages(imgs)
   }, [])
@@ -159,10 +201,18 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
           has_frame: values.has_frame,
           frame_material: values.frame_material || undefined,
           frame_color: values.frame_color || undefined,
+          cost: values.cost ?? undefined,
         }),
       })
 
-      const data = await res.json() as { title?: string; description?: string; tags?: string[]; subcategory?: string; error?: string }
+      const data = await res.json() as {
+        title?: string
+        description?: string
+        tags?: string[]
+        subcategory?: string
+        price_suggestion?: PriceSuggestion
+        error?: string
+      }
 
       if (!res.ok) throw new Error(data.error ?? "Error al generar contenido")
 
@@ -170,6 +220,9 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       if (data.description) form.setValue("description", data.description, { shouldValidate: true, shouldDirty: true })
       if (data.tags?.length) form.setValue("tags", data.tags.join(", "), { shouldDirty: true })
       if (data.subcategory) form.setValue("subcategory", data.subcategory, { shouldDirty: true })
+      if (data.price_suggestion) {
+        setAiPriceSuggestion(data.price_suggestion)
+      }
 
       setAiGenerated(true)
       toast.success("Contenido generado. Puedes editarlo antes de continuar.")
@@ -314,7 +367,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                         </FormControl>
                         <SelectContent>
                           {(SUBCATEGORIES[watchCategory] ?? []).map((sub) => (
-                            <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                            <SelectItem key={sub.value} value={sub.value}>{sub.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -517,6 +570,41 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   </FormItem>
                 )}
               />
+
+              {aiPriceSuggestion && (
+                <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 space-y-3">
+                  <p className="text-xs font-medium text-stone-500 uppercase tracking-wide">
+                    Sugerencia de precio — selecciona para pre-llenar
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      { key: "aggressive",   label: "Venta rápida",    value: aiPriceSuggestion.aggressive },
+                      { key: "balanced",     label: "Recomendado",     value: aiPriceSuggestion.balanced },
+                      { key: "conservative", label: "Precio premium",  value: aiPriceSuggestion.conservative },
+                    ] as const).map(({ key, label, value }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => {
+                          form.setValue("price", value, { shouldValidate: true, shouldDirty: true })
+                          setPriceFromAI(true)
+                        }}
+                        className={`rounded-lg border p-3 text-left transition-colors hover:border-gold-500 ${
+                          form.watch("price") === value
+                            ? "border-gold-500 bg-amber-50"
+                            : "border-stone-200 bg-white"
+                        }`}
+                      >
+                        <p className="text-[11px] text-stone-400 font-medium">{label}</p>
+                        <p className="text-base font-semibold text-carbon-900">
+                          ${value.toLocaleString("es-MX")}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-stone-400">{aiPriceSuggestion.rationale}</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -531,13 +619,25 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Precio público (MXN)</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <FormLabel>Precio público (MXN)</FormLabel>
+                        {priceFromAI && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                            <Sparkles size={9} />
+                            Sugerido por IA
+                          </span>
+                        )}
+                      </div>
                       <FormControl>
                         <Input
                           type="number"
                           placeholder="1200"
                           {...field}
                           value={field.value ?? ""}
+                          onChange={(e) => {
+                            field.onChange(e)
+                            setPriceFromAI(false)
+                          }}
                         />
                       </FormControl>
                       <FormMessage />

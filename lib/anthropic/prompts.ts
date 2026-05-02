@@ -19,6 +19,15 @@ DATOS DE LA OBRA:
 - Medidas: {width}cm x {height}cm
 - Técnica: {technique}
 - Con marco: {has_frame} ({frame_material} {frame_color})
+- Costo de adquisición: {cost}
+
+TABLA DE REFERENCIA DE PRECIOS (MXN, obras en México):
+| Tamaño         | Sin marco        | Con marco        |
+|----------------|------------------|------------------|
+| Pequeño (<50cm)| $800 – $1,500    | $1,200 – $2,200  |
+| Mediano (50-80cm)| $1,500 – $3,500 | $2,500 – $5,000  |
+| Grande (>80cm) | $3,000 – $7,000  | $5,000 – $12,000 |
+Obras religiosas y reproducciones clásicas tienen mayor demanda y margen en México.
 
 INSTRUCCIONES:
 Analiza la imagen adjunta y genera:
@@ -29,14 +38,26 @@ Analiza la imagen adjunta y genera:
 
 3. **Tags** (5-8 palabras clave para SEO): conceptos visuales y temáticos.
 
-4. **Subcategoría**: elige la más adecuada según la categoría indicada. Para "religiosa": Virgen de Guadalupe, San Charbel, Sagrado Corazón, Última Cena, Ángeles, Santos, u Otra. Para "nacional": Paisaje rural, Paisaje marino, Paisaje urbano, Puente, Montaña, Bosque, u Otro. Para "europea": Paisaje clásico, Retrato, Bodegón, Mitología, Arquitectura, u Otro. Para "moderna": Abstracto, Geométrico, Expresionista, Minimalista, u Otro.
+4. **Subcategoría**: elige la más adecuada según la categoría indicada. Para "religiosa" usa exactamente uno de estos valores (slug): virgen_guadalupe, san_charbel, san_judas_tadeo, san_miguel_arcangel, la_sagrada_familia, la_ultima_cena. Para "nacional": Paisaje rural, Paisaje marino, Paisaje urbano, Puente, Montaña, Bosque, u Otro. Para "europea": Paisaje clásico, Retrato, Bodegón, Mitología, Arquitectura, u Otro. Para "moderna": Abstracto, Geométrico, Expresionista, Minimalista, u Otro.
+
+5. **Sugerencia de precio** (solo si se proporcionó el costo de adquisición): propón tres niveles de precio en MXN basado en la tabla de referencia, el tamaño, la técnica, si tiene marco, y la categoría. Los precios deben ser múltiplos de 50 y realistas para el mercado mexicano de decoración.
+   - aggressive: precio mínimo para venta rápida (margen ≥ 2.5x costo si hay costo, o extremo inferior de tabla)
+   - balanced: precio recomendado con buen margen (margen ≥ 3.5x costo si hay costo, o punto medio de tabla)
+   - conservative: precio premium para maximizar ingreso (margen ≥ 5x costo si hay costo, o extremo superior de tabla)
+   - rationale: una oración breve explicando el rango sugerido
 
 FORMATO DE RESPUESTA (JSON estricto, sin texto adicional):
 {
   "title": "...",
   "description": "...",
   "tags": ["tag1", "tag2", ...],
-  "subcategory": "..."
+  "subcategory": "...",
+  "price_suggestion": {
+    "aggressive": 0,
+    "balanced": 0,
+    "conservative": 0,
+    "rationale": "..."
+  }
 }
 `
 

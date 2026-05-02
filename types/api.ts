@@ -25,6 +25,13 @@ export interface ArtworkListParams {
   sort?: "created_at_desc" | "created_at_asc" | "price_asc" | "price_desc"
 }
 
+export interface PriceSuggestion {
+  aggressive: number
+  balanced: number
+  conservative: number
+  rationale: string
+}
+
 export interface GenerateContentRequest {
   artwork_id?: string
   image_url: string
@@ -36,6 +43,7 @@ export interface GenerateContentRequest {
   has_frame?: boolean
   frame_material?: string
   frame_color?: string
+  cost?: number
 }
 
 export interface GenerateContentResponse {
@@ -43,6 +51,7 @@ export interface GenerateContentResponse {
   description: string
   tags: string[]
   subcategory?: string
+  price_suggestion?: PriceSuggestion
 }
 
 export interface GeneratePostRequest {
