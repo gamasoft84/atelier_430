@@ -107,23 +107,52 @@
 
 ---
 
-## Fase 3 — Integración IA ⏳
+## Fase 3 — Integración IA ✅ (2026-05-01)
 
-- [ ] API route `/api/ai/generate-content`
-- [ ] Botón "Generar con IA" en form
-- [ ] API route `/api/ai/generate-post`
-- [ ] Generador de posts (modal con 3 versiones)
+### Completado
+
+- [x] `app/api/ai/generate-content/route.ts` — genera título, descripción, tags, subcategoría con Claude Vision
+- [x] Botón "Generar con IA" activo en ArtworkForm paso 2 (spinner + estado "Regenerar" post-generación)
+- [x] `lib/anthropic/services/artwork-analysis.ts` — servicio core reutilizable
+- [x] Sugerencia de precio por IA: 3 niveles (venta rápida / recomendado / premium) con márgenes configurables
+- [x] Tarjetas de precio en Step 2 → pre-llenan campo de precio en Step 3 con badge "Sugerido por IA"
+- [x] Auto-fill para categoría "religiosa": 55×65 cm, técnica "impresion", marco activado
+- [x] Subcategorías de religiosa con slugs: virgen_guadalupe, san_charbel, san_judas_tadeo, san_miguel_arcangel, la_sagrada_familia, la_ultima_cena
+- [x] Selects de técnica y subcategoría en modo controlado (value= en lugar de defaultValue=)
+
+### Pendiente Fase 3
+- [ ] API route `/api/ai/generate-post` — genera posts para redes sociales
+- [ ] Modal generador de posts desde ficha de obra
 
 ---
 
-## Fase 4 — Catálogo público ⏳
+## Fase 4 — Catálogo público ⏳ (Sesión 1 completada 2026-05-02)
 
-- [ ] Layout público (header + footer)
-- [ ] Home con hero + grid de destacadas
-- [ ] Catálogo con filtros y ordenamiento
-- [ ] Página de detalle de obra
-- [ ] Botón WhatsApp dinámico
-- [ ] SEO (meta tags dinámicos)
+### Sesión 1 ✅
+
+- [x] `lib/supabase/queries/public.ts` — queries públicas: count, featured, category stats, by code, related, show_prices
+- [x] `app/(public)/layout.tsx` — layout público independiente del admin
+- [x] `components/public/PublicHeader.tsx` — header sticky con logo y nav mínima
+- [x] `components/public/PublicFooter.tsx` — footer dark con contacto y sociales
+- [x] `components/public/WhatsAppFloat.tsx` — botón flotante sticky bottom-right
+- [x] `app/(public)/page.tsx` — home: hero con contador dinámico, obras destacadas (8), sección por categorías
+- [x] `components/public/ArtworkCard.tsx` — card con hover overlay, badge status, precio condicional
+- [x] `components/public/CategorySection.tsx` — 4 cards con imagen de fondo y contador
+- [x] `app/(public)/catalogo/page.tsx` — grid completo sin filtros (Sesión 2), estado vacío amigable
+- [x] `app/(public)/catalogo/[code]/page.tsx` — detalle: galería, specs, precio, CTAs, obras relacionadas
+- [x] `components/public/ArtworkGallery.tsx` — galería client con thumbnails y zoom hover
+- [x] `components/public/WhatsAppButton.tsx` — mensaje pre-llenado: código, título, medidas, precio, URL
+- [x] `components/public/ShareButton.tsx` — dropdown: WA share, FB share, copiar enlace
+- [x] `components/public/RelatedArtworks.tsx` — 4 obras de la misma categoría
+- [x] Breadcrumb, badge VENDIDA/RESERVADA, metadata básica SEO
+
+### Sesión 2 — PENDIENTE
+- [ ] Catálogo con filtros: categoría, técnica, precio min/max, con/sin marco, ordenamiento
+- [ ] Paginación del catálogo (ARTWORKS_PER_PAGE = 24)
+- [ ] OG tags dinámicos para cada obra (imagen, descripción, URL canónica)
+- [ ] robots.txt + sitemap.xml
+- [ ] Contador de vistas (incrementar views_count al entrar al detalle)
+- [ ] Contador de clicks de WhatsApp (incrementar whatsapp_clicks)
 
 ---
 
