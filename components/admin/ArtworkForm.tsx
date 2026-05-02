@@ -18,6 +18,8 @@ import { createArtwork, updateArtwork } from "@/app/actions/artworks"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES, SOLD_CHANNELS } from "@/lib/constants"
 import type { Artwork } from "@/types/artwork"
 import type { PriceSuggestion } from "@/types/api"
+import type { ClassificationResult } from "@/types/classification"
+import { applyAutoFill } from "@/lib/utils/artwork-autofill"
 import type { UploadedImage } from "@/hooks/useImageUpload"
 
 // ─── Schema ───────────────────────────────────────────────────────────────
@@ -125,6 +127,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const [aiGenerated, setAiGenerated] = useState(false)
   const [aiPriceSuggestion, setAiPriceSuggestion] = useState<PriceSuggestion | null>(null)
   const [priceFromAI, setPriceFromAI] = useState(false)
+  const [isClassifying, setIsClassifying] = useState(false)
+  const [classifyConfidence, setClassifyConfidence] = useState<number | null>(null)
 
   // Stable upload session ID — never changes for this form instance
   const uploadId = useMemo(
@@ -175,7 +179,44 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
     setImages(imgs)
   }, [])
 
-  // ── AI generation ───────────────────────────────────────────────────────
+  // ── AI classification (step 1) ──────────────────────────────────────────
+
+  const handleClassify = async () => {
+    const primaryImage = images.find((img) => img.is_primary) ?? images[0]
+    if (!primaryImage) return
+
+    setIsClassifying(true)
+    try {
+      const res = await fetch("/api/ai/classify-artwork", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_url: primaryImage.cloudinary_url }),
+      })
+
+      const data = await res.json() as ClassificationResult & { error?: string }
+      if (!res.ok) throw new Error(data.error ?? "Error al clasificar")
+
+      const fill = applyAutoFill(data)
+      form.setValue("category", fill.category, { shouldDirty: true })
+      if (fill.subcategory) form.setValue("subcategory", fill.subcategory, { shouldDirty: true })
+      form.setValue("technique", fill.technique, { shouldDirty: true })
+      form.setValue("has_frame", fill.has_frame, { shouldDirty: true })
+      if (fill.frame_material) form.setValue("frame_material", fill.frame_material, { shouldDirty: true })
+      if (fill.frame_color) form.setValue("frame_color", fill.frame_color, { shouldDirty: true })
+      if (fill.width_cm) form.setValue("width_cm", fill.width_cm, { shouldDirty: true })
+      if (fill.height_cm) form.setValue("height_cm", fill.height_cm, { shouldDirty: true })
+
+      setClassifyConfidence(data.confidence)
+      const pct = Math.round(data.confidence * 100)
+      toast.success(`Datos detectados con ${pct}% de confianza`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo clasificar automáticamente")
+    } finally {
+      setIsClassifying(false)
+    }
+  }
+
+  // ── AI generation (step 2) ──────────────────────────────────────────────
 
   const handleGenerateAI = async () => {
     const primaryImage = images.find((img) => img.is_primary) ?? images[0]
@@ -325,7 +366,37 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
           {/* ─ Step 1: Basic data ─────────────────────────────────── */}
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="font-semibold text-carbon-900">Datos básicos</h2>
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="font-semibold text-carbon-900">Datos básicos</h2>
+                <div className="flex items-center gap-2">
+                  {classifyConfidence !== null && (
+                    <span
+                      className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${
+                        classifyConfidence >= 0.8
+                          ? "text-green-700 bg-green-50 border-green-200"
+                          : "text-amber-700 bg-amber-50 border-amber-200"
+                      }`}
+                    >
+                      {classifyConfidence >= 0.8 ? "Detectado" : "Verificar"} {Math.round(classifyConfidence * 100)}%
+                    </span>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClassify}
+                    disabled={isClassifying || images.length === 0}
+                    title={images.length === 0 ? "Sube una imagen primero" : undefined}
+                    className="gap-1.5 shrink-0"
+                  >
+                    {isClassifying ? (
+                      <><Loader2 size={14} className="animate-spin" />Analizando...</>
+                    ) : (
+                      <><Sparkles size={14} />Pre-llenar con IA</>
+                    )}
+                  </Button>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField
@@ -334,7 +405,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Categoría *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecciona" />
