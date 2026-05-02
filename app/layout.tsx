@@ -20,10 +20,22 @@ export const metadata: Metadata = {
     template: "%s | Atelier 430",
   },
   description: "430 piezas. Una sola colección. Arte curado, listo para tu hogar.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   openGraph: {
     siteName: "Atelier 430",
     locale: "es_MX",
     type: "website",
+    title: "Atelier 430",
+    description: "430 piezas. Una sola colección. Arte curado, listo para tu hogar.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Atelier 430",
+    description: "430 piezas. Una sola colección. Arte curado, listo para tu hogar.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 }
 

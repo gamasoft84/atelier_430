@@ -13,6 +13,8 @@ import {
 
 // ─── Metadata ──────────────────────────────────────────────────────────────
 
+import { SITE_URL, SITE_NAME } from "@/lib/constants"
+
 export async function generateMetadata({
   params,
 }: {
@@ -22,9 +24,39 @@ export async function generateMetadata({
   const artwork = await getArtworkByCode(code)
   if (!artwork) return { title: "Obra no encontrada" }
 
+  const primaryImage =
+    artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
+  const url = `${SITE_URL}/catalogo/${code}`
+  const description = artwork.description ?? `${artwork.title} — ${SITE_NAME}`
+
   return {
     title: artwork.title,
-    description: artwork.description ?? undefined,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: artwork.title,
+      description,
+      url,
+      type: "website",
+      siteName: SITE_NAME,
+      locale: "es_MX",
+      ...(primaryImage && {
+        images: [
+          {
+            url: primaryImage.cloudinary_url,
+            width: primaryImage.width ?? 800,
+            height: primaryImage.height ?? 1066,
+            alt: artwork.title,
+          },
+        ],
+      }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: artwork.title,
+      description,
+      ...(primaryImage && { images: [primaryImage.cloudinary_url] }),
+    },
   }
 }
 
@@ -223,6 +255,33 @@ export default async function ArtworkDetailPage({
 
       {/* Related artworks */}
       <RelatedArtworks artworks={related} showPrice={showPrices} />
+
+      {/* Schema.org JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: artwork.title,
+            description: artwork.description ?? undefined,
+            image: (artwork.images ?? []).map((i) => i.cloudinary_url),
+            brand: { "@type": "Brand", name: "Atelier 430" },
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "MXN",
+              price: showPrices && artwork.show_price && artwork.price
+                ? String(artwork.price)
+                : undefined,
+              availability:
+                artwork.status === "available"
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/OutOfStock",
+              url: `${SITE_URL}/catalogo/${artwork.code}`,
+            },
+          }),
+        }}
+      />
     </div>
   )
 }

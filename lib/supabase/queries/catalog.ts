@@ -84,7 +84,7 @@ export async function getFilteredArtworks(
 
   // Category
   if (params.categorias.length > 0) {
-    query = query.in("category", params.categorias)
+    query = query.in("category", params.categorias as import("@/types/artwork").ArtworkCategory[])
   }
 
   // Technique
