@@ -120,6 +120,15 @@
 - [x] Subcategorías de religiosa con slugs: virgen_guadalupe, san_charbel, san_judas_tadeo, san_miguel_arcangel, la_sagrada_familia, la_ultima_cena
 - [x] Selects de técnica y subcategoría en modo controlado (value= en lugar de defaultValue=)
 
+### Mejora quirúrgica — Clasificación inteligente ✅ (2026-05-02)
+
+- [x] `types/classification.ts` — ClassificationResult + AutoFillResult
+- [x] `lib/anthropic/prompts.ts` — CLASSIFICATION_PROMPT con instrucciones estrictas por categoría
+- [x] `lib/anthropic/services/artwork-classifier.ts` — classifyArtwork() con validación Zod, reutilizable en Fase 6
+- [x] `lib/utils/artwork-autofill.ts` — applyAutoFill() con reglas de negocio (técnica automática, defaults religiosa)
+- [x] `app/api/ai/classify-artwork/route.ts` — POST con auth + validación Zod
+- [x] ArtworkForm Step 1: botón "Pre-llenar con IA", badge de confianza verde/amarillo, loading state
+
 ### Pendiente Fase 3
 - [ ] API route `/api/ai/generate-post` — genera posts para redes sociales
 - [ ] Modal generador de posts desde ficha de obra
