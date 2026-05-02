@@ -129,6 +129,10 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const [priceFromAI, setPriceFromAI] = useState(false)
   const [isClassifying, setIsClassifying] = useState(false)
   const [classifyConfidence, setClassifyConfidence] = useState<number | null>(null)
+  // Subcategorías sugeridas por IA que no están en la lista predefinida
+  const [extraSubcategories, setExtraSubcategories] = useState<
+    Record<string, Array<{ value: string; label: string }>>
+  >({})
 
   // Stable upload session ID — never changes for this form instance
   const uploadId = useMemo(
@@ -207,6 +211,26 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       if (fill.height_cm) form.setValue("height_cm", fill.height_cm, { shouldDirty: true })
 
       setClassifyConfidence(data.confidence)
+
+      // If AI returned a subcategory not in the predefined list, register it dynamically
+      if (fill.subcategory) {
+        const predefined = SUBCATEGORIES[fill.category] ?? []
+        const isKnown = predefined.some((s) => s.value === fill.subcategory)
+        if (!isKnown) {
+          setExtraSubcategories((prev) => {
+            const already = (prev[fill.category] ?? []).some((s) => s.value === fill.subcategory)
+            if (already) return prev
+            return {
+              ...prev,
+              [fill.category]: [
+                ...(prev[fill.category] ?? []),
+                { value: fill.subcategory, label: fill.subcategory },
+              ],
+            }
+          })
+        }
+      }
+
       const pct = Math.round(data.confidence * 100)
       toast.success(`Datos detectados con ${pct}% de confianza`)
     } catch (err) {
@@ -260,7 +284,25 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       if (data.title) form.setValue("title", data.title, { shouldValidate: true, shouldDirty: true })
       if (data.description) form.setValue("description", data.description, { shouldValidate: true, shouldDirty: true })
       if (data.tags?.length) form.setValue("tags", data.tags.join(", "), { shouldDirty: true })
-      if (data.subcategory) form.setValue("subcategory", data.subcategory, { shouldDirty: true })
+      if (data.subcategory) {
+        const currentCategory = form.getValues("category")
+        const predefined = SUBCATEGORIES[currentCategory] ?? []
+        const isKnown = predefined.some((s) => s.value === data.subcategory)
+        if (!isKnown) {
+          setExtraSubcategories((prev) => {
+            const already = (prev[currentCategory] ?? []).some((s) => s.value === data.subcategory)
+            if (already) return prev
+            return {
+              ...prev,
+              [currentCategory]: [
+                ...(prev[currentCategory] ?? []),
+                { value: data.subcategory!, label: data.subcategory! },
+              ],
+            }
+          })
+        }
+        form.setValue("subcategory", data.subcategory, { shouldDirty: true })
+      }
       if (data.price_suggestion) {
         setAiPriceSuggestion(data.price_suggestion)
       }
@@ -437,7 +479,10 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {(SUBCATEGORIES[watchCategory] ?? []).map((sub) => (
+                          {[
+                            ...(SUBCATEGORIES[watchCategory] ?? []),
+                            ...(extraSubcategories[watchCategory] ?? []),
+                          ].map((sub) => (
                             <SelectItem key={sub.value} value={sub.value}>{sub.label}</SelectItem>
                           ))}
                         </SelectContent>
