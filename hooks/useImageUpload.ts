@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useMemo } from "react"
 import { arrayMove } from "@dnd-kit/sortable"
 import { MAX_IMAGES_PER_ARTWORK } from "@/lib/constants"
 
@@ -133,9 +133,10 @@ export function useImageUpload(): UseImageUploadReturn {
     []
   )
 
-  const doneImages = images
-    .filter((i) => i.status === "done")
-    .sort((a, b) => a.position - b.position)
+  const doneImages = useMemo(
+    () => images.filter((i) => i.status === "done").sort((a, b) => a.position - b.position),
+    [images]
+  )
 
   const uploadingCount = images.filter((i) => i.status === "uploading").length
   const canAddMore = doneImages.length + uploadingCount < MAX_IMAGES_PER_ARTWORK
