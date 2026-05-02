@@ -359,7 +359,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Subcategoría</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecciona" />
@@ -383,7 +383,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Técnica</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecciona" />
