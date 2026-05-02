@@ -67,14 +67,43 @@
 
 ---
 
-## Fase 2 — CRUD de obras ⏳
+## Fase 2 — CRUD de obras ✅ (2026-05-01)
 
-- [ ] ImageUploader con drag & drop
-- [ ] Form de crear obra (paso a paso)
-- [ ] Listado admin con filtros
-- [ ] Edición de obra
-- [ ] Modal de venta
-- [ ] Modal de apartar
+### Completado
+
+- [x] `hooks/useImageUpload.ts` — hook completo con XHR upload, progress, reorder, initialize, reset
+- [x] `app/api/upload/sign/route.ts` — firma SHA1 para Cloudinary (server-side)
+- [x] `app/api/upload/route.ts` — DELETE de imágenes en Cloudinary
+- [x] `components/admin/ImageUploader.tsx` — drag & drop, clipboard paste, reorder dnd-kit, thumbnails con progress bar
+- [x] `app/actions/artworks.ts` — 7 server actions: createArtwork, updateArtwork, deleteArtwork, sellArtwork, reserveArtwork, toggleArtworkVisibility, generateArtworkCode
+- [x] `components/admin/ArtworkForm.tsx` — wizard 5 pasos (imágenes → básicos → contenido → precio → publicar)
+- [x] `app/admin/(protected)/obras/nueva/page.tsx` — página crear obra
+- [x] `app/admin/(protected)/obras/page.tsx` — listado con filtros por búsqueda, categoría y estado; paginación 20/página
+- [x] `components/admin/ArtworksFilters.tsx` — filtros client-side con debounce 400ms
+- [x] `components/admin/ArtworksTable.tsx` — tabla server component con thumbnails Cloudinary, badges de estado/categoría
+- [x] `app/admin/(protected)/obras/[id]/page.tsx` — página editar obra con datos precargados
+- [x] `components/admin/DeleteArtworkDialog.tsx` — modal confirmación eliminar (controlled + uncontrolled)
+- [x] `components/admin/SellArtworkDialog.tsx` — modal registrar venta (precio, canal, comprador)
+- [x] `components/admin/ArtworkActionsMenu.tsx` — dropdown por fila: editar, vender, ocultar/mostrar, eliminar
+
+### Arquitectura de imágenes
+- Upload directo a Cloudinary con firma SHA1 generada en servidor (api_secret nunca expuesto)
+- XHR para progreso en tiempo real por imagen
+- dnd-kit para reordenar thumbnails
+- Fire-and-forget DELETE al eliminar imágenes o obras
+
+### Fixes técnicos
+- `database.ts` reescrito con tipos explícitos (Insert/Update sin Omit circular) + `Relationships` + `CompositeTypes` para `@supabase/supabase-js@2.105`
+- `useImageUpload`: `doneImages` envuelto en `useMemo` para evitar infinite re-render loop
+- `ArtworkFormData.code` opcional (se auto-genera en server action)
+- `zodResolver` con 3 generics para `@hookform/resolvers@5.x`
+
+### Cómo probar
+1. `npm run dev`
+2. `/admin/obras` → listado vacío con botón "Nueva obra"
+3. `/admin/obras/nueva` → wizard 5 pasos, subir imagen, publicar
+4. Tabla: badge de estado, thumbnail, menú de acciones (⋯)
+5. Menú: editar, registrar venta, ocultar/mostrar, eliminar
 
 ---
 

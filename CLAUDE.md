@@ -196,15 +196,15 @@ Cuando generes copy o contenido para el sitio:
 
 ## 🎯 Estado actual del proyecto
 
-**Fase actual:** Fase 0 (Setup inicial)
+**Fase actual:** Fase 3 (Integración IA)
+
+**Fases completadas:** 0 (Setup), 1 (Auth), 2 (CRUD obras)
 
 **Próximos pasos:**
-1. Inicializar Next.js 14 con TypeScript + Tailwind
-2. Configurar shadcn/ui
-3. Configurar Supabase
-4. Configurar Cloudinary
-5. Variables de entorno
-6. Deploy inicial a Vercel
+1. `app/api/ai/generate-content/route.ts` — genera título, descripción y tags con Claude Vision
+2. Conectar botón "Generar con IA" en ArtworkForm paso 3
+3. `app/api/ai/generate-post/route.ts` — genera posts para redes sociales
+4. Modal generador de posts desde la ficha de obra
 
 ---
 

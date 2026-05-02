@@ -1,7 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, ImageIcon, Pencil } from "lucide-react"
+import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import ArtworkActionsMenu from "@/components/admin/ArtworkActionsMenu"
 import type { ArtworkCategory, ArtworkStatus } from "@/types/artwork"
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -205,13 +206,12 @@ export default function ArtworksTable({
 
                   {/* Actions */}
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/obras/${artwork.id}`}
-                      title="Editar obra"
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-stone-400 hover:text-gold-500 hover:bg-gold-50 transition-colors"
-                    >
-                      <Pencil size={14} />
-                    </Link>
+                    <ArtworkActionsMenu
+                      id={artwork.id}
+                      code={artwork.code}
+                      title={artwork.title}
+                      status={artwork.status}
+                    />
                   </td>
                 </tr>
               )
