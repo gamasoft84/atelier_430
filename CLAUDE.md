@@ -196,15 +196,24 @@ Cuando generes copy o contenido para el sitio:
 
 ## 🎯 Estado actual del proyecto
 
-**Fase actual:** Fase 3 (Integración IA)
+**Fase actual:** Fase 5 (Wishlist) o Fase 6 (Carga masiva) — Rick decide
 
-**Fases completadas:** 0 (Setup), 1 (Auth), 2 (CRUD obras)
+**Fases completadas:** 0 (Setup), 1 (Auth), 2 (CRUD obras), 3 (IA), 4 (Catálogo público)
 
-**Próximos pasos:**
-1. `app/api/ai/generate-content/route.ts` — genera título, descripción y tags con Claude Vision
-2. Conectar botón "Generar con IA" en ArtworkForm paso 3
-3. `app/api/ai/generate-post/route.ts` — genera posts para redes sociales
-4. Modal generador de posts desde la ficha de obra
+**Próximos pasos (Fase 5 — Wishlist):**
+1. `hooks/useWishlist.ts` — hook completo (localStorage + DB sync por session_id)
+2. Botón corazón en ArtworkCard
+3. Página `/favoritos`
+4. Compartir wishlist por link
+
+**Arquitectura pública ya existente:**
+- `app/(public)/` — layout con header, footer, WhatsApp flotante
+- `app/(public)/catalogo/` — catálogo con filtros, búsqueda, sort, paginación
+- `app/(public)/catalogo/[code]/` — detalle de obra con galería, WhatsApp, SEO completo
+- `app/(public)/categoria/[slug]/` — páginas de categoría
+- `lib/supabase/queries/public.ts` — queries públicas
+- `lib/supabase/queries/catalog.ts` — query filtrada con paginación
+- `types/catalog.ts` — CatalogParams, parseCatalogParams, hasActiveFilters
 
 ---
 

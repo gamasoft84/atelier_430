@@ -146,11 +146,27 @@
 - [x] `components/public/RelatedArtworks.tsx` — 4 obras de la misma categoría
 - [x] Breadcrumb, badge VENDIDA/RESERVADA, metadata básica SEO
 
-### Sesión 2 — PENDIENTE
-- [ ] Catálogo con filtros: categoría, técnica, precio min/max, con/sin marco, ordenamiento
-- [ ] Paginación del catálogo (ARTWORKS_PER_PAGE = 24)
-- [ ] OG tags dinámicos para cada obra (imagen, descripción, URL canónica)
-- [ ] robots.txt + sitemap.xml
+### Sesión 2 ✅ (2026-05-02)
+
+- [x] `types/catalog.ts` — CatalogParams, parseCatalogParams, hasActiveFilters
+- [x] `lib/supabase/queries/catalog.ts` — getFilteredArtworks (filtros DB + size filter JS) + getPriceRange
+- [x] `components/public/catalog/FilterSidebar.tsx` — sidebar sticky desktop + drawer mobile
+- [x] `components/public/catalog/CatalogClient.tsx` — wrapper client con estado mobile
+- [x] `components/public/catalog/CatalogToolbar.tsx` — búsqueda debounced 300ms, sort, contador, limpiar
+- [x] `components/public/catalog/Pagination.tsx` — paginación con URL como source of truth
+- [x] `components/public/catalog/EmptyState.tsx` — sin resultados + catálogo vacío
+- [x] `app/(public)/catalogo/page.tsx` — reescrito como Server Component con searchParams
+- [x] `app/(public)/categoria/[slug]/page.tsx` — 4 páginas de categoría con filtros contextualizados
+- [x] SEO: OG + Twitter cards completos en detalle de obra
+- [x] Schema.org JSON-LD (Product) en detalle de obra
+- [x] `app/sitemap.ts` — sitemap dinámico con todas las obras disponibles
+- [x] `app/robots.ts` — permite todo excepto /admin/
+- [x] `app/not-found.tsx` — 404 personalizado con layout público
+- [x] `app/(public)/catalogo/error.tsx` — error boundary con Reintentar
+- [x] Animaciones Framer Motion: stagger 40ms por card, fade+slide entrada
+- [x] metadata base mejorada en root layout (metadataBase, OG, Twitter, robots)
+
+### Pendiente (post Fase 4)
 - [ ] Contador de vistas (incrementar views_count al entrar al detalle)
 - [ ] Contador de clicks de WhatsApp (incrementar whatsapp_clicks)
 
