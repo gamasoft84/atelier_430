@@ -190,12 +190,32 @@
 
 ---
 
-## Fase 6 — Carga masiva e importación bulk ⏳
+## Fase 6 — Carga masiva e importación bulk ⏳ (Sesión 1 completada 2026-05-02)
 
-- [ ] BulkUploader (drag & drop 20-50 fotos)
-- [ ] BulkImporter (Excel + ZIP)
-- [ ] Procesamiento en background con IA
-- [ ] Vista de revisión de borradores
+### Sesión 1 ✅
+
+- [x] `types/import.ts` — ImportCategory, ImportTechnique, ExcelRowData, ValidatedRow, ValidationSummary, EXCEL_COLUMN_DEFS
+- [x] `components/admin/AdminSidebar.tsx` — sub-item "Importar masivo" (FileSpreadsheet, /admin/obras/importar)
+- [x] `app/admin/(protected)/obras/importar/page.tsx` — página Server Component con metadata
+- [x] `components/admin/import/ImportWizard.tsx` — wizard 3 pasos con stepper vertical (Paso 3 locked)
+- [x] `components/admin/import/TemplateStep.tsx` — Paso 1: descarga plantilla + convención de códigos
+- [x] `app/api/template/excel/route.ts` — GET genera .xlsx con exceljs (auth requerida)
+  * Hoja "Obras": headers dorado/carbón, dropdowns en B/D/G/H, validaciones numéricas, 3 filas de ejemplo
+  * Hoja "Instrucciones": guía de llenado formateada
+  * Hoja "Resumen": fórmulas de conteo, suma de costos/precios, margen estimado
+- [x] `app/actions/import.ts` — validateImportFile() server action (xlsx server-side, check BD codes)
+- [x] `components/admin/import/ValidatorStep.tsx` — Paso 2: drop zone + validación + preview
+  * Validaciones por fila: code regex, category, technique, medidas, has_frame, cost, price
+  * Detección de duplicados en archivo y en BD (warning, no error)
+  * Tabla con toggle "solo errores", stats (total/válidas/errores/warnings)
+  * CTA habilitado solo si no hay errores
+
+### Pendiente Sesión 2
+- [ ] Subida de ZIP de imágenes con react-dropzone
+- [ ] Procesamiento batch con IA (reutiliza classifyArtwork() de Fase 3)
+- [ ] Inserción masiva en Supabase como borradores
+- [ ] Vista de revisión de borradores generados
+- [ ] Publicación masiva desde la vista de revisión
 
 ---
 
