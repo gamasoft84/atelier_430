@@ -3,6 +3,17 @@ import { ARTWORK_CONTENT_PROMPT, SOCIAL_POST_PROMPT } from "./prompts"
 import type { GenerateContentRequest, GenerateContentResponse, GeneratePostResponse } from "@/types/api"
 import type { ArtworkPublic } from "@/types/artwork"
 
+// Extracts the first JSON object from a string — handles cases where Claude
+// adds preamble text before the JSON block.
+function extractJson(text: string): string {
+  const start = text.indexOf("{")
+  const end = text.lastIndexOf("}")
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error("No se encontró un objeto JSON válido en la respuesta")
+  }
+  return text.slice(start, end + 1)
+}
+
 export async function generateArtworkContent(
   params: GenerateContentRequest
 ): Promise<GenerateContentResponse> {
@@ -25,10 +36,7 @@ export async function generateArtworkContent(
         content: [
           {
             type: "image",
-            source: {
-              type: "url",
-              url: params.image_url,
-            },
+            source: { type: "url", url: params.image_url },
           },
           {
             type: "text",
@@ -39,8 +47,9 @@ export async function generateArtworkContent(
     ],
   })
 
-  const text = message.content[0].type === "text" ? message.content[0].text : ""
-  return JSON.parse(text) as GenerateContentResponse
+  const raw = message.content[0].type === "text" ? message.content[0].text : ""
+  const json = extractJson(raw)
+  return JSON.parse(json) as GenerateContentResponse
 }
 
 export async function generateSocialPosts(
@@ -62,6 +71,7 @@ export async function generateSocialPosts(
     messages: [{ role: "user", content: prompt }],
   })
 
-  const text = message.content[0].type === "text" ? message.content[0].text : ""
-  return JSON.parse(text) as GeneratePostResponse
+  const raw = message.content[0].type === "text" ? message.content[0].text : ""
+  const json = extractJson(raw)
+  return JSON.parse(json) as GeneratePostResponse
 }

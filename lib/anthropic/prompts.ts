@@ -29,11 +29,14 @@ Analiza la imagen adjunta y genera:
 
 3. **Tags** (5-8 palabras clave para SEO): conceptos visuales y temáticos.
 
+4. **Subcategoría**: elige la más adecuada según la categoría indicada. Para "religiosa": Virgen de Guadalupe, San Charbel, Sagrado Corazón, Última Cena, Ángeles, Santos, u Otra. Para "nacional": Paisaje rural, Paisaje marino, Paisaje urbano, Puente, Montaña, Bosque, u Otro. Para "europea": Paisaje clásico, Retrato, Bodegón, Mitología, Arquitectura, u Otro. Para "moderna": Abstracto, Geométrico, Expresionista, Minimalista, u Otro.
+
 FORMATO DE RESPUESTA (JSON estricto, sin texto adicional):
 {
   "title": "...",
   "description": "...",
-  "tags": ["tag1", "tag2", ...]
+  "tags": ["tag1", "tag2", ...],
+  "subcategory": "..."
 }
 `
 

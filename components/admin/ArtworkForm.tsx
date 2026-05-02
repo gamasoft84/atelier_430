@@ -6,7 +6,7 @@ import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
-import { ChevronRight, ChevronLeft, Sparkles, Loader2, Check } from "lucide-react"
+import { ChevronRight, ChevronLeft, Sparkles, Loader2, Check, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -92,6 +92,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const [step, setStep] = useState(0)
   const [images, setImages] = useState<UploadedImage[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [aiGenerated, setAiGenerated] = useState(false)
 
   // Stable upload session ID — never changes for this form instance
   const uploadId = useMemo(
@@ -130,6 +132,53 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const handleImagesChange = useCallback((imgs: UploadedImage[]) => {
     setImages(imgs)
   }, [])
+
+  // ── AI generation ───────────────────────────────────────────────────────
+
+  const handleGenerateAI = async () => {
+    const primaryImage = images.find((img) => img.is_primary) ?? images[0]
+    if (!primaryImage) {
+      toast.error("Agrega al menos una imagen para generar contenido con IA")
+      return
+    }
+
+    setIsGenerating(true)
+    const values = form.getValues()
+
+    try {
+      const res = await fetch("/api/ai/generate-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image_url: primaryImage.cloudinary_url,
+          category: values.category,
+          subcategory: values.subcategory || undefined,
+          technique: values.technique || undefined,
+          width_cm: values.width_cm ?? undefined,
+          height_cm: values.height_cm ?? undefined,
+          has_frame: values.has_frame,
+          frame_material: values.frame_material || undefined,
+          frame_color: values.frame_color || undefined,
+        }),
+      })
+
+      const data = await res.json() as { title?: string; description?: string; tags?: string[]; subcategory?: string; error?: string }
+
+      if (!res.ok) throw new Error(data.error ?? "Error al generar contenido")
+
+      if (data.title) form.setValue("title", data.title, { shouldValidate: true, shouldDirty: true })
+      if (data.description) form.setValue("description", data.description, { shouldValidate: true, shouldDirty: true })
+      if (data.tags?.length) form.setValue("tags", data.tags.join(", "), { shouldDirty: true })
+      if (data.subcategory) form.setValue("subcategory", data.subcategory, { shouldDirty: true })
+
+      setAiGenerated(true)
+      toast.success("Contenido generado. Puedes editarlo antes de continuar.")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al generar contenido")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
   // ── Navigation ──────────────────────────────────────────────────────────
 
@@ -392,21 +441,34 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
           {/* ─ Step 2: Content / AI ───────────────────────────────── */}
           {step === 2 && (
             <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
                   <h2 className="font-semibold text-carbon-900">Título y descripción</h2>
-                  <p className="text-sm text-stone-500 mt-0.5">Escríbelo tú o genera con IA en la Fase 3.</p>
+                  <p className="text-sm text-stone-500 mt-0.5">
+                    {images.length === 0
+                      ? "Vuelve al paso anterior y sube una imagen para usar la IA."
+                      : "Escríbelo tú o genera con IA usando la imagen principal."}
+                  </p>
                 </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled
-                  className="gap-1.5 text-stone-400 border-stone-200"
+                  onClick={handleGenerateAI}
+                  disabled={isGenerating || images.length === 0}
+                  className={
+                    aiGenerated
+                      ? "gap-1.5 shrink-0 bg-gold-500 hover:bg-gold-400 text-white border-gold-500"
+                      : "gap-1.5 shrink-0"
+                  }
                 >
-                  <Sparkles size={14} />
-                  Generar con IA
-                  <span className="text-[10px] bg-stone-100 px-1.5 py-0.5 rounded text-stone-400">Fase 3</span>
+                  {isGenerating ? (
+                    <><Loader2 size={14} className="animate-spin" />Generando...</>
+                  ) : aiGenerated ? (
+                    <><RefreshCw size={14} />Regenerar</>
+                  ) : (
+                    <><Sparkles size={14} />Generar con IA</>
+                  )}
                 </Button>
               </div>
 

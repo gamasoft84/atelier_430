@@ -26,7 +26,7 @@ export interface ArtworkListParams {
 }
 
 export interface GenerateContentRequest {
-  artwork_id: string
+  artwork_id?: string
   image_url: string
   category: string
   subcategory?: string
@@ -42,6 +42,7 @@ export interface GenerateContentResponse {
   title: string
   description: string
   tags: string[]
+  subcategory?: string
 }
 
 export interface GeneratePostRequest {
