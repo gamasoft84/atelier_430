@@ -37,7 +37,7 @@ function CategoryCard({ category, count, thumbnail }: CategoryCardProps) {
   return (
     <Link
       href={`/catalogo?categoria=${category}`}
-      className="group relative overflow-hidden rounded-xl aspect-[4/5] block"
+      className="group relative overflow-hidden rounded-xl aspect-[4/5] block bg-stone-800"
     >
       {thumbnail ? (
         <Image
@@ -45,7 +45,7 @@ function CategoryCard({ category, count, thumbnail }: CategoryCardProps) {
           alt={meta.label}
           fill
           sizes="(max-width: 640px) 50vw, 25vw"
-          className="object-cover scale-[0.98] transition-transform duration-500 group-hover:scale-100"
+          className="object-contain object-center transition-transform duration-500 group-hover:scale-[1.02]"
         />
       ) : (
         <div className="absolute inset-0 bg-stone-200" />
