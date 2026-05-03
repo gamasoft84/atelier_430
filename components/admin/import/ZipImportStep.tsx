@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Archive, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { runBulkImport } from "@/app/actions/bulk-import"
+import type { BulkImportResult } from "@/app/actions/bulk-import"
 import { BULK_IMPORT_MAX_ROWS } from "@/lib/constants"
 import type { ValidationSummary } from "@/types/import"
 import { toast } from "sonner"
@@ -19,6 +19,12 @@ interface ZipImportStepProps {
 export default function ZipImportStep({ summary, onBack }: ZipImportStepProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
+  const [uploadPhase, setUploadPhase] = useState<"uploading" | "processing">("uploading")
+  const [progressTotal, setProgressTotal] = useState(0)
+  const [progressIndex, setProgressIndex] = useState(0)
+  const [progressCode, setProgressCode] = useState<string | null>(null)
+  const [progressOutcome, setProgressOutcome] = useState<"created" | "skipped" | null>(null)
+  const [progressSkipReason, setProgressSkipReason] = useState<string | null>(null)
   const [result, setResult] = useState<{
     created: number
     skipped: { code: string; reason: string }[]
@@ -35,24 +41,102 @@ export default function ZipImportStep({ summary, onBack }: ZipImportStepProps) {
       }
       setFileName(file.name)
       setIsUploading(true)
+      setUploadPhase("uploading")
+      setProgressTotal(0)
+      setProgressIndex(0)
+      setProgressCode(null)
+      setProgressOutcome(null)
+      setProgressSkipReason(null)
       setResult(null)
       try {
         const fd = new FormData()
         fd.append("zip", file)
         fd.append("payload", JSON.stringify(summary))
-        const res = await runBulkImport(fd)
-        if ("error" in res) {
-          toast.error(res.error)
-        } else {
-          setResult(res.result)
+
+        const res = await fetch("/api/admin/bulk-import", {
+          method: "POST",
+          body: fd,
+          credentials: "same-origin",
+        })
+
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => null) as { error?: string } | null
+          toast.error(errBody?.error ?? `Error HTTP ${res.status}`)
+          return
+        }
+
+        setUploadPhase("processing")
+        setProgressTotal(validRows.length)
+
+        const reader = res.body?.getReader()
+        if (!reader) {
+          toast.error("No se pudo leer la respuesta del servidor")
+          return
+        }
+
+        const decoder = new TextDecoder()
+        let buf = ""
+        let finalResult: BulkImportResult | null = null
+
+        while (true) {
+          const { done, value } = await reader.read()
+          buf += decoder.decode(value, { stream: !done })
+          const lines = buf.split("\n")
+          buf = lines.pop() ?? ""
+          for (const line of lines) {
+            const t = line.trim()
+            if (!t) continue
+            let msg: Record<string, unknown>
+            try {
+              msg = JSON.parse(t) as Record<string, unknown>
+            } catch {
+              continue
+            }
+            const typ = msg.type as string
+            if (typ === "start") {
+              setProgressTotal(typeof msg.total === "number" ? msg.total : validRows.length)
+            }
+            if (typ === "progress") {
+              setProgressIndex(typeof msg.index === "number" ? msg.index : 0)
+              setProgressTotal(typeof msg.total === "number" ? msg.total : validRows.length)
+              setProgressCode(typeof msg.code === "string" ? msg.code : null)
+              setProgressOutcome(
+                msg.outcome === "created" || msg.outcome === "skipped" ? msg.outcome : null
+              )
+              setProgressSkipReason(typeof msg.skipReason === "string" ? msg.skipReason : null)
+            }
+            if (typ === "done") {
+              finalResult = msg.result as BulkImportResult
+            }
+            if (typ === "error") {
+              throw new Error(typeof msg.message === "string" ? msg.message : "Error al importar")
+            }
+          }
+          if (done) break
+        }
+
+        const tail = buf.trim()
+        if (tail) {
+          try {
+            const msg = JSON.parse(tail) as Record<string, unknown>
+            if (msg.type === "done" && msg.result) finalResult = msg.result as BulkImportResult
+          } catch {
+            /* ignore */
+          }
+        }
+
+        if (finalResult) {
+          setResult(finalResult)
           toast.success(
-            res.result.created > 0
-              ? `Se crearon ${res.result.created} borrador${res.result.created > 1 ? "es" : ""}`
+            finalResult.created > 0
+              ? `Se crearon ${finalResult.created} borrador${finalResult.created > 1 ? "es" : ""}`
               : "Ninguna obra nueva"
           )
+        } else {
+          toast.error("La importación terminó sin resultado")
         }
-      } catch {
-        toast.error("Error al procesar la importación")
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Error al procesar la importación")
       } finally {
         setIsUploading(false)
       }
@@ -109,13 +193,63 @@ export default function ZipImportStep({ summary, onBack }: ZipImportStepProps) {
           >
             <input {...getInputProps()} />
             {isUploading ? (
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto">
                 <Loader2 size={36} className="animate-spin text-gold-500" />
-                <div>
-                  <p className="font-medium text-carbon-900">Importando {fileName}…</p>
-                  <p className="text-sm text-stone-400 mt-0.5">
-                    Subiendo a Cloudinary y clasificando con IA (puede tardar varios minutos)
+                <div className="text-center w-full">
+                  <p className="font-medium text-carbon-900">
+                    {uploadPhase === "uploading"
+                      ? `Subiendo ${fileName}…`
+                      : "Procesando obras"}
                   </p>
+                  {uploadPhase === "processing" && progressTotal > 0 && (
+                    <>
+                      <p className="text-sm text-stone-600 mt-2">
+                        {progressIndex > 0 ? (
+                          <>
+                            Obra <strong>{progressIndex}</strong> de <strong>{progressTotal}</strong>
+                            {progressCode && (
+                              <>
+                                {" "}
+                                · <span className="font-mono">{progressCode}</span>
+                                {progressOutcome === "created" && (
+                                  <span className="text-green-700"> · creada</span>
+                                )}
+                                {progressOutcome === "skipped" && (
+                                  <span className="text-amber-700"> · omitida</span>
+                                )}
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          <>Listo para procesar <strong>{progressTotal}</strong> filas válidas</>
+                        )}
+                      </p>
+                      {progressOutcome === "skipped" && progressSkipReason && (
+                        <p className="text-xs text-stone-500 mt-1 line-clamp-2">
+                          {progressSkipReason}
+                        </p>
+                      )}
+                      <div className="mt-3 h-2 rounded-full bg-stone-200 overflow-hidden">
+                        <div
+                          className="h-full bg-gold-500 transition-[width] duration-300 ease-out"
+                          style={{
+                            width:
+                              progressTotal > 0
+                                ? `${Math.min(100, Math.round((progressIndex / progressTotal) * 100))}%`
+                                : "0%",
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-stone-400 mt-2">
+                        Cloudinary + IA por obra; puedes dejar esta pestaña abierta.
+                      </p>
+                    </>
+                  )}
+                  {uploadPhase === "uploading" && (
+                    <p className="text-sm text-stone-400 mt-0.5">
+                      Después se procesará cada obra con IA (varios minutos en lotes grandes).
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (
