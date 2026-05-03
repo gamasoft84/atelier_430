@@ -228,34 +228,29 @@ export default async function ArtworkDetailPage({
             <p className="text-sm text-stone-600 leading-relaxed">{artwork.description}</p>
           )}
 
-          {/* Vista 3D / AR — marco en RSC para que el HTML en Vercel siempre traiga la sección; el visor es island cliente */}
-          {(images.length > 0 || !isSold) && (
-            <section className="rounded-xl border border-stone-200/80 bg-stone-50/80 p-4 sm:p-5 space-y-3">
-              <div>
-                <h2 className="font-display text-lg text-carbon-900 tracking-tight">
-                  Prueba este cuadro en tu espacio
-                </h2>
-                <p className="text-xs text-stone-500 mt-1.5 leading-relaxed">
-                  Gira el modelo con el dedo. En iPhone (Safari) o Android (Chrome), usa el botón
-                  de realidad aumentada para colocar el cuadro en una pared; la escala se basa en las
-                  medidas de la ficha cuando están cargadas.
+          {/* Vista 3D / AR — siempre en ficha (evita ocultarla si vendida + imágenes vacías en edge); sin fotos solo aviso */}
+          <section className="rounded-xl border border-stone-200/80 bg-stone-50/80 p-4 sm:p-5 space-y-3">
+            <div>
+              <h2 className="font-display text-lg text-carbon-900 tracking-tight">
+                Prueba este cuadro en tu espacio
+              </h2>
+              <p className="text-xs text-stone-500 mt-1.5 leading-relaxed">
+                Gira el modelo con el dedo. En iPhone (Safari) o Android (Chrome), usa el botón de
+                realidad aumentada para colocar el cuadro en una pared; la escala se basa en las
+                medidas de la ficha cuando están cargadas.
+              </p>
+            </div>
+            {images.length > 0 ? (
+              <ArtworkARViewerIsland artworkCode={artwork.code} title={artwork.title} />
+            ) : (
+              <div className="rounded-xl border border-dashed border-stone-200 bg-stone-50 px-4 py-8 text-center">
+                <p className="text-xs text-stone-500">
+                  Esta obra aún no tiene fotos en el catálogo. Sube imágenes en el admin para activar
+                  la vista 3D.
                 </p>
               </div>
-              {images.length > 0 ? (
-                <ArtworkARViewerIsland
-                  artworkCode={artwork.code}
-                  title={artwork.title}
-                />
-              ) : (
-                <div className="rounded-xl border border-dashed border-stone-200 bg-stone-50 px-4 py-8 text-center">
-                  <p className="text-xs text-stone-500">
-                    Esta obra aún no tiene fotos en el catálogo. Sube imágenes en el admin para
-                    activar la vista 3D.
-                  </p>
-                </div>
-              )}
-            </section>
-          )}
+            )}
+          </section>
 
           {/* CTAs */}
           {!isSold && (
