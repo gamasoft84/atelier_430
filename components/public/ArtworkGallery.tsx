@@ -26,14 +26,16 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
     <div className="space-y-3">
       {/* Main image */}
       <div className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-stone-100">
-        <Image
-          src={active.cloudinary_url}
-          alt={active.alt_text ?? title}
-          fill
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          priority
-        />
+        <div className="absolute inset-2 overflow-hidden rounded-lg">
+          <Image
+            src={active.cloudinary_url}
+            alt={active.alt_text ?? title}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            priority
+          />
+        </div>
       </div>
 
       {/* Thumbnails */}
