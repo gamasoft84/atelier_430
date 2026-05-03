@@ -1,11 +1,27 @@
 "use client"
 
-import ArtworkWallARViewer from "./ArtworkWallARViewer"
+import dynamic from "next/dynamic"
+
+/**
+ * El visor debe cargarse solo en el cliente (`ssr: false`).
+ * Importar `@google/model-viewer` durante el SSR de Vercel rompe la sección entera.
+ */
+const ArtworkWallARViewer = dynamic(
+  () => import("./ArtworkWallARViewer"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-[min(70vh,420px)] rounded-xl bg-stone-100 animate-pulse"
+        aria-hidden
+      />
+    ),
+  }
+)
 
 export interface ArtworkWallARProps {
   artworkCode: string
   title: string
-  /** Si no hay filas en artwork_images, mostramos aviso en lugar del visor */
   hasImages: boolean
 }
 
@@ -22,8 +38,8 @@ export default function ArtworkWallAR({
         </h2>
         <p className="text-xs text-stone-500 mt-1.5 leading-relaxed">
           Gira el modelo con el dedo. En iPhone (Safari) o Android (Chrome), usa el botón de
-          realidad aumentada para colocar el cuadro en una pared; la escala se basa en las
-          medidas de la ficha cuando están cargadas.
+          realidad aumentada para colocar el cuadro en una pared; la escala se basa en las medidas
+          de la ficha cuando están cargadas.
         </p>
       </div>
       {hasImages ? (
@@ -31,8 +47,8 @@ export default function ArtworkWallAR({
       ) : (
         <div className="rounded-xl border border-dashed border-stone-200 bg-stone-50 px-4 py-8 text-center">
           <p className="text-xs text-stone-500">
-            Esta obra aún no tiene fotos en el catálogo. Sube imágenes en el admin para activar
-            la vista 3D.
+            Esta obra aún no tiene fotos en el catálogo. Sube imágenes en el admin para activar la
+            vista 3D.
           </p>
         </div>
       )}

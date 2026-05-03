@@ -228,7 +228,7 @@ export default async function ArtworkDetailPage({
             <p className="text-sm text-stone-600 leading-relaxed">{artwork.description}</p>
           )}
 
-          {/* Vista 3D / AR (visible si no está vendida; el visor solo si hay fotos) */}
+          {/* Vista 3D / AR — wrapper cliente + dynamic(ssr:false) evita ejecutar model-viewer en SSR */}
           {!isSold && (
             <ArtworkWallAR
               artworkCode={artwork.code}
