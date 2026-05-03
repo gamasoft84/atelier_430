@@ -99,6 +99,35 @@ atelier430/
 | `npm run typecheck` | Verificar tipos TypeScript |
 | `npm run db:setup` | Crear tablas en Supabase |
 | `npm run db:reset` | Reset de base de datos (dev) |
+| `npm run purge:dev` | Ver scripts/purge-dev-data.mjs — borrar datos de prueba en Supabase + Cloudinary |
+
+### Purge de datos de desarrollo (`scripts/purge-dev-data.mjs`)
+
+Vacía tablas de aplicación en Supabase (con **service role**), elimina en Cloudinary los assets listados en `artwork_images`, y repuebla `site_settings` con los defaults del migration inicial (salvo que uses `--keep-site-settings`). **No borra usuarios de Auth.**
+
+Requiere en `.env`: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+
+```bash
+# Simular solo conteos (no borra nada)
+npm run purge:dev -- --dry-run
+
+# Ejecutar borrado real (obligatorio --confirm)
+npm run purge:dev -- --confirm
+
+# Equivalente sin npm (Node 20.6+ con --env-file)
+node --env-file=.env scripts/purge-dev-data.mjs --dry-run
+node --env-file=.env scripts/purge-dev-data.mjs --confirm
+```
+
+Opciones adicionales:
+
+| Flag | Efecto |
+|------|--------|
+| `--skip-cloudinary` | Solo vacía tablas en Supabase |
+| `--skip-database` | Solo borra en Cloudinary según filas actuales de `artwork_images` |
+| `--keep-site-settings` | No toca `site_settings` |
+
+Si ya vaciaste la base pero quedaron archivos en Cloudinary, este script no tendrá `public_id`; borra la carpeta en el panel de Cloudinary (`atelier430/artworks`) o repone datos y vuelve a ejecutar.
 
 ---
 
