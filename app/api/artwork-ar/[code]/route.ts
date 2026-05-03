@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { buildPosterGlbBuffer } from "@/lib/ar/build-poster-glb"
+import { cloudinaryUrlForArTexture } from "@/lib/cloudinary/transform"
 import { getArtworkByCodeAnon } from "@/lib/supabase/queries/public"
 
 export const runtime = "nodejs"
@@ -47,7 +48,7 @@ export async function GET(
   const primary =
     sorted.find((i) => i.is_primary) ?? sorted[0]
 
-  const imageUri = primary.cloudinary_url
+  const imageUri = cloudinaryUrlForArTexture(primary.cloudinary_url)
 
   let widthM: number
   let heightM: number
