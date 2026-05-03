@@ -158,8 +158,8 @@ export async function getFilteredArtworks(
 
   // Pagination
   const total = rows.length
-  const totalPages = Math.max(1, Math.ceil(total / perPage))
-  const safePage = Math.min(params.page, totalPages)
+  const totalPages = total === 0 ? 0 : Math.max(1, Math.ceil(total / perPage))
+  const safePage = total === 0 ? 1 : Math.min(params.page, totalPages)
   const offset = (safePage - 1) * perPage
   const artworks = rows.slice(offset, offset + perPage)
 

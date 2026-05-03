@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import type { Metadata } from "next"
 import ArtworkGallery from "@/components/public/ArtworkGallery"
+import ArtworkWallAR from "@/components/public/ArtworkWallAR"
 import WhatsAppButton from "@/components/public/WhatsAppButton"
 import ShareButton from "@/components/public/ShareButton"
 import RelatedArtworks from "@/components/public/RelatedArtworks"
@@ -225,6 +226,15 @@ export default async function ArtworkDetailPage({
           {/* Description */}
           {artwork.description && (
             <p className="text-sm text-stone-600 leading-relaxed">{artwork.description}</p>
+          )}
+
+          {/* Vista 3D / AR (visible si no está vendida; el visor solo si hay fotos) */}
+          {!isSold && (
+            <ArtworkWallAR
+              artworkCode={artwork.code}
+              title={artwork.title}
+              hasImages={images.length > 0}
+            />
           )}
 
           {/* CTAs */}

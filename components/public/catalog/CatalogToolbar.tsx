@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useTransition, useState, useEffect } from "react"
+import { useCallback, useTransition, useState, useEffect, useRef } from "react"
 import { Search, SlidersHorizontal, X } from "lucide-react"
 import type { SortOption } from "@/types/catalog"
 
@@ -32,6 +32,7 @@ export default function CatalogToolbar({
   const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
   const [search, setSearch] = useState(currentQ)
+  const searchDebounceReady = useRef(false)
 
   // Sync search input with URL param
   useEffect(() => {
@@ -54,8 +55,12 @@ export default function CatalogToolbar({
     [router, searchParams]
   )
 
-  // Debounced search
+  // Debounced search (no disparar al montar: evita router.push fantasma y listas vacías)
   useEffect(() => {
+    if (!searchDebounceReady.current) {
+      searchDebounceReady.current = true
+      return
+    }
     const id = setTimeout(() => {
       updateParam("q", search || null)
     }, 300)

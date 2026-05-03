@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
 import ArtworkCard from "@/components/public/ArtworkCard"
 import FilterSidebar from "@/components/public/catalog/FilterSidebar"
 import CatalogToolbar from "@/components/public/catalog/CatalogToolbar"
@@ -79,27 +78,13 @@ export default function CatalogClient({
           />
         ) : (
           <>
-            <motion.div
-              className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.04 } },
-              }}
-            >
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {artworks.map((artwork, i) => (
-                <motion.div
-                  key={artwork.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 16 },
-                    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-                  }}
-                >
+                <div key={artwork.id}>
                   <ArtworkCard artwork={artwork} showPrice={showPrices} priority={i < 8} />
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
 
             <Pagination page={page} totalPages={totalPages} buildHref={buildHref} />
           </>
