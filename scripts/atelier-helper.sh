@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =============================================================================
-# ATELIER 430 - Helper de Fotos v1.1 (compatible bash 3.2 - Mac)
+# ATELIER 430 - Helper de Fotos v1.2 (compatible bash 3.2 - Mac)
 # =============================================================================
 
 # Colores
@@ -69,7 +69,7 @@ get_expected_count() {
 print_header() {
     clear
     echo -e "${GOLD}═══════════════════════════════════════════════════${NC}"
-    echo -e "${GOLD}   🎨 Atelier 430 - Helper de Fotos v1.1${NC}"
+    echo -e "${GOLD}   🎨 Atelier 430 - Helper de Fotos v1.2${NC}"
     echo -e "${GOLD}═══════════════════════════════════════════════════${NC}"
     echo ""
 }
@@ -167,10 +167,11 @@ rename_folder() {
         local new_name="$folder/${code}-${next_num}.${extension}"
         
         if [ "$dry_run" = "true" ]; then
-            echo -e "  ${CYAN}$(basename $file)${NC} → ${GREEN}${code}-${next_num}.${extension}${NC}"
+            echo -e "  ${CYAN}$(basename "$file")${NC} → ${GREEN}${code}-${next_num}.${extension}${NC}"
         else
-            mv "$file" "$new_name"
-            echo -e "  ${GREEN}✅${NC} $(basename $file) → ${code}-${next_num}.${extension}"
+            # -f: sin prompt; evita alias mv -i que leería stdin y rompe bucles "read <<< lista"
+            mv -f "$file" "$new_name"
+            echo -e "  ${GREEN}✅${NC} $(basename "$file") → ${code}-${next_num}.${extension}" >&2
         fi
         
         next_num=$((next_num + 1))
@@ -355,7 +356,7 @@ func_rename_single() {
     case $confirm in
         s|S)
             echo ""
-            local count=$(rename_folder "$full_path" "$code" "false")
+            local count=$(rename_folder "$full_path" "$code" "false" </dev/null)
             echo ""
             echo -e "${GREEN}✅ $count fotos renombradas${NC}"
             ;;
@@ -474,7 +475,7 @@ rename_by_range() {
     while IFS='|' read -r fpath fcode; do
         [ -z "$fpath" ] && continue
         echo -e "${CYAN}Procesando $fcode...${NC}"
-        local count=$(rename_folder "$fpath" "$fcode" "false")
+        local count=$(rename_folder "$fpath" "$fcode" "false" </dev/null)
         total_renamed=$((total_renamed + count))
     done <<< "$folders_list"
     
@@ -558,7 +559,7 @@ rename_by_category() {
         [ -z "$fpath" ] && continue
         processed=$((processed + 1))
         printf "${CYAN}[%d/%d] %s...${NC}\r" "$processed" "$folder_count" "$fcode"
-        local count=$(rename_folder "$fpath" "$fcode" "false")
+        local count=$(rename_folder "$fpath" "$fcode" "false" </dev/null)
         total_renamed=$((total_renamed + count))
     done <<< "$folders_list"
     
@@ -637,7 +638,7 @@ rename_all_pending() {
         [ -z "$fpath" ] && continue
         processed=$((processed + 1))
         printf "${CYAN}[%d/%d] %s...${NC}\r" "$processed" "$folder_count" "$fcode"
-        local count=$(rename_folder "$fpath" "$fcode" "false")
+        local count=$(rename_folder "$fpath" "$fcode" "false" </dev/null)
         total_renamed=$((total_renamed + count))
     done <<< "$folders_list"
     

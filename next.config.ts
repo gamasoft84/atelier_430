@@ -2,6 +2,13 @@ import type { NextConfig } from "next"
 import { PERMISSIONS_POLICY } from "./lib/http/permissions-policy"
 
 const nextConfig: NextConfig = {
+  // Import masivo (ZIP + JSON): defaults Next son 1 MB (Server Actions) y ~10 MB (proxy).
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "100mb",
+    },
+    proxyClientMaxBodySize: "100mb",
+  },
   images: {
     remotePatterns: [
       {
