@@ -105,14 +105,22 @@ CATEGORÍAS PERMITIDAS (elige exactamente una):
 - "europea": reproducciones de maestros europeos clásicos, retratos clásicos, bodegones, mitología
 - "moderna": arte abstracto, geométrico, expresionista, minimalista, contemporáneo
 
-SUBCATEGORÍAS (solo si category = "religiosa", usa el slug exacto o null):
-- "virgen_guadalupe" — Virgen de Guadalupe
-- "san_charbel" — San Charbel
-- "san_judas_tadeo" — San Judas Tadeo
-- "san_miguel_arcangel" — San Miguel Arcángel
-- "la_sagrada_familia" — La Sagrada Familia
-- "la_ultima_cena" — La Última Cena
-- null — si no encaja en ninguna de las anteriores
+SUBCATEGORÍAS — elige el valor exacto según la categoría, o null si no encaja ninguno:
+
+Si category = "religiosa" (usa slug exacto):
+- "virgen_guadalupe", "san_charbel", "san_judas_tadeo", "san_miguel_arcangel", "la_sagrada_familia", "la_ultima_cena"
+
+Si category = "nacional":
+- "Paisaje rural", "Paisaje marino", "Paisaje urbano", "Puente", "Montaña", "Bosque"
+- Si ninguna encaja, devuelve una descripción breve del tema (máx 3 palabras, en español)
+
+Si category = "europea":
+- "Paisaje clásico", "Retrato", "Bodegón", "Mitología", "Arquitectura"
+- Si ninguna encaja, devuelve una descripción breve del tema (máx 3 palabras, en español)
+
+Si category = "moderna":
+- "Abstracto", "Geométrico", "Expresionista", "Minimalista"
+- Si ninguna encaja, devuelve una descripción breve del estilo (máx 3 palabras, en español)
 
 MARCO:
 - has_frame: true si la obra claramente tiene marco visible; false si solo se ve el lienzo/bastidor

@@ -16,7 +16,7 @@ export function applyAutoFill(classification: ClassificationResult): AutoFillRes
 
   return {
     category: classification.category,
-    subcategory: "",
+    subcategory: classification.subcategory ?? "",
     technique: "oleo",
     has_frame: classification.has_frame,
     frame_material: classification.has_frame ? "pino" : "",
