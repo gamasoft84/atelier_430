@@ -5,7 +5,7 @@ import JSZip from "jszip"
 import { createClient } from "@/lib/supabase/server"
 import { classifyArtwork } from "@/lib/anthropic/services/artwork-classifier"
 import { uploadBufferToCloudinary } from "@/lib/cloudinary/upload-server"
-import { artworkCodeFromZipEntry, mimeFromFilename } from "@/lib/import/zip-match"
+import { mimeFromFilename, parseArtworkFromZipPath } from "@/lib/import/zip-match"
 import { BULK_IMPORT_MAX_ROWS } from "@/lib/constants"
 import type { ArtworkCategory } from "@/types/artwork"
 import type { ValidationSummary, ValidatedRow } from "@/types/import"
@@ -29,13 +29,23 @@ async function zipImagesByCode(zipBuffer: ArrayBuffer): Promise<{
   mimes: Map<string, string>
 }> {
   const zip = await JSZip.loadAsync(zipBuffer)
-  const buffers = new Map<string, Buffer>()
-  const mimes = new Map<string, string>()
   const paths = Object.keys(zip.files).filter((p) => !zip.files[p].dir)
+
+  /** Mejor archivo por código: menor sortKey gana (E-001.jpg antes que E-001-2.jpg). */
+  const best = new Map<string, { sortKey: number; path: string }>()
   for (const path of paths) {
     if (!/\.(jpe?g|png|webp)$/i.test(path)) continue
-    const code = artworkCodeFromZipEntry(path)
-    if (!code || buffers.has(code)) continue
+    const parsed = parseArtworkFromZipPath(path)
+    if (!parsed) continue
+    const prev = best.get(parsed.code)
+    if (prev && parsed.sortKey > prev.sortKey) continue
+    if (prev && parsed.sortKey === prev.sortKey) continue
+    best.set(parsed.code, { sortKey: parsed.sortKey, path })
+  }
+
+  const buffers = new Map<string, Buffer>()
+  const mimes = new Map<string, string>()
+  for (const [code, { path }] of best) {
     const entry = zip.file(path)
     if (!entry) continue
     const buf = await entry.async("nodebuffer")
@@ -46,8 +56,9 @@ async function zipImagesByCode(zipBuffer: ArrayBuffer): Promise<{
 }
 
 /**
- * Recibe Excel ya validado (JSON) + ZIP con una imagen por código (`E-001.jpg`, etc.).
- * Crea obras en estado `draft`, sube imagen a Cloudinary y enriquece con classifyArtwork.
+ * Recibe Excel ya validado (JSON) + ZIP con fotos por código.
+ * Nombres válidos: `E-001.jpg` o varias por obra `E-001-1.jpg`, `E-001-2.jpg` (se usa la de menor sufijo / sin sufijo si existe).
+ * Crea obras en estado `draft`, sube una imagen principal a Cloudinary y enriquece con classifyArtwork.
  */
 export async function runBulkImport(
   formData: FormData
@@ -104,7 +115,11 @@ export async function runBulkImport(
     }
     const imgBuf = imageMap.get(code)
     if (!imgBuf) {
-      skipped.push({ code, reason: "Sin imagen en el ZIP (nombre esperado ej. E-001.jpg)" })
+      skipped.push({
+        code,
+        reason:
+          "Sin imagen en el ZIP (usa E-001.jpg o E-001-1.jpg, mismo código que en Excel)",
+      })
       continue
     }
 

@@ -86,9 +86,10 @@ export default function ZipImportStep({ summary, onBack }: ZipImportStepProps) {
         <div>
           <h2 className="font-semibold text-carbon-900 text-lg">Paso 3: ZIP de imágenes</h2>
           <p className="text-sm text-stone-500 mt-1">
-            Un archivo .zip con una foto por código de obra. Nombres tipo{" "}
+            Un .zip con una imagen principal por código (o varias por obra). Ejemplos:{" "}
             <span className="font-mono text-xs bg-stone-100 px-1 rounded">E-001.jpg</span>,{" "}
-            <span className="font-mono text-xs bg-stone-100 px-1 rounded">subcarpeta/N-042.png</span>.
+            <span className="font-mono text-xs bg-stone-100 px-1 rounded">E-001-1.jpg</span>,{" "}
+            <span className="font-mono text-xs bg-stone-100 px-1 rounded">N-042.png</span>.
             Máximo <strong>{BULK_IMPORT_MAX_ROWS}</strong> obras por lote. Listas válidas:{" "}
             <strong>{validRows.length}</strong>.
           </p>
