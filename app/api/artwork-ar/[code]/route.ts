@@ -21,8 +21,26 @@ export async function GET(
   const { code } = await context.params
   const artwork = await getArtworkByCode(code)
 
-  if (!artwork?.images?.length) {
-    return NextResponse.json({ error: "Obra no encontrada" }, { status: 404 })
+  if (!artwork) {
+    return NextResponse.json(
+      {
+        error: "No hay obra con ese código, está oculta o el entorno apunta a otra base de datos.",
+        reason: "artwork_not_found",
+        code,
+      },
+      { status: 404 }
+    )
+  }
+
+  if (!artwork.images?.length) {
+    return NextResponse.json(
+      {
+        error: "La obra existe pero no tiene imágenes en artwork_images (sube fotos en el admin).",
+        reason: "no_images",
+        code: artwork.code,
+      },
+      { status: 404 }
+    )
   }
 
   const sorted = [...artwork.images].sort((a, b) => a.position - b.position)
