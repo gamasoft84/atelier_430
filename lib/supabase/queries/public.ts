@@ -1,4 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js"
+import { createAnonSupabaseClient } from "@/lib/supabase/anon"
 import { createClient } from "@/lib/supabase/server"
+import type { Database } from "@/types/database"
 import type { ArtworkPublic, ArtworkCategory } from "@/types/artwork"
 
 const ARTWORK_SELECT = `
@@ -88,8 +91,10 @@ export async function getPublicArtworks(limit = 48): Promise<ArtworkPublic[]> {
   return (data as unknown[]).map(normalizeImages) as ArtworkPublic[]
 }
 
-export async function getArtworkByCode(code: string): Promise<ArtworkPublic | null> {
-  const supabase = await createClient()
+async function selectArtworkByCode(
+  supabase: SupabaseClient<Database>,
+  code: string
+): Promise<ArtworkPublic | null> {
   const { data } = await supabase
     .from("artworks")
     .select(ARTWORK_SELECT)
@@ -98,6 +103,16 @@ export async function getArtworkByCode(code: string): Promise<ArtworkPublic | nu
     .maybeSingle()
   if (!data) return null
   return normalizeImages(data) as ArtworkPublic
+}
+
+export async function getArtworkByCode(code: string): Promise<ArtworkPublic | null> {
+  const supabase = await createClient()
+  return selectArtworkByCode(supabase, code)
+}
+
+/** Igual que `getArtworkByCode`, pero con cliente anónimo (p. ej. API routes sin sesión). */
+export async function getArtworkByCodeAnon(code: string): Promise<ArtworkPublic | null> {
+  return selectArtworkByCode(createAnonSupabaseClient(), code)
 }
 
 export async function getRelatedArtworks(

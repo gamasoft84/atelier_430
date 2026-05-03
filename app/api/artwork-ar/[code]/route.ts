@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { buildPosterGlbBuffer } from "@/lib/ar/build-poster-glb"
-import { getArtworkByCode } from "@/lib/supabase/queries/public"
+import { getArtworkByCodeAnon } from "@/lib/supabase/queries/public"
 
 export const runtime = "nodejs"
 
@@ -19,7 +19,7 @@ export async function GET(
   context: { params: Promise<{ code: string }> }
 ) {
   const { code } = await context.params
-  const artwork = await getArtworkByCode(code)
+  const artwork = await getArtworkByCodeAnon(code)
 
   if (!artwork) {
     return NextResponse.json(
