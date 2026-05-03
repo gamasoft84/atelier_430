@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { ArtworkPublic } from "@/types/artwork"
+import ArtworkSizeBadge from "@/components/public/ArtworkSizeBadge"
 import WishlistHeartButton from "@/components/public/WishlistHeartButton"
 
 const STATUS_BADGE: Record<string, { label: string; className: string }> = {
@@ -41,7 +42,7 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
                 alt={primaryImage.alt_text ?? artwork.title}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className={`object-contain transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
+                className={`object-cover transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
                 priority={priority}
               />
             </div>
@@ -56,6 +57,8 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
               {badge.label}
             </span>
           )}
+
+          <ArtworkSizeBadge widthCm={artwork.width_cm} heightCm={artwork.height_cm} />
 
           <div className="absolute inset-0 bg-carbon-900/0 group-hover:bg-carbon-900/20 transition-colors duration-300 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100">
             <span className="text-xs font-medium text-white bg-carbon-900/70 px-3 py-1 rounded-full backdrop-blur-sm">

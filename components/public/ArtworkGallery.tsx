@@ -32,7 +32,7 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
             alt={active.alt_text ?? title}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             priority
           />
         </div>

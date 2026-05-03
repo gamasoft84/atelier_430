@@ -2,7 +2,8 @@ import { createClient } from "@/lib/supabase/server"
 import { ARTWORKS_PER_PAGE } from "@/lib/constants"
 import { ARTWORK_SELECT, normalizeArtworkRow } from "@/lib/supabase/queries/artwork-row"
 import type { ArtworkPublic } from "@/types/artwork"
-import type { CatalogParams, CatalogResult, SizeOption } from "@/types/catalog"
+import { isArtworkInSizeCategories } from "@/lib/artwork-size"
+import type { CatalogParams, CatalogResult } from "@/types/catalog"
 
 // ─── Price range ──────────────────────────────────────────────────────────
 
@@ -30,27 +31,6 @@ export async function getPriceRange(): Promise<{ min: number; max: number }> {
   const maxPrice = (maxData?.[0] as { price: number } | undefined)?.price ?? 10000
 
   return { min: Math.floor(minPrice), max: Math.ceil(maxPrice) }
-}
-
-// ─── Size helper ──────────────────────────────────────────────────────────
-
-const SIZE_RANGES: Record<SizeOption, [number, number]> = {
-  chico:   [0,   50],
-  mediano: [50,  80],
-  grande:  [80, 120],
-  xl:      [120, Infinity],
-}
-
-function matchesSize(
-  widthCm: number | null,
-  heightCm: number | null,
-  sizes: SizeOption[]
-): boolean {
-  if (sizes.length === 0) return true
-  const maxSide = Math.max(widthCm ?? 0, heightCm ?? 0)
-  return sizes.some(
-    (s) => maxSide >= SIZE_RANGES[s][0] && maxSide < SIZE_RANGES[s][1]
-  )
 }
 
 // ─── Main catalog query ───────────────────────────────────────────────────
@@ -132,7 +112,9 @@ export async function getFilteredArtworks(
 
   // Size filter (JS layer)
   if (params.tamanos.length > 0) {
-    rows = rows.filter((a) => matchesSize(a.width_cm, a.height_cm, params.tamanos))
+    rows = rows.filter((a) =>
+      isArtworkInSizeCategories(a.width_cm, a.height_cm, params.tamanos)
+    )
   }
 
   // Size sort (JS layer)

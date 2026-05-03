@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import type { Metadata } from "next"
 import ArtworkGallery from "@/components/public/ArtworkGallery"
+import ArtworkSizeBadge from "@/components/public/ArtworkSizeBadge"
 import ArtworkARViewerIsland from "@/components/public/ArtworkARViewerIsland"
 import ArtworkWishlistButton from "@/components/public/ArtworkWishlistButton"
 import WhatsAppButton from "@/components/public/WhatsAppButton"
@@ -212,6 +213,11 @@ export default async function ArtworkDetailPage({
                   {dimensions}
                 </span>
               )}
+              <ArtworkSizeBadge
+                variant="chip"
+                widthCm={artwork.width_cm}
+                heightCm={artwork.height_cm}
+              />
               {artwork.technique && (
                 <span className="px-3 py-1.5 rounded-lg bg-stone-100 text-xs text-stone-600">
                   {TECHNIQUE_LABEL[artwork.technique] ?? artwork.technique}
