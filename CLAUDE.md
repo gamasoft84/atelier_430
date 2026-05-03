@@ -196,15 +196,20 @@ Cuando generes copy o contenido para el sitio:
 
 ## 🎯 Estado actual del proyecto
 
-**Fase actual:** Fase 5 (Wishlist) o Fase 6 (Carga masiva) — Rick decide
+**Fase actual:** Fase 7 (Newsletter y posts) — siguiente en `docs/progress.md`
 
-**Fases completadas:** 0 (Setup), 1 (Auth), 2 (CRUD obras), 3 (IA), 4 (Catálogo público)
+**Fases completadas:** 0 (Setup), 1 (Auth), 2 (CRUD obras), 3 (IA), 4 (Catálogo público), 5 (Wishlist), 6 (Carga masiva Excel + ZIP + borradores)
 
-**Próximos pasos (Fase 5 — Wishlist):**
-1. `hooks/useWishlist.ts` — hook completo (localStorage + DB sync por session_id)
-2. Botón corazón en ArtworkCard
-3. Página `/favoritos`
-4. Compartir wishlist por link
+**Próximos pasos (Fase 7 — referencia):**
+1. Form de suscripción público
+2. Integración Resend
+3. Templates de email
+4. Generador de posts para redes (modal por obra)
+
+**Importación masiva (Fase 6):**
+- `/admin/obras/importar` — Excel + ZIP, hasta `BULK_IMPORT_MAX_ROWS` (60) por ejecución
+- `/admin/obras/importar/revision` — publicar borradores
+- Migración DB: `002_artwork_status_draft.sql` debe estar aplicada en Supabase
 
 **Arquitectura pública ya existente:**
 - `app/(public)/` — layout con header, footer, WhatsApp flotante
@@ -235,5 +240,5 @@ Si no estás seguro de algo:
 
 ---
 
-**Última actualización:** Abril 2026
+**Última actualización:** Mayo 2026
 **Mantenido por:** Rick + Claude Code

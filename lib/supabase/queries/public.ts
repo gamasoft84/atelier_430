@@ -89,7 +89,7 @@ async function selectArtworkByCode(
     .from("artworks")
     .select(ARTWORK_SELECT)
     .eq("code", code)
-    .neq("status", "hidden")
+    .in("status", ["available", "reserved", "sold"])
     .maybeSingle()
   if (!data) return null
   return normalizeArtworkRow(data)

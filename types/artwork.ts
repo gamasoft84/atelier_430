@@ -1,5 +1,5 @@
 export type ArtworkCategory = "religiosa" | "nacional" | "europea" | "moderna"
-export type ArtworkStatus = "available" | "reserved" | "sold" | "hidden"
+export type ArtworkStatus = "available" | "reserved" | "sold" | "hidden" | "draft"
 export type SoldChannel = "whatsapp" | "presencial" | "mercadolibre" | "marketplace" | "instagram" | "otro"
 
 export interface ArtworkImage {

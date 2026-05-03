@@ -38,6 +38,7 @@ const STATUS_CONFIG: Record<ArtworkStatus, { label: string; className: string }>
   reserved:  { label: "Reservada",  className: "bg-amber-50 text-amber-700 border border-amber-200" },
   sold:      { label: "Vendida",    className: "bg-stone-100 text-stone-500 border border-stone-200" },
   hidden:    { label: "Oculta",     className: "bg-stone-50 text-stone-400 border border-stone-200" },
+  draft:     { label: "Borrador",   className: "bg-violet-50 text-violet-800 border border-violet-200" },
 }
 
 const CATEGORY_LABELS: Record<ArtworkCategory, string> = {

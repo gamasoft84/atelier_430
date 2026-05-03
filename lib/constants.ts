@@ -11,7 +11,10 @@ export const MAX_IMAGES_PER_ARTWORK = 5
 export const ARTWORKS_PER_PAGE = 24
 
 export const ARTWORK_CATEGORIES = ["religiosa", "nacional", "europea", "moderna"] as const
-export const ARTWORK_STATUSES = ["available", "reserved", "sold", "hidden"] as const
+export const ARTWORK_STATUSES = ["available", "reserved", "sold", "hidden", "draft"] as const
+
+/** Límite por ejecución (IA + Cloudinary) para evitar timeouts en Vercel */
+export const BULK_IMPORT_MAX_ROWS = 60
 export const ARTWORK_TECHNIQUES = ["oleo", "impresion", "mixta", "acrilico"] as const
 export const SOLD_CHANNELS = [
   "whatsapp",

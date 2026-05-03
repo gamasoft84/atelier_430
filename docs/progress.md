@@ -196,7 +196,7 @@
 
 ---
 
-## Fase 6 — Carga masiva e importación bulk ⏳ (Sesión 1 completada 2026-05-02)
+## Fase 6 — Carga masiva e importación bulk ✅ (cerrada 2026-05-02)
 
 ### Sesión 1 ✅
 
@@ -216,12 +216,29 @@
   * Tabla con toggle "solo errores", stats (total/válidas/errores/warnings)
   * CTA habilitado solo si no hay errores
 
-### Pendiente Sesión 2
-- [ ] Subida de ZIP de imágenes con react-dropzone
-- [ ] Procesamiento batch con IA (reutiliza classifyArtwork() de Fase 3)
-- [ ] Inserción masiva en Supabase como borradores
-- [ ] Vista de revisión de borradores generados
-- [ ] Publicación masiva desde la vista de revisión
+### Sesión 2 ✅
+
+- [x] `supabase/migrations/002_artwork_status_draft.sql` — estado `draft` en `artworks.status` (ejecutar en Supabase antes de usar import ZIP)
+- [x] Tipos: `ArtworkStatus` + `draft`; catálogo público y wishlist excluyen borradores (`public.ts`, `wishlist.ts`)
+- [x] `jszip` + `lib/import/zip-match.ts` — emparejamiento Excel ↔ nombre de archivo en ZIP
+- [x] `lib/cloudinary/upload-server.ts` — `uploadBufferToCloudinary` para buffers del ZIP
+- [x] `app/actions/bulk-import.ts` — `runBulkImport` (ZIP + payload validado, IA `classifyArtwork`, insert `draft`), `bulkPublishDrafts` → `available`
+- [x] `components/admin/import/ZipImportStep.tsx` + wiring en `ImportWizard` / `ValidatorStep` (continuar a imágenes → ZIP)
+- [x] `app/admin/(protected)/obras/importar/revision/page.tsx` + `DraftsReviewClient.tsx` — revisión, selección, publicación masiva
+- [x] Admin: enlace "Revisar borradores", tabla/filtros con badge Borrador; `ArtworkForm` — schema y select incluyen `draft` (edición de importados)
+
+### Alcance MVP entregado
+- Plantilla Excel, validación server-side, ZIP + emparejamiento por código, IA (`classifyArtwork`), borradores en BD, revisión y publicación masiva.
+- `export const maxDuration = 300` en `/admin/obras/importar` para Server Actions largas (ZIP + Cloudinary + Claude).
+
+### Diferido (post-MVP / diseño original)
+- Ruta `/admin/obras/carga-masiva` (drop 20–50 fotos sin Excel).
+- Tabla `import_jobs`, cola en background, polling de progreso, email al terminar, log descargable.
+- Barra de progreso por obra en tiempo real (hoy el proceso es síncrono por lote).
+
+### Checklist operativo (Rick / deploy)
+- [ ] Ejecutar `supabase/migrations/002_artwork_status_draft.sql` en el proyecto Supabase (requerido para `status = draft`).
+- [ ] Importaciones muy grandes: varios lotes de hasta `BULK_IMPORT_MAX_ROWS` (60); si hay timeouts, reducir filas o valorar cola en el futuro.
 
 ---
 

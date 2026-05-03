@@ -17,6 +17,7 @@ const STATUS_LABELS: Record<string, string> = {
   reserved: "Reservada",
   sold: "Vendida",
   hidden: "Oculta",
+  draft: "Borrador",
 }
 
 export default function ArtworksFilters() {

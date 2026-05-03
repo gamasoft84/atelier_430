@@ -20,6 +20,7 @@ import type { ValidationSummary, ValidatedRow } from "@/types/import"
 interface ValidatorStepProps {
   onValidated: (summary: ValidationSummary) => void
   validationResult: ValidationSummary | null
+  onContinueToImages?: (summary: ValidationSummary) => void
 }
 
 // ─── Stat card ───────────────────────────────────────────────────────────────
@@ -159,7 +160,11 @@ function ResultsTable({ rows }: { rows: ValidatedRow[] }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ValidatorStep({ onValidated, validationResult }: ValidatorStepProps) {
+export default function ValidatorStep({
+  onValidated,
+  validationResult,
+  onContinueToImages,
+}: ValidatorStepProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [fileName, setFileName]         = useState<string | null>(null)
   const [globalError, setGlobalError]   = useState<string | null>(null)
@@ -345,7 +350,11 @@ export default function ValidatorStep({ onValidated, validationResult }: Validat
       {hasResults && (
         <div className="flex justify-end">
           <Button
-            disabled={!isClean}
+            type="button"
+            disabled={!isClean || !validationResult}
+            onClick={() => {
+              if (isClean && validationResult) onContinueToImages?.(validationResult)
+            }}
             className={cn(
               "gap-2",
               isClean
@@ -356,7 +365,6 @@ export default function ValidatorStep({ onValidated, validationResult }: Validat
           >
             <FileSpreadsheet size={15} />
             Continuar al Paso 3
-            <span className="text-xs opacity-75 ml-1">(Sesión 2)</span>
           </Button>
         </div>
       )}

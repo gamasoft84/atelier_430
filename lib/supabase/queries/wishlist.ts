@@ -22,7 +22,7 @@ export async function getWishlistArtworksForSession(
     .from("artworks")
     .select(ARTWORK_SELECT)
     .in("id", ids)
-    .neq("status", "hidden")
+    .in("status", ["available", "reserved", "sold"])
   if (e2 || !rows?.length) return []
 
   const byId = new Map(

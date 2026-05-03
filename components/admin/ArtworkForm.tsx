@@ -39,7 +39,9 @@ const artworkSchema = z.object({
   original_price: z.coerce.number().min(0).nullable().optional(),
   cost: z.coerce.number().min(0).nullable().optional(),
   show_price: z.boolean().default(true),
-  status: z.enum(["available", "reserved", "sold", "hidden"]).default("available"),
+  status: z
+    .enum(["available", "reserved", "sold", "hidden", "draft"])
+    .default("available"),
   location_in_storage: z.string().max(50).optional().default(""),
   admin_notes: z.string().max(500).optional().default(""),
   tags: z.string().optional().default(""),
@@ -899,7 +901,10 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="available">Disponible</SelectItem>
-                        <SelectItem value="hidden">Borrador (oculto)</SelectItem>
+                        <SelectItem value="reserved">Reservada</SelectItem>
+                        <SelectItem value="sold">Vendida</SelectItem>
+                        <SelectItem value="hidden">Oculta</SelectItem>
+                        <SelectItem value="draft">Borrador (import)</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>

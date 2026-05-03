@@ -45,7 +45,7 @@ export default function TemplateStep({ onDownloaded }: TemplateStepProps) {
         {[
           { label: "3 hojas",          desc: "Obras · Instrucciones · Resumen" },
           { label: "13 columnas",       desc: "Con validaciones y dropdowns" },
-          { label: "Hasta 500 obras",   desc: "Por importación" },
+          { label: "Lotes de 60 obras", desc: "Máximo por ZIP + IA (repite si hace falta)" },
         ].map(({ label, desc }) => (
           <div key={label} className="rounded-lg border border-stone-100 bg-stone-50 p-3">
             <p className="font-semibold text-carbon-900">{label}</p>
