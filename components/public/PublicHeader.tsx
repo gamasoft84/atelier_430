@@ -1,4 +1,5 @@
 import Link from "next/link"
+import PublicHeaderNav from "@/components/public/PublicHeaderNav"
 
 export default function PublicHeader() {
   return (
@@ -12,14 +13,7 @@ export default function PublicHeader() {
             Atelier 430
           </Link>
 
-          <nav className="flex items-center gap-6">
-            <Link
-              href="/catalogo"
-              className="text-sm font-medium text-stone-600 hover:text-carbon-900 transition-colors"
-            >
-              Catálogo
-            </Link>
-          </nav>
+          <PublicHeaderNav />
         </div>
       </div>
     </header>

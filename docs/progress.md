@@ -181,12 +181,18 @@
 
 ---
 
-## Fase 5 — Wishlist ⏳
+## Fase 5 — Wishlist ✅ (2026-05-02)
 
-- [ ] Hook useWishlist (localStorage + DB)
-- [ ] Sincronización por session_id
-- [ ] Página /favoritos
-- [ ] Compartir wishlist
+- [x] `hooks/useWishlist.ts` — reexport del contexto + `WishlistProvider` (session_id en localStorage, sync Supabase)
+- [x] `components/public/WishlistProvider.tsx` — estado global + insert/delete `wishlist_items`
+- [x] `components/public/WishlistHeartButton.tsx` — corazón en cards y ficha
+- [x] `lib/wishlist/session-id.ts` — `getOrCreateWishlistSessionId()`
+- [x] `lib/supabase/queries/wishlist.ts` — `getWishlistArtworksForSession`
+- [x] `lib/supabase/queries/artwork-row.ts` — `ARTWORK_SELECT` compartido (evita import server en cliente)
+- [x] Página `/favoritos` — grid propio, vacío, precios según `show_prices`
+- [x] Compartir lista: `/favoritos?list=<uuid>` + copiar enlace + “Añadir todo a mis favoritos”
+- [x] WhatsApp masivo desde favoritos (si `NEXT_PUBLIC_WHATSAPP_NUMBER`)
+- [x] Header: enlace Favoritos con badge de conteo
 
 ---
 

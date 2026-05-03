@@ -1,21 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { createAnonSupabaseClient } from "@/lib/supabase/anon"
+import { ARTWORK_SELECT, normalizeArtworkRow } from "@/lib/supabase/queries/artwork-row"
 import { createClient } from "@/lib/supabase/server"
 import type { Database } from "@/types/database"
 import type { ArtworkPublic, ArtworkCategory } from "@/types/artwork"
 
-const ARTWORK_SELECT = `
-  id, code, title, description, category, subcategory, tags, technique,
-  width_cm, height_cm, has_frame, frame_material, frame_color,
-  price, original_price, show_price, status,
-  reserved_until, reserved_by, sold_at, sold_price, sold_channel, sold_buyer_name,
-  ai_generated, manually_edited, views_count, wishlist_count, whatsapp_clicks,
-  created_at, updated_at, published_at,
-  images:artwork_images(
-    id, artwork_id, cloudinary_url, cloudinary_public_id,
-    width, height, position, is_primary, alt_text, created_at
-  )
-`.trim()
+export { ARTWORK_SELECT, normalizeArtworkRow }
 
 export async function getAvailableCount(): Promise<number> {
   const supabase = await createClient()
@@ -36,7 +26,7 @@ export async function getFeaturedArtworks(limit = 8): Promise<ArtworkPublic[]> {
     .order("created_at", { ascending: false })
     .limit(limit)
   if (!data) return []
-  return (data as unknown[]).map(normalizeImages) as ArtworkPublic[]
+  return (data as unknown[]).map(normalizeArtworkRow) as ArtworkPublic[]
 }
 
 export async function getCategoryStats(): Promise<
@@ -88,7 +78,7 @@ export async function getPublicArtworks(limit = 48): Promise<ArtworkPublic[]> {
     .order("created_at", { ascending: false })
     .limit(limit)
   if (!data) return []
-  return (data as unknown[]).map(normalizeImages) as ArtworkPublic[]
+  return (data as unknown[]).map(normalizeArtworkRow) as ArtworkPublic[]
 }
 
 async function selectArtworkByCode(
@@ -102,7 +92,7 @@ async function selectArtworkByCode(
     .neq("status", "hidden")
     .maybeSingle()
   if (!data) return null
-  return normalizeImages(data) as ArtworkPublic
+  return normalizeArtworkRow(data)
 }
 
 export async function getArtworkByCode(code: string): Promise<ArtworkPublic | null> {
@@ -130,7 +120,7 @@ export async function getRelatedArtworks(
     .order("views_count", { ascending: false })
     .limit(limit)
   if (!data) return []
-  return data.map(normalizeImages) as ArtworkPublic[]
+  return data.map(normalizeArtworkRow) as ArtworkPublic[]
 }
 
 export async function getShowPrices(): Promise<boolean> {
@@ -145,17 +135,4 @@ export async function getShowPrices(): Promise<boolean> {
   if (typeof v === "boolean") return v
   if (typeof v === "object" && v !== null && "enabled" in v) return Boolean((v as { enabled: unknown }).enabled)
   return true
-}
-
-// Supabase returns images as unsorted array — normalize to sorted and typed
-function normalizeImages(row: unknown): unknown {
-  if (!row || typeof row !== "object") return row
-  const r = row as Record<string, unknown>
-  const images = Array.isArray(r.images)
-    ? [...r.images].sort(
-        (a, b) =>
-          (a as { position: number }).position - (b as { position: number }).position
-      )
-    : []
-  return { ...r, images }
 }

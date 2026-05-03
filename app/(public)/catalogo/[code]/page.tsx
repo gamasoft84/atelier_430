@@ -3,6 +3,7 @@ import Link from "next/link"
 import type { Metadata } from "next"
 import ArtworkGallery from "@/components/public/ArtworkGallery"
 import ArtworkARViewerIsland from "@/components/public/ArtworkARViewerIsland"
+import ArtworkWishlistButton from "@/components/public/ArtworkWishlistButton"
 import WhatsAppButton from "@/components/public/WhatsAppButton"
 import ShareButton from "@/components/public/ShareButton"
 import RelatedArtworks from "@/components/public/RelatedArtworks"
@@ -174,9 +175,12 @@ export default async function ArtworkDetailPage({
           </div>
 
           {/* Title */}
-          <h1 className="font-display text-3xl sm:text-4xl text-carbon-900 leading-tight">
-            {artwork.title}
-          </h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="font-display text-3xl sm:text-4xl text-carbon-900 leading-tight flex-1">
+              {artwork.title}
+            </h1>
+            <ArtworkWishlistButton artworkId={artwork.id} />
+          </div>
 
           {/* Code */}
           <p className="text-xs text-stone-400 font-mono">{artwork.code}</p>

@@ -1,20 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
+import { ARTWORKS_PER_PAGE } from "@/lib/constants"
+import { ARTWORK_SELECT, normalizeArtworkRow } from "@/lib/supabase/queries/artwork-row"
 import type { ArtworkPublic } from "@/types/artwork"
 import type { CatalogParams, CatalogResult, SizeOption } from "@/types/catalog"
-import { ARTWORKS_PER_PAGE } from "@/lib/constants"
-
-const ARTWORK_SELECT = `
-  id, code, title, description, category, subcategory, tags, technique,
-  width_cm, height_cm, has_frame, frame_material, frame_color,
-  price, original_price, show_price, status,
-  reserved_until, reserved_by, sold_at, sold_price, sold_channel, sold_buyer_name,
-  ai_generated, manually_edited, views_count, wishlist_count, whatsapp_clicks,
-  created_at, updated_at, published_at,
-  images:artwork_images(
-    id, artwork_id, cloudinary_url, cloudinary_public_id,
-    width, height, position, is_primary, alt_text, created_at
-  )
-`.trim()
 
 // ─── Price range ──────────────────────────────────────────────────────────
 
@@ -140,7 +128,7 @@ export async function getFilteredArtworks(
   }
 
   // Normalize images
-  let rows = (data as unknown[]).map(normalizeImages) as ArtworkPublic[]
+  let rows = (data as unknown[]).map(normalizeArtworkRow) as ArtworkPublic[]
 
   // Size filter (JS layer)
   if (params.tamanos.length > 0) {
@@ -166,16 +154,3 @@ export async function getFilteredArtworks(
   return { artworks, total, page: safePage, totalPages }
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────
-
-function normalizeImages(row: unknown): unknown {
-  if (!row || typeof row !== "object") return row
-  const r = row as Record<string, unknown>
-  const images = Array.isArray(r.images)
-    ? [...r.images].sort(
-        (a, b) =>
-          (a as { position: number }).position - (b as { position: number }).position
-      )
-    : []
-  return { ...r, images }
-}

@@ -1,6 +1,9 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
 import type { ArtworkPublic } from "@/types/artwork"
+import WishlistHeartButton from "@/components/public/WishlistHeartButton"
 
 const STATUS_BADGE: Record<string, { label: string; className: string }> = {
   sold:     { label: "VENDIDA",   className: "bg-carbon-900 text-cream" },
@@ -28,58 +31,58 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
   const isSold = artwork.status === "sold"
 
   return (
-    <Link
-      href={`/catalogo/${artwork.code}`}
-      className="group block"
-    >
-      {/* Image container */}
-      <div className="relative overflow-hidden rounded-lg bg-stone-100 aspect-[3/4]">
-        {primaryImage ? (
-          <Image
-            src={primaryImage.cloudinary_url}
-            alt={primaryImage.alt_text ?? artwork.title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className={`object-cover transition-transform duration-500 group-hover:scale-105 ${isSold ? "opacity-60" : ""}`}
-            priority={priority}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
-            <span className="text-stone-300 text-sm">Sin imagen</span>
+    <div className="relative">
+      <Link href={`/catalogo/${artwork.code}`} className="group block">
+        <div className="relative overflow-hidden rounded-lg bg-stone-100 aspect-[3/4]">
+          {primaryImage ? (
+            <Image
+              src={primaryImage.cloudinary_url}
+              alt={primaryImage.alt_text ?? artwork.title}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className={`object-cover transition-transform duration-500 group-hover:scale-105 ${isSold ? "opacity-60" : ""}`}
+              priority={priority}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
+              <span className="text-stone-300 text-sm">Sin imagen</span>
+            </div>
+          )}
+
+          {badge && (
+            <span className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded ${badge.className}`}>
+              {badge.label}
+            </span>
+          )}
+
+          <div className="absolute inset-0 bg-carbon-900/0 group-hover:bg-carbon-900/20 transition-colors duration-300 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100">
+            <span className="text-xs font-medium text-white bg-carbon-900/70 px-3 py-1 rounded-full backdrop-blur-sm">
+              Ver obra
+            </span>
           </div>
-        )}
-
-        {/* Status badge */}
-        {badge && (
-          <span className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded ${badge.className}`}>
-            {badge.label}
-          </span>
-        )}
-
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-carbon-900/0 group-hover:bg-carbon-900/20 transition-colors duration-300 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100">
-          <span className="text-xs font-medium text-white bg-carbon-900/70 px-3 py-1 rounded-full backdrop-blur-sm">
-            Ver obra
-          </span>
         </div>
-      </div>
 
-      {/* Info */}
-      <div className="mt-3 space-y-0.5">
-        <p className="text-[11px] uppercase tracking-widest text-stone-400">
-          {CATEGORY_LABEL[artwork.category]}
-        </p>
-        <p className="font-display text-sm leading-snug text-carbon-900 line-clamp-2 group-hover:text-gold-500 transition-colors">
-          {artwork.title}
-        </p>
-        {showPrice && artwork.show_price && artwork.price ? (
-          <p className="text-sm font-semibold text-carbon-900">
-            ${artwork.price.toLocaleString("es-MX")} MXN
+        <div className="mt-3 space-y-0.5">
+          <p className="text-[11px] uppercase tracking-widest text-stone-400">
+            {CATEGORY_LABEL[artwork.category]}
           </p>
-        ) : showPrice && !artwork.show_price ? (
-          <p className="text-xs text-stone-400">Consultar precio</p>
-        ) : null}
-      </div>
-    </Link>
+          <p className="font-display text-sm leading-snug text-carbon-900 line-clamp-2 group-hover:text-gold-500 transition-colors">
+            {artwork.title}
+          </p>
+          {showPrice && artwork.show_price && artwork.price ? (
+            <p className="text-sm font-semibold text-carbon-900">
+              ${artwork.price.toLocaleString("es-MX")} MXN
+            </p>
+          ) : showPrice && !artwork.show_price ? (
+            <p className="text-xs text-stone-400">Consultar precio</p>
+          ) : null}
+        </div>
+      </Link>
+
+      <WishlistHeartButton
+        artworkId={artwork.id}
+        className="absolute top-2 right-2 z-20 shadow-sm"
+      />
+    </div>
   )
 }
