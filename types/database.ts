@@ -8,6 +8,7 @@ export interface Database {
           id: string
           code: string
           title: string
+          artist: string | null
           description: string | null
           ai_generated: boolean
           manually_edited: boolean
@@ -45,6 +46,7 @@ export interface Database {
           id?: string
           code: string
           title: string
+          artist?: string | null
           description?: string | null
           ai_generated?: boolean
           manually_edited?: boolean
@@ -82,6 +84,7 @@ export interface Database {
           id?: string
           code?: string
           title?: string
+          artist?: string | null
           description?: string | null
           ai_generated?: boolean
           manually_edited?: boolean

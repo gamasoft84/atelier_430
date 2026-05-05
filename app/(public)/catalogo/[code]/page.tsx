@@ -183,6 +183,13 @@ export default async function ArtworkDetailPage({
             <ArtworkWishlistButton artworkId={artwork.id} />
           </div>
 
+          {/* Artist (optional) */}
+          {artwork.artist?.trim() ? (
+            <p className="text-sm text-stone-500">
+              {artwork.artist.trim()}
+            </p>
+          ) : null}
+
           {/* Code */}
           <p className="text-xs text-stone-400 font-mono">{artwork.code}</p>
 

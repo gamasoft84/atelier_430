@@ -19,6 +19,7 @@ export interface Artwork {
   id: string
   code: string
   title: string
+  artist: string | null
   description: string | null
   ai_generated: boolean
   manually_edited: boolean
@@ -62,6 +63,7 @@ export type ArtworkPublic = Omit<
 export interface ArtworkFormData {
   code?: string
   title: string
+  artist?: string
   description: string
   category: ArtworkCategory
   subcategory: string

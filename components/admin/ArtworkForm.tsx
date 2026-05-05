@@ -15,17 +15,24 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Separator } from "@/components/ui/separator"
 import ImageUploader from "@/components/admin/ImageUploader"
 import { createArtwork, updateArtwork } from "@/app/actions/artworks"
-import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES, SOLD_CHANNELS } from "@/lib/constants"
+import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES } from "@/lib/constants"
+import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Artwork } from "@/types/artwork"
 import type { PriceSuggestion } from "@/types/api"
 import type { ClassificationResult } from "@/types/classification"
 import { applyAutoFill } from "@/lib/utils/artwork-autofill"
 import type { UploadedImage } from "@/hooks/useImageUpload"
+import {
+  ARTWORK_CREATE_DEFAULTS_SETTING_KEY,
+  DEFAULT_ARTWORK_CREATE_DEFAULTS,
+  parseArtworkCreateDefaults,
+} from "@/lib/site-settings/artwork-create-defaults"
 
 // ─── Schema ───────────────────────────────────────────────────────────────
 
 const artworkSchema = z.object({
   title: z.string().min(2, "Mínimo 2 caracteres").max(200),
+  artist: z.string().max(120).optional().default(""),
   description: z.string().max(2000).optional().default(""),
   category: z.enum(["religiosa", "nacional", "europea", "moderna"]),
   subcategory: z.string().max(50).optional().default(""),
@@ -131,6 +138,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const [priceFromAI, setPriceFromAI] = useState(false)
   const [isClassifying, setIsClassifying] = useState(false)
   const [classifyConfidence, setClassifyConfidence] = useState<number | null>(null)
+  const [createDefaultsLoaded, setCreateDefaultsLoaded] = useState(false)
   // Subcategorías sugeridas por IA que no están en la lista predefinida
   const [extraSubcategories, setExtraSubcategories] = useState<
     Record<string, Array<{ value: string; label: string }>>
@@ -147,17 +155,36 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
     resolver: zodResolver(artworkSchema) as Resolver<ArtworkFormValues, unknown, ArtworkFormValues>,
     defaultValues: {
       title: artwork?.title ?? "",
+      artist:
+        artwork?.artist ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.artist : ""),
       description: artwork?.description ?? "",
-      category: artwork?.category ?? "nacional",
-      subcategory: artwork?.subcategory ?? "",
-      technique: artwork?.technique ?? "",
-      width_cm: artwork?.width_cm ?? undefined,
-      height_cm: artwork?.height_cm ?? undefined,
-      has_frame: artwork?.has_frame ?? false,
+      category:
+        artwork?.category ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.category : "nacional"),
+      subcategory:
+        artwork?.subcategory ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.subcategory : ""),
+      technique:
+        artwork?.technique ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.technique : ""),
+      width_cm:
+        artwork?.width_cm ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.width_cm : undefined),
+      height_cm:
+        artwork?.height_cm ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.height_cm : undefined),
+      has_frame:
+        artwork?.has_frame ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.has_frame : false),
       frame_material: artwork?.frame_material ?? "",
       frame_color: artwork?.frame_color ?? "",
-      price: artwork?.price ?? undefined,
-      original_price: artwork?.original_price ?? undefined,
+      price:
+        artwork?.price ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.price : undefined),
+      original_price:
+        artwork?.original_price ??
+        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.original_price : undefined),
       cost: artwork?.cost ?? undefined,
       show_price: artwork?.show_price ?? true,
       status: artwork?.status ?? "available",
@@ -169,6 +196,54 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
 
   const watchCategory = form.watch("category")
   const watchHasFrame = form.watch("has_frame")
+
+  // Load configurable defaults for create mode (from `site_settings`)
+  useEffect(() => {
+    if (mode !== "create" || artwork) return
+    if (createDefaultsLoaded) return
+
+    let cancelled = false
+    const run = async () => {
+      try {
+        const supabase = createSupabaseBrowserClient()
+        const { data, error } = await supabase
+          .from("site_settings")
+          .select("value")
+          .eq("key", ARTWORK_CREATE_DEFAULTS_SETTING_KEY)
+          .maybeSingle()
+
+        if (cancelled) return
+        if (error) throw error
+
+        const defaults = parseArtworkCreateDefaults(data?.value)
+
+        // Don't override if the user already started editing
+        if (!form.formState.isDirty) {
+          form.reset({
+            ...form.getValues(),
+            category: defaults.category,
+            subcategory: defaults.subcategory,
+            technique: defaults.technique,
+            artist: defaults.artist,
+            width_cm: defaults.width_cm,
+            height_cm: defaults.height_cm,
+            has_frame: defaults.has_frame,
+            price: defaults.price,
+            original_price: defaults.original_price,
+          })
+        }
+      } catch {
+        // Silent fallback to hardcoded defaults
+      } finally {
+        if (!cancelled) setCreateDefaultsLoaded(true)
+      }
+    }
+
+    void run()
+    return () => {
+      cancelled = true
+    }
+  }, [artwork, createDefaultsLoaded, form, mode])
 
   // Auto-fill defaults when switching to "religiosa" in create mode
   useEffect(() => {
@@ -348,6 +423,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
 
     const formData = {
       ...values,
+      artist: values.artist?.trim() || "",
       width_cm: values.width_cm ?? null,
       height_cm: values.height_cm ?? null,
       price: values.price ?? null,
@@ -651,6 +727,20 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                     <FormLabel>Título *</FormLabel>
                     <FormControl>
                       <Input placeholder="Puente al pueblo dormido" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="artist"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Artista (opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Anónimo / Taller / Autor" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

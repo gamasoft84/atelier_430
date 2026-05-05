@@ -1,7 +1,7 @@
 import type { ArtworkPublic } from "@/types/artwork"
 
 export const ARTWORK_SELECT = `
-  id, code, title, description, category, subcategory, tags, technique,
+  id, code, title, artist, description, category, subcategory, tags, technique,
   width_cm, height_cm, has_frame, frame_material, frame_color,
   price, original_price, show_price, status,
   reserved_until, reserved_by, sold_at, sold_price, sold_channel, sold_buyer_name,

@@ -55,6 +55,7 @@ export async function createArtwork(
     .insert({
       code,
       title: formData.title,
+      artist: formData.artist?.trim() ? formData.artist.trim() : null,
       description: formData.description || null,
       category: formData.category,
       subcategory: formData.subcategory || null,
@@ -132,6 +133,7 @@ export async function updateArtwork(
     .from("artworks")
     .update({
       title: formData.title,
+      artist: formData.artist?.trim() ? formData.artist.trim() : null,
       description: formData.description || null,
       category: formData.category,
       subcategory: formData.subcategory || null,
