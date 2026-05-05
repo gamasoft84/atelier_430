@@ -9,6 +9,7 @@ import {
   ClipboardList,
   ShoppingBag,
   Mail,
+  BarChart3,
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -28,6 +29,7 @@ const navItems: NavItem[] = [
   { href: "/admin/obras/importar/revision", label: "Revisar borradores", icon: ClipboardList, sub: true },
   { href: "/admin/ventas", label: "Ventas", icon: ShoppingBag },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
+  { href: "/admin/reportes", label: "Reportes", icon: BarChart3 },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
 ]
 
