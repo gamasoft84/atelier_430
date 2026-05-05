@@ -181,7 +181,7 @@
 
 ---
 
-## Fase 5 — Wishlist ✅ (2026-05-02)
+## Fase 5 — Wishlist ✅ (2026-05-05)
 
 - [x] `hooks/useWishlist.ts` — reexport del contexto + `WishlistProvider` (session_id en localStorage, sync Supabase)
 - [x] `components/public/WishlistProvider.tsx` — estado global + insert/delete `wishlist_items`
@@ -193,6 +193,7 @@
 - [x] Compartir lista: `/favoritos?list=<uuid>` + copiar enlace + “Añadir todo a mis favoritos”
 - [x] WhatsApp masivo desde favoritos (si `NEXT_PUBLIC_WHATSAPP_NUMBER`)
 - [x] Header: enlace Favoritos con badge de conteo
+- [x] `app/(public)/layout.tsx` — `WishlistProvider` montado en el layout (fix crítico)
 
 ---
 
