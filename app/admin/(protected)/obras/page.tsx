@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Plus, FileDown } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { ARTWORK_CATEGORIES, ARTWORK_STATUSES } from "@/lib/constants"
 import ArtworksFilters from "@/components/admin/ArtworksFilters"
@@ -68,13 +68,23 @@ export default async function ObrasPage(props: {
               : "Cargando inventario..."}
           </p>
         </div>
-        <Link
-          href="/admin/obras/nueva"
-          className="flex items-center gap-2 bg-gold-500 hover:bg-gold-400 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus size={16} />
-          Nueva obra
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/catalogo/pdf?categoria=todas"
+            className="flex items-center gap-2 border border-stone-200 text-stone-600 hover:border-stone-300 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            download
+          >
+            <FileDown size={16} />
+            PDF catálogo
+          </a>
+          <Link
+            href="/admin/obras/nueva"
+            className="flex items-center gap-2 bg-gold-500 hover:bg-gold-400 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus size={16} />
+            Nueva obra
+          </Link>
+        </div>
       </div>
 
       <Suspense fallback={<div className="h-10 rounded-lg bg-stone-100 animate-pulse" />}>
