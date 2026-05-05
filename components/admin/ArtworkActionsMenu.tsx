@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { MoreHorizontal, Pencil, DollarSign, Eye, EyeOff, Trash2, Loader2 } from "lucide-react"
+import { MoreHorizontal, Pencil, DollarSign, Eye, EyeOff, Trash2, Loader2, Share2 } from "lucide-react"
 import { toast } from "sonner"
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import SellArtworkDialog from "@/components/admin/SellArtworkDialog"
 import DeleteArtworkDialog from "@/components/admin/DeleteArtworkDialog"
+import SocialPostModal from "@/components/admin/SocialPostModal"
 import { toggleArtworkVisibility } from "@/app/actions/artworks"
 import type { ArtworkStatus } from "@/types/artwork"
 
@@ -27,8 +28,9 @@ interface ArtworkActionsMenuProps {
 
 export default function ArtworkActionsMenu({ id, code, title, status }: ArtworkActionsMenuProps) {
   const router = useRouter()
-  const [sellOpen, setSellOpen] = useState(false)
+  const [sellOpen,   setSellOpen]   = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [postOpen,   setPostOpen]   = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const handleToggleVisibility = () => {
@@ -91,6 +93,14 @@ export default function ArtworkActionsMenu({ id, code, title, status }: ArtworkA
             {isHidden ? "Hacer visible" : "Ocultar"}
           </DropdownMenuItem>
 
+          <DropdownMenuItem
+            onClick={() => setPostOpen(true)}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <Share2 size={13} />
+            Generar post
+          </DropdownMenuItem>
+
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
@@ -117,6 +127,13 @@ export default function ArtworkActionsMenu({ id, code, title, status }: ArtworkA
         artworkTitle={title}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
+      />
+
+      <SocialPostModal
+        artworkId={id}
+        artworkTitle={title}
+        open={postOpen}
+        onOpenChange={setPostOpen}
       />
     </>
   )

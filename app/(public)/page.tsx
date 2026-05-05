@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Suspense } from "react"
 import ArtworkCard from "@/components/public/ArtworkCard"
 import CategorySection from "@/components/public/CategorySection"
+import NewsletterForm from "@/components/public/NewsletterForm"
 import {
   getAvailableCount,
   getFeaturedArtworks,
@@ -111,6 +112,25 @@ export default async function HomePage() {
       <div className="border-t border-stone-100" />
 
       <CategorySection stats={stats} />
+
+      <div className="border-t border-stone-100" />
+
+      {/* Newsletter */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="max-w-xl">
+          <p className="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-3">
+            Mantente al tanto
+          </p>
+          <h2 className="font-display text-2xl sm:text-3xl text-carbon-900 mb-3">
+            Obras nuevas, primero tú
+          </h2>
+          <p className="text-sm text-stone-500 mb-6 leading-relaxed">
+            Avisamos cuando llegan piezas nuevas o hay precios especiales.
+            Sin spam — solo arte.
+          </p>
+          <NewsletterForm />
+        </div>
+      </section>
     </>
   )
 }
