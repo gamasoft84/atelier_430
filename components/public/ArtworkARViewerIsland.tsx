@@ -22,9 +22,20 @@ const ArtworkWallARViewer = dynamic(
 export default function ArtworkARViewerIsland({
   artworkCode,
   title,
+  widthCm,
+  heightCm,
 }: {
   artworkCode: string
   title: string
+  widthCm: number | null
+  heightCm: number | null
 }) {
-  return <ArtworkWallARViewer artworkCode={artworkCode} title={title} />
+  return (
+    <ArtworkWallARViewer
+      artworkCode={artworkCode}
+      title={title}
+      widthCm={widthCm}
+      heightCm={heightCm}
+    />
+  )
 }

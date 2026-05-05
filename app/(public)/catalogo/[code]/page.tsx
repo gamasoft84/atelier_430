@@ -258,7 +258,12 @@ export default async function ArtworkDetailPage({
               </p>
             </div>
             {images.length > 0 ? (
-              <ArtworkARViewerIsland artworkCode={artwork.code} title={artwork.title} />
+              <ArtworkARViewerIsland
+                artworkCode={artwork.code}
+                title={artwork.title}
+                widthCm={artwork.width_cm}
+                heightCm={artwork.height_cm}
+              />
             ) : (
               <div className="rounded-xl border border-dashed border-stone-200 bg-stone-50 px-4 py-8 text-center">
                 <p className="text-xs text-stone-500">

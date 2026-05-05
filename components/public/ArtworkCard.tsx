@@ -55,6 +55,7 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   className={`${isHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
                   priority={priority}
+                  loading={priority ? "eager" : "lazy"}
                 />
               </div>
             </div>

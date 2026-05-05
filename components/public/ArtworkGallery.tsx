@@ -61,6 +61,7 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
               sizes="(max-width: 768px) 100vw, 50vw"
               className={`${isActiveHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03]`}
               priority
+              loading="eager"
             />
           </div>
         </div>
