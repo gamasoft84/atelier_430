@@ -243,12 +243,19 @@
 
 ---
 
-## Fase 7 — Newsletter y posts ⏳
+## Fase 7 — Newsletter y posts ✅ (2026-05-05)
 
-- [ ] Form de suscripción
-- [ ] Integración Resend
-- [ ] Templates de email
-- [ ] Generador de posts para redes
+- [x] `lib/resend/client.ts` — singleton Resend + `lib/resend/emails/welcome.ts` — HTML email template (sin dependencias extra)
+- [x] `app/actions/newsletter.ts` — `subscribeToNewsletter()`: inserta en `newsletter_subscribers`, email de bienvenida fire-and-forget
+- [x] `components/public/NewsletterForm.tsx` — formulario público con estado éxito inline
+- [x] `app/(public)/page.tsx` — sección "Obras nuevas, primero tú" al final de la home
+- [x] `app/api/ai/generate-post/route.ts` — POST auth: busca obra → Claude SOCIAL_POST_PROMPT → JSON
+- [x] `components/admin/SocialPostModal.tsx` — modal tabs Instagram / Facebook / WhatsApp Status, carga auto, copiar, regenerar
+- [x] `components/admin/ArtworkActionsMenu.tsx` — nueva opción "Generar post" con Share2
+- [x] `app/admin/(protected)/newsletter/page.tsx` — tabla real de suscriptores, 3 stats, aviso dominio Resend
+
+### Pendiente (operativo)
+- [ ] Verificar dominio en resend.com/domains para poder enviar a cualquier email (hoy solo acepta el del dueño de la cuenta)
 
 ---
 
