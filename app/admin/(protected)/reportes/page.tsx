@@ -114,6 +114,30 @@ export default async function AdminReportesPage() {
   const categoryRows = (["religiosa", "nacional", "europea", "moderna"] as ArtworkCategory[])
     .map((c) => ({ category: c, ...(byCategory.get(c) ?? emptyAgg()) }))
 
+  const categorySubtotal = categoryRows.reduce(
+    (acc, r) => {
+      acc.soldCount += r.soldCount
+      acc.soldSum += r.soldSum
+      acc.stockCount += r.stockCount
+      acc.stockSumPrice += r.stockSumPrice
+      acc.stockSumOriginal += r.stockSumOriginal
+      return acc
+    },
+    { soldCount: 0, soldSum: 0, stockCount: 0, stockSumPrice: 0, stockSumOriginal: 0 }
+  )
+
+  const dimSubtotal = dimRows.reduce(
+    (acc, r) => {
+      acc.soldCount += r.soldCount
+      acc.soldSum += r.soldSum
+      acc.stockCount += r.stockCount
+      acc.stockSumPrice += r.stockSumPrice
+      acc.stockSumOriginal += r.stockSumOriginal
+      return acc
+    },
+    { soldCount: 0, soldSum: 0, stockCount: 0, stockSumPrice: 0, stockSumOriginal: 0 }
+  )
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
@@ -127,19 +151,18 @@ export default async function AdminReportesPage() {
         <div className="rounded-xl border border-stone-200 bg-white p-4">
           <p className="text-xs uppercase tracking-widest text-stone-400">Vendidas</p>
           <p className="text-2xl font-semibold text-carbon-900 mt-1">{total.soldCount}</p>
-          <p className="text-xs text-stone-500 mt-1">Suma: {money(total.soldSum)}</p>
+          <p className="text-xs text-stone-400 mt-1">Suma: {money(total.soldSum)}</p>
         </div>
         <div className="rounded-xl border border-stone-200 bg-white p-4">
           <p className="text-xs uppercase tracking-widest text-stone-400">Stock (disponibles)</p>
-          <p className="text-2xl font-semibold text-carbon-900 mt-1">{total.stockCount}</p>
-          <p className="text-xs text-stone-500 mt-1">Suma: {money(total.stockSumPrice)}</p>
+          <p className="text-2xl font-semibold text-green-700 mt-1">{money(total.stockSumPrice)}</p>
+          <p className="text-xs text-stone-500 mt-1">{total.stockCount} obras</p>
         </div>
         <div className="rounded-xl border border-stone-200 bg-white p-4">
-          <p className="text-xs uppercase tracking-widest text-stone-400">Precio anterior (stock)</p>
-          <p className="text-2xl font-semibold text-carbon-900 mt-1">
+          <p className="text-xs uppercase tracking-widest text-stone-400">Precio ORIGINAL EN TIENDA</p>
+          <p className="text-lg font-semibold text-stone-600 mt-1 line-through">
             {money(total.stockSumOriginal)}
           </p>
-          <p className="text-xs text-stone-500 mt-1">Suma `original_price`</p>
         </div>
         <div className="rounded-xl border border-stone-200 bg-white p-4">
           <p className="text-xs uppercase tracking-widest text-stone-400">Otros estados</p>
@@ -163,8 +186,8 @@ export default async function AdminReportesPage() {
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Vendidas</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Suma ventas</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Stock</th>
-                <th className="text-right px-4 py-3 font-medium text-stone-500">Suma stock</th>
-                <th className="text-right px-4 py-3 font-medium text-stone-500">Suma anterior</th>
+                <th className="text-right px-4 py-3 font-medium text-stone-500">Total precio de remate</th>
+                <th className="text-right px-4 py-3 font-medium text-stone-500">Total precio tienda</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100">
@@ -172,13 +195,23 @@ export default async function AdminReportesPage() {
                 <tr key={r.category} className="hover:bg-stone-50/60">
                   <td className="px-4 py-3 capitalize text-stone-700">{r.category}</td>
                   <td className="px-4 py-3 text-right text-stone-700">{r.soldCount}</td>
-                  <td className="px-4 py-3 text-right text-stone-700">{money(r.soldSum)}</td>
+                  <td className="px-4 py-3 text-right text-stone-600">{money(r.soldSum)}</td>
                   <td className="px-4 py-3 text-right text-stone-700">{r.stockCount}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-carbon-900">{money(r.stockSumPrice)}</td>
-                  <td className="px-4 py-3 text-right text-stone-600">{money(r.stockSumOriginal)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-green-700">{money(r.stockSumPrice)}</td>
+                  <td className="px-4 py-3 text-right text-stone-600 line-through">{money(r.stockSumOriginal)}</td>
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t border-stone-200 bg-stone-50">
+                <td className="px-4 py-3 font-medium text-stone-600">Subtotal</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-700">{categorySubtotal.soldCount}</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-600">{money(categorySubtotal.soldSum)}</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-700">{categorySubtotal.stockCount}</td>
+                <td className="px-4 py-3 text-right font-semibold text-green-700">{money(categorySubtotal.stockSumPrice)}</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-700 line-through">{money(categorySubtotal.stockSumOriginal)}</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </section>
@@ -198,8 +231,8 @@ export default async function AdminReportesPage() {
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Vendidas</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Suma ventas</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Stock</th>
-                <th className="text-right px-4 py-3 font-medium text-stone-500">Suma stock</th>
-                <th className="text-right px-4 py-3 font-medium text-stone-500">Suma anterior</th>
+                <th className="text-right px-4 py-3 font-medium text-stone-500">Total precio de remate</th>
+                <th className="text-right px-4 py-3 font-medium text-stone-500">Total precio tienda</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100">
@@ -209,13 +242,23 @@ export default async function AdminReportesPage() {
                     {r.w} × {r.h}
                   </td>
                   <td className="px-4 py-3 text-right text-stone-700">{r.soldCount}</td>
-                  <td className="px-4 py-3 text-right text-stone-700">{money(r.soldSum)}</td>
+                  <td className="px-4 py-3 text-right text-stone-600">{money(r.soldSum)}</td>
                   <td className="px-4 py-3 text-right text-stone-700">{r.stockCount}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-carbon-900">{money(r.stockSumPrice)}</td>
-                  <td className="px-4 py-3 text-right text-stone-600">{money(r.stockSumOriginal)}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-green-700">{money(r.stockSumPrice)}</td>
+                  <td className="px-4 py-3 text-right text-stone-600 line-through">{money(r.stockSumOriginal)}</td>
                 </tr>
               ))}
             </tbody>
+            <tfoot>
+              <tr className="border-t border-stone-200 bg-stone-50">
+                <td className="px-4 py-3 font-medium text-stone-600">Subtotal</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-700">{dimSubtotal.soldCount}</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-600">{money(dimSubtotal.soldSum)}</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-700">{dimSubtotal.stockCount}</td>
+                <td className="px-4 py-3 text-right font-semibold text-green-700">{money(dimSubtotal.stockSumPrice)}</td>
+                <td className="px-4 py-3 text-right font-medium text-stone-700 line-through">{money(dimSubtotal.stockSumOriginal)}</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </section>
