@@ -452,6 +452,44 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
     }
   }
 
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────
+  // - Ctrl/Cmd + S: guardar como borrador
+  // - Alt + ← / → : navegar pasos (solo si no estás escribiendo en un input)
+  useEffect(() => {
+    const isEditableTarget = (t: EventTarget | null) => {
+      if (!t || !(t instanceof HTMLElement)) return false
+      const tag = t.tagName.toLowerCase()
+      if (t.isContentEditable) return true
+      return tag === "input" || tag === "textarea" || tag === "select"
+    }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      // Save draft
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault()
+        if (isSubmitting) return
+        void form.handleSubmit((v) => onSubmit(v, true))()
+        return
+      }
+
+      // Step navigation (avoid hijacking cursor navigation while typing)
+      if (isEditableTarget(e.target)) return
+
+      if (e.altKey && e.key === "ArrowRight") {
+        e.preventDefault()
+        next()
+        return
+      }
+      if (e.altKey && e.key === "ArrowLeft") {
+        e.preventDefault()
+        prev()
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [form, isSubmitting, next, onSubmit, prev])
+
   // ── Render steps ────────────────────────────────────────────────────────
 
   return (

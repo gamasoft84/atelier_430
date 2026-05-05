@@ -13,9 +13,25 @@ export const metadata: Metadata = { title: "Obras" }
 const PAGE_SIZE = 20
 const VALID_CATEGORIES = new Set<string>(ARTWORK_CATEGORIES)
 const VALID_STATUSES = new Set<string>(ARTWORK_STATUSES)
+const VALID_SORTS = new Set<string>([
+  "code",
+  "title",
+  "category",
+  "size",
+  "status",
+  "price",
+  "created_at",
+])
 
 export default async function ObrasPage(props: {
-  searchParams: Promise<{ q?: string; category?: string; status?: string; page?: string }>
+  searchParams: Promise<{
+    q?: string
+    category?: string
+    status?: string
+    page?: string
+    sort?: string
+    dir?: string
+  }>
 }) {
   const params = await props.searchParams
 
@@ -30,6 +46,12 @@ export default async function ObrasPage(props: {
     ? (params.status as ArtworkStatus)
     : undefined
 
+  const safeSort = VALID_SORTS.has(params.sort ?? "")
+    ? (params.sort as "code" | "title" | "category" | "size" | "status" | "price" | "created_at")
+    : "created_at"
+  const safeDir = params.dir === "asc" ? "asc" : "desc"
+  const ascending = safeDir === "asc"
+
   const supabase = await createClient()
 
   let query = supabase
@@ -40,8 +62,34 @@ export default async function ObrasPage(props: {
        artwork_images(cloudinary_url, cloudinary_public_id, is_primary, position)`,
       { count: "exact" }
     )
-    .order("created_at", { ascending: false })
     .range(from, to)
+
+  // Sorting
+  switch (safeSort) {
+    case "code":
+      query = query.order("code", { ascending, nullsFirst: false })
+      break
+    case "title":
+      query = query.order("title", { ascending, nullsFirst: false })
+      break
+    case "category":
+      query = query.order("category", { ascending, nullsFirst: false })
+      break
+    case "status":
+      query = query.order("status", { ascending, nullsFirst: false })
+      break
+    case "price":
+      query = query.order("price", { ascending, nullsFirst: false })
+      break
+    case "size":
+      // Primary sort by width, then height (both nullable)
+      query = query
+        .order("width_cm", { ascending, nullsFirst: false })
+        .order("height_cm", { ascending, nullsFirst: false })
+      break
+    default:
+      query = query.order("created_at", { ascending: false })
+  }
 
   if (params.q?.trim()) {
     query = query.or(`title.ilike.%${params.q.trim()}%,code.ilike.%${params.q.trim()}%`)
@@ -100,6 +148,8 @@ export default async function ObrasPage(props: {
           q: params.q,
           category: params.category,
           status: params.status,
+          sort: safeSort,
+          dir: safeDir,
         }}
       />
     </div>

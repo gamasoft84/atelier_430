@@ -72,6 +72,59 @@ function buildPageUrl(params: Record<string, string | undefined>, page: number):
   return qs ? `/admin/obras?${qs}` : "/admin/obras"
 }
 
+function buildSortUrl(
+  params: Record<string, string | undefined>,
+  sort: string
+): string {
+  const currentSort = params.sort ?? "created_at"
+  const currentDir = params.dir ?? "desc"
+  const nextDir =
+    currentSort === sort ? (currentDir === "asc" ? "desc" : "asc") : "asc"
+
+  const url = new URLSearchParams()
+  Object.entries({ ...params, page: undefined, sort, dir: nextDir }).forEach(([k, v]) => {
+    if (v) url.set(k, v)
+  })
+  const qs = url.toString()
+  return qs ? `/admin/obras?${qs}` : "/admin/obras"
+}
+
+function SortHeader({
+  label,
+  sortKey,
+  align = "left",
+  params,
+  className,
+}: {
+  label: string
+  sortKey: string
+  align?: "left" | "right"
+  params: Record<string, string | undefined>
+  className?: string
+}) {
+  const active = (params.sort ?? "created_at") === sortKey
+  const dir = (params.dir ?? "desc") as "asc" | "desc"
+  const indicator = active ? (dir === "asc" ? "↑" : "↓") : ""
+
+  return (
+    <th className={cn(
+      align === "right" ? "text-right" : "text-left",
+      "px-4 py-3 font-medium text-stone-500 select-none",
+      className
+    )}>
+      <Link
+        href={buildSortUrl(params, sortKey)}
+        className="inline-flex items-center gap-1 hover:text-carbon-900 transition-colors"
+      >
+        {label}
+        <span className={cn("text-xs", active ? "text-carbon-900" : "text-stone-300")}>
+          {indicator || "↕"}
+        </span>
+      </Link>
+    </th>
+  )
+}
+
 function getPrimaryImage(images: ArtworkRow["artwork_images"]) {
   return (
     images.find((i) => i.is_primary) ??
@@ -133,12 +186,12 @@ export default function ArtworksTable({
           <thead>
             <tr className="border-b border-stone-100 bg-stone-50">
               <th className="text-left px-4 py-3 font-medium text-stone-500 w-14">Img</th>
-              <th className="text-left px-4 py-3 font-medium text-stone-500 w-24">Código</th>
-              <th className="text-left px-4 py-3 font-medium text-stone-500">Título</th>
-              <th className="text-left px-4 py-3 font-medium text-stone-500 hidden md:table-cell w-28">Categoría</th>
-              <th className="text-left px-4 py-3 font-medium text-stone-500 hidden md:table-cell w-24">Tamaño</th>
-              <th className="text-left px-4 py-3 font-medium text-stone-500 w-28">Estado</th>
-              <th className="text-right px-4 py-3 font-medium text-stone-500 hidden sm:table-cell w-28">Precio</th>
+              <SortHeader label="Código" sortKey="code" params={currentParams} className="w-24" />
+              <SortHeader label="Título" sortKey="title" params={currentParams} />
+              <SortHeader label="Categoría" sortKey="category" params={currentParams} className="hidden md:table-cell w-28" />
+              <SortHeader label="Tamaño" sortKey="size" params={currentParams} className="hidden md:table-cell w-24" />
+              <SortHeader label="Estado" sortKey="status" params={currentParams} className="w-28" />
+              <SortHeader label="Precio" sortKey="price" params={currentParams} align="right" className="hidden sm:table-cell w-28" />
               <th className="text-right px-4 py-3 font-medium text-stone-500 w-20">Acciones</th>
             </tr>
           </thead>
