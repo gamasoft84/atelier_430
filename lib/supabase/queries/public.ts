@@ -30,7 +30,11 @@ export async function getFeaturedArtworks(limit = 8): Promise<ArtworkPublic[]> {
 }
 
 export async function getCategoryStats(): Promise<
-  Array<{ category: ArtworkCategory; count: number; thumbnail: string | null }>
+  Array<{
+    category: ArtworkCategory
+    count: number
+    thumbnail: { url: string; width: number | null; height: number | null } | null
+  }>
 > {
   const supabase = await createClient()
   const categories: ArtworkCategory[] = ["religiosa", "nacional", "europea", "moderna"]
@@ -45,7 +49,7 @@ export async function getCategoryStats(): Promise<
           .eq("category", category),
         supabase
           .from("artworks")
-          .select("images:artwork_images(cloudinary_url, is_primary, position)")
+          .select("images:artwork_images(cloudinary_url, width, height, is_primary, position)")
           .eq("status", "available")
           .eq("category", category)
           .order("views_count", { ascending: false })
@@ -53,13 +57,26 @@ export async function getCategoryStats(): Promise<
           .maybeSingle(),
       ])
 
-      const images = (thumbRes.data?.images as Array<{ cloudinary_url: string; is_primary: boolean; position: number }> | null) ?? []
+      const images =
+        (thumbRes.data?.images as Array<{
+          cloudinary_url: string
+          width: number | null
+          height: number | null
+          is_primary: boolean
+          position: number
+        }> | null) ?? []
       const primary = images.find((i) => i.is_primary) ?? images.sort((a, b) => a.position - b.position)[0]
 
       return {
         category,
         count: countRes.count ?? 0,
-        thumbnail: primary?.cloudinary_url ?? null,
+        thumbnail: primary
+          ? {
+              url: primary.cloudinary_url,
+              width: primary.width ?? null,
+              height: primary.height ?? null,
+            }
+          : null,
       }
     })
   )

@@ -54,8 +54,23 @@ export async function GET(
   let heightM: number
 
   if (artwork.width_cm && artwork.height_cm) {
-    widthM = artwork.width_cm / 100
-    heightM = artwork.height_cm / 100
+    // If saved dimensions don't match the image orientation, swap them.
+    // This avoids generating a vertical poster from a horizontal photo when dimensions were entered reversed.
+    const dimAspect = artwork.width_cm / artwork.height_cm
+    const imgAspect =
+      primary.width && primary.height && primary.height > 0
+        ? primary.width / primary.height
+        : null
+
+    const shouldSwap =
+      imgAspect !== null &&
+      ((dimAspect < 1 && imgAspect > 1) || (dimAspect > 1 && imgAspect < 1))
+
+    const wCm = shouldSwap ? artwork.height_cm : artwork.width_cm
+    const hCm = shouldSwap ? artwork.width_cm : artwork.height_cm
+
+    widthM = wCm / 100
+    heightM = hCm / 100
   } else if (primary.width && primary.height && primary.height > 0) {
     const aspect = primary.width / primary.height
     heightM = 0.9

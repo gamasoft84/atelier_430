@@ -27,22 +27,32 @@ interface ArtworkCardProps {
 export default function ArtworkCard({ artwork, showPrice = true, priority = false }: ArtworkCardProps) {
   const primaryImage =
     artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
+  const hasRenderableImage =
+    typeof primaryImage?.cloudinary_url === "string" && primaryImage.cloudinary_url.length > 0
 
   const badge = STATUS_BADGE[artwork.status]
   const isSold = artwork.status === "sold"
+  const isHorizontal =
+    Boolean(primaryImage?.width && primaryImage?.height) &&
+    (primaryImage!.width as number) > (primaryImage!.height as number)
 
   return (
     <div className="relative">
       <Link href={`/catalogo/${artwork.code}`} className="group block">
-        <div className="relative overflow-hidden rounded-lg bg-stone-100 aspect-[3/4]">
-          {primaryImage ? (
-            <div className="absolute inset-2 overflow-hidden rounded-md">
+        <div
+          className={[
+            "relative overflow-hidden rounded-lg bg-stone-100",
+            isHorizontal ? "aspect-[4/3]" : "aspect-[3/4]",
+          ].join(" ")}
+        >
+          {hasRenderableImage ? (
+            <div className="absolute inset-2 overflow-hidden rounded-md bg-stone-100">
               <Image
-                src={primaryImage.cloudinary_url}
+                src={primaryImage!.cloudinary_url}
                 alt={primaryImage.alt_text ?? artwork.title}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className={`object-cover transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
+                className={`${isHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
                 priority={priority}
               />
             </div>

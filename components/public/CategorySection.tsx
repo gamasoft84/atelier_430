@@ -28,20 +28,28 @@ const CATEGORY_META: Record<ArtworkCategory, { label: string; description: strin
 interface CategoryCardProps {
   category: ArtworkCategory
   count: number
-  thumbnail: string | null
+  thumbnail: { url: string; width: number | null; height: number | null } | null
 }
 
 function CategoryCard({ category, count, thumbnail }: CategoryCardProps) {
   const meta = CATEGORY_META[category]
+  const isHorizontal =
+    typeof thumbnail?.width === "number" &&
+    typeof thumbnail?.height === "number" &&
+    thumbnail.height > 0 &&
+    thumbnail.width > thumbnail.height
 
   return (
     <Link
       href={`/catalogo?categoria=${category}`}
-      className="group relative overflow-hidden rounded-xl aspect-[4/5] block"
+      className={[
+        "group relative overflow-hidden rounded-xl block",
+        isHorizontal ? "aspect-[4/3]" : "aspect-[3/4]",
+      ].join(" ")}
     >
       {thumbnail ? (
         <Image
-          src={thumbnail}
+          src={thumbnail.url}
           alt={meta.label}
           fill
           sizes="(max-width: 640px) 50vw, 25vw"
@@ -64,7 +72,11 @@ function CategoryCard({ category, count, thumbnail }: CategoryCardProps) {
 }
 
 interface CategorySectionProps {
-  stats: Array<{ category: ArtworkCategory; count: number; thumbnail: string | null }>
+  stats: Array<{
+    category: ArtworkCategory
+    count: number
+    thumbnail: { url: string; width: number | null; height: number | null } | null
+  }>
 }
 
 export default function CategorySection({ stats }: CategorySectionProps) {

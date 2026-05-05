@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import type { ArtworkImage } from "@/types/artwork"
 
@@ -14,7 +14,28 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const active = sorted[activeIndex]
 
+  // When navigating between artworks, this client component may persist.
+  // Ensure the index always points to a valid image.
+  useEffect(() => {
+    if (sorted.length === 0) return
+    if (activeIndex >= sorted.length) setActiveIndex(0)
+  }, [activeIndex, sorted.length])
+
+  const isActiveHorizontal =
+    typeof active?.width === "number" &&
+    typeof active?.height === "number" &&
+    active.height > 0 &&
+    active.width > active.height
+
   if (sorted.length === 0) {
+    return (
+      <div className="aspect-[3/4] rounded-xl bg-stone-100 flex items-center justify-center">
+        <span className="text-stone-300 text-sm">Sin imagen</span>
+      </div>
+    )
+  }
+
+  if (!active) {
     return (
       <div className="aspect-[3/4] rounded-xl bg-stone-100 flex items-center justify-center">
         <span className="text-stone-300 text-sm">Sin imagen</span>
@@ -25,14 +46,19 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
   return (
     <div className="space-y-3">
       {/* Main image */}
-      <div className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-stone-100">
+      <div
+        className={[
+          "group relative rounded-xl overflow-hidden bg-stone-100",
+          isActiveHorizontal ? "aspect-[4/3]" : "aspect-[3/4]",
+        ].join(" ")}
+      >
         <div className="absolute inset-2 overflow-hidden rounded-lg">
           <Image
             src={active.cloudinary_url}
             alt={active.alt_text ?? title}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            className={`${isActiveHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03]`}
             priority
           />
         </div>
