@@ -252,11 +252,14 @@
 
 ---
 
-## Fase 8 — PDF y dashboard completo ⏳
+## Fase 8 — PDF y dashboard completo ✅ (2026-05-02)
 
-- [ ] Generación de PDF con @react-pdf/renderer
-- [ ] Dashboard con métricas reales
-- [ ] Gráficas de ventas (Recharts)
+- [x] `lib/supabase/queries/dashboard.ts` — getInventoryStats, getMonthlySales, getCurrentMonthStats, getVentas
+- [x] `components/admin/SalesChart.tsx` — BarChart Recharts (barras doradas, tooltip personalizado en es-MX)
+- [x] `app/admin/(protected)/dashboard/page.tsx` — reescrito: 6 métricas de inventario, gráfica 6 meses, stats del mes actual y ticket prom., Suspense skeleton
+- [x] `app/admin/(protected)/ventas/page.tsx` — reescrito: filtro por período (mes/trimestre/todo), 3 totalizadores, tabla con thumbnail, badge de canal, comprador
+- [x] `app/api/catalogo/pdf/route.tsx` — @react-pdf/renderer: catálogo por categoría o completo; cuadrícula 2×3 por página; imágenes Cloudinary optimizadas (w_400,h_500,c_fill,q_70)
+- [x] Botón "PDF catálogo" en `/admin/obras` con descarga directa al endpoint
 
 ---
 
