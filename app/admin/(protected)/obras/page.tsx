@@ -29,6 +29,7 @@ export default async function ObrasPage(props: {
     category?: string
     status?: string
     page?: string
+    size?: string
     sort?: string
     dir?: string
   }>
@@ -46,6 +47,10 @@ export default async function ObrasPage(props: {
     ? (params.status as ArtworkStatus)
     : undefined
 
+  const safeSize = (params.size ?? "").match(/^(\d+)\s*x\s*(\d+)$/i)
+  const sizeWidth = safeSize ? Number(safeSize[1]) : null
+  const sizeHeight = safeSize ? Number(safeSize[2]) : null
+
   const safeSort = VALID_SORTS.has(params.sort ?? "")
     ? (params.sort as "code" | "title" | "category" | "size" | "status" | "price" | "created_at")
     : "created_at"
@@ -54,11 +59,32 @@ export default async function ObrasPage(props: {
 
   const supabase = await createClient()
 
+  // Build size options (distinct, from DB)
+  const { data: sizeRows } = await supabase
+    .from("artworks")
+    .select("width_cm, height_cm")
+    .not("width_cm", "is", null)
+    .not("height_cm", "is", null)
+    .limit(2000)
+
+  const sizeOptions = Array.from(
+    new Set(
+      (sizeRows ?? [])
+        .map((r) => `${r.width_cm}x${r.height_cm}`)
+        .filter((s) => !s.includes("null"))
+    )
+  ).sort((a, b) => {
+    const [aw, ah] = a.split("x").map(Number)
+    const [bw, bh] = b.split("x").map(Number)
+    if (aw !== bw) return aw - bw
+    return ah - bh
+  })
+
   let query = supabase
     .from("artworks")
     .select(
-      `id, code, title, category, status, price, show_price, created_at,
-       width_cm, height_cm,
+      `id, code, title, category, status, price, original_price, show_price, created_at,
+       width_cm, height_cm, price_locked,
        artwork_images(cloudinary_url, cloudinary_public_id, is_primary, position)`,
       { count: "exact" }
     )
@@ -100,6 +126,9 @@ export default async function ObrasPage(props: {
   if (safeStatus) {
     query = query.eq("status", safeStatus)
   }
+  if (sizeWidth !== null && sizeHeight !== null) {
+    query = query.eq("width_cm", sizeWidth).eq("height_cm", sizeHeight)
+  }
 
   const { data, count } = await query
 
@@ -137,7 +166,7 @@ export default async function ObrasPage(props: {
       </div>
 
       <Suspense fallback={<div className="h-10 rounded-lg bg-stone-100 animate-pulse" />}>
-        <ArtworksFilters />
+        <ArtworksFilters sizeOptions={sizeOptions} />
       </Suspense>
 
       <ArtworksTable
@@ -148,6 +177,7 @@ export default async function ObrasPage(props: {
           q: params.q,
           category: params.category,
           status: params.status,
+          size: params.size,
           sort: safeSort,
           dir: safeDir,
         }}

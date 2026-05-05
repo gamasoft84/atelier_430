@@ -20,7 +20,7 @@ const STATUS_LABELS: Record<string, string> = {
   draft: "Borrador",
 }
 
-export default function ArtworksFilters() {
+export default function ArtworksFilters({ sizeOptions }: { sizeOptions: string[] }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -59,7 +59,8 @@ export default function ArtworksFilters() {
 
   const activeCategory = searchParams.get("category") ?? ""
   const activeStatus = searchParams.get("status") ?? ""
-  const hasFilters = search || activeCategory || activeStatus
+  const activeSize = searchParams.get("size") ?? ""
+  const hasFilters = search || activeCategory || activeStatus || activeSize
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -99,6 +100,19 @@ export default function ArtworksFilters() {
         {ARTWORK_STATUSES.map((s) => (
           <option key={s} value={s}>
             {STATUS_LABELS[s]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={activeSize}
+        onChange={(e) => updateParam("size", e.target.value)}
+        className="text-sm bg-white border border-stone-200 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 transition-colors cursor-pointer"
+      >
+        <option value="">Todos los tamaños</option>
+        {sizeOptions.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt.replace("x", " × ")}
           </option>
         ))}
       </select>

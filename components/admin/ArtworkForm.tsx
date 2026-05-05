@@ -44,6 +44,7 @@ const artworkSchema = z.object({
   frame_color: z.string().max(50).optional().default(""),
   price: z.coerce.number().min(0).nullable().optional(),
   original_price: z.coerce.number().min(0).nullable().optional(),
+  price_locked: z.boolean().default(false),
   cost: z.coerce.number().min(0).nullable().optional(),
   show_price: z.boolean().default(true),
   status: z
@@ -185,6 +186,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       original_price:
         artwork?.original_price ??
         (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.original_price : undefined),
+      price_locked: artwork?.price_locked ?? false,
       cost: artwork?.cost ?? undefined,
       show_price: artwork?.show_price ?? true,
       status: artwork?.status ?? "available",
@@ -429,6 +431,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       price: values.price ?? null,
       original_price: values.original_price ?? null,
       cost: values.cost ?? null,
+      price_locked: values.price_locked,
       status: asDraft ? ("hidden" as const) : values.status,
       tags: values.tags ? values.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
     }
@@ -908,6 +911,31 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="price_locked"
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-3">
+                    <FormControl>
+                      <input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        className="w-4 h-4 accent-gold-500"
+                      />
+                    </FormControl>
+                    <div className="space-y-0.5">
+                      <FormLabel className="!mt-0 cursor-pointer">
+                        Bloquear precio (excluir de ajuste masivo)
+                      </FormLabel>
+                      <p className="text-xs text-stone-400">
+                        Útil para obras con precio especial o negociación directa. No aplica a vendidas.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField

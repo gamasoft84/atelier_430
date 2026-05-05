@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, ImageIcon, Pin } from "lucide-react"
 import { cn } from "@/lib/utils"
 import ArtworkActionsMenu from "@/components/admin/ArtworkActionsMenu"
 import type { ArtworkCategory, ArtworkStatus } from "@/types/artwork"
@@ -14,9 +14,11 @@ export interface ArtworkRow {
   category: ArtworkCategory
   status: ArtworkStatus
   price: number | null
+  original_price: number | null
   show_price: boolean
   width_cm: number | null
   height_cm: number | null
+  price_locked: boolean
   created_at: string
   artwork_images: {
     cloudinary_url: string
@@ -54,6 +56,12 @@ function formatPrice(price: number | null, show: boolean): string {
   if (!show) return "Privado"
   if (price === null) return "—"
   return `$${price.toLocaleString("es-MX")}`
+}
+
+function formatOriginalPrice(originalPrice: number | null, show: boolean): string {
+  if (!show) return "Privado"
+  if (originalPrice === null) return "—"
+  return `$${originalPrice.toLocaleString("es-MX")}`
 }
 
 function formatSize(widthCm: number | null, heightCm: number | null): string {
@@ -191,6 +199,7 @@ export default function ArtworksTable({
               <SortHeader label="Categoría" sortKey="category" params={currentParams} className="hidden md:table-cell w-28" />
               <SortHeader label="Tamaño" sortKey="size" params={currentParams} className="hidden md:table-cell w-24" />
               <SortHeader label="Estado" sortKey="status" params={currentParams} className="w-28" />
+              <th className="text-right px-4 py-3 font-medium text-stone-500 hidden lg:table-cell w-32">Precio anterior</th>
               <SortHeader label="Precio" sortKey="price" params={currentParams} align="right" className="hidden sm:table-cell w-28" />
               <th className="text-right px-4 py-3 font-medium text-stone-500 w-20">Acciones</th>
             </tr>
@@ -263,16 +272,39 @@ export default function ArtworksTable({
                     </span>
                   </td>
 
-                  {/* Price */}
-                  <td className="px-4 py-3 text-right hidden sm:table-cell">
+                  {/* Original price */}
+                  <td className="px-4 py-3 text-right hidden lg:table-cell">
                     <span
                       className={cn(
                         "text-sm",
-                        artwork.show_price ? "text-carbon-900" : "text-stone-400 italic"
+                        artwork.show_price ? "text-stone-500" : "text-stone-400 italic"
                       )}
                     >
-                      {formatPrice(artwork.price, artwork.show_price)}
+                      {formatOriginalPrice(artwork.original_price, artwork.show_price)}
                     </span>
+                  </td>
+
+                  {/* Price */}
+                  <td className="px-4 py-3 text-right hidden sm:table-cell">
+                    <div className="inline-flex items-center justify-end gap-2">
+                      {artwork.price_locked && artwork.status !== "sold" && (
+                        <span
+                          className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gold-500/15 text-gold-500 border border-gold-500/25"
+                          title="Precio fijo (excluido de ajuste masivo)"
+                          aria-label="Precio fijo"
+                        >
+                          <Pin size={12} />
+                        </span>
+                      )}
+                      <span
+                        className={cn(
+                          "text-sm font-semibold",
+                          artwork.show_price ? "text-carbon-900" : "text-stone-400 italic"
+                        )}
+                      >
+                        {formatPrice(artwork.price, artwork.show_price)}
+                      </span>
+                    </div>
                   </td>
 
                   {/* Actions */}

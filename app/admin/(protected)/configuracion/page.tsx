@@ -1,11 +1,14 @@
 import type { Metadata } from "next"
 import ArtworkCreateDefaultsSettings from "@/components/admin/settings/ArtworkCreateDefaultsSettings"
+import BulkPricingBySize from "@/components/admin/settings/BulkPricingBySize"
+import { getSizeGroups } from "@/app/actions/bulk-pricing"
 
 export const metadata: Metadata = {
   title: "Configuración",
 }
 
-export default function AdminConfiguracionPage() {
+export default async function AdminConfiguracionPage() {
+  const groups = await getSizeGroups()
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
@@ -16,6 +19,9 @@ export default function AdminConfiguracionPage() {
       </div>
 
       <ArtworkCreateDefaultsSettings />
+
+      {/* Bulk pricing */}
+      <BulkPricingBySize groups={groups} />
     </div>
   )
 }

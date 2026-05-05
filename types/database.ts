@@ -24,6 +24,7 @@ export interface Database {
           price: number | null
           original_price: number | null
           cost: number | null
+          price_locked: boolean
           show_price: boolean
           status: "available" | "reserved" | "sold" | "hidden" | "draft"
           reserved_until: string | null
@@ -62,6 +63,7 @@ export interface Database {
           price?: number | null
           original_price?: number | null
           cost?: number | null
+          price_locked?: boolean
           show_price?: boolean
           status?: "available" | "reserved" | "sold" | "hidden" | "draft"
           reserved_until?: string | null
@@ -100,6 +102,7 @@ export interface Database {
           price?: number | null
           original_price?: number | null
           cost?: number | null
+          price_locked?: boolean
           show_price?: boolean
           status?: "available" | "reserved" | "sold" | "hidden" | "draft"
           reserved_until?: string | null

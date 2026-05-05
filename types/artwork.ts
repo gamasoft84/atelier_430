@@ -35,6 +35,7 @@ export interface Artwork {
   price: number | null
   original_price: number | null
   cost: number | null
+  price_locked: boolean
   show_price: boolean
   status: ArtworkStatus
   reserved_until: string | null
@@ -57,7 +58,7 @@ export interface Artwork {
 
 export type ArtworkPublic = Omit<
   Artwork,
-  "cost" | "location_in_storage" | "admin_notes" | "sold_buyer_contact"
+  "cost" | "location_in_storage" | "admin_notes" | "sold_buyer_contact" | "price_locked"
 >
 
 export interface ArtworkFormData {
@@ -75,6 +76,7 @@ export interface ArtworkFormData {
   frame_color: string
   price: number | null
   original_price: number | null
+  price_locked?: boolean
   cost: number | null
   show_price: boolean
   status: ArtworkStatus
