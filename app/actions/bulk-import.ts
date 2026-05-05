@@ -44,20 +44,17 @@ export async function runBulkImport(
   }
 
   const zipBuffer = await zipFile.arrayBuffer()
-  let imageMap: Map<string, Buffer>
-  let mimeMap: Map<string, string>
+  let imagesByCode: Awaited<ReturnType<typeof zipImagesByCode>>["imagesByCode"]
   try {
     const z = await zipImagesByCode(zipBuffer)
-    imageMap = z.buffers
-    mimeMap = z.mimes
+    imagesByCode = z.imagesByCode
   } catch {
     return { error: "No se pudo leer el ZIP. Comprueba que sea un .zip válido." }
   }
 
   const result = await runBulkImportCore(supabase, {
     rows,
-    imageMap,
-    mimeMap,
+    imagesByCode,
   })
 
   revalidatePath("/admin/obras")

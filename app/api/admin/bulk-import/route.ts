@@ -70,12 +70,10 @@ export async function POST(request: Request) {
   }
 
   const zipBuffer = await zipFile.arrayBuffer()
-  let imageMap: Map<string, Buffer>
-  let mimeMap: Map<string, string>
+  let imagesByCode: Awaited<ReturnType<typeof zipImagesByCode>>["imagesByCode"]
   try {
     const z = await zipImagesByCode(zipBuffer)
-    imageMap = z.buffers
-    mimeMap = z.mimes
+    imagesByCode = z.imagesByCode
   } catch {
     return NextResponse.json(
       { error: "No se pudo leer el ZIP. Comprueba que sea un .zip válido." },
@@ -95,8 +93,7 @@ export async function POST(request: Request) {
         send({ type: "start", total: rows.length })
         const result = await runBulkImportCore(supabase, {
           rows,
-          imageMap,
-          mimeMap,
+          imagesByCode,
           onRowDone: (p) =>
             send({
               type: "progress",
