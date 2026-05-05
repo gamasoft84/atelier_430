@@ -36,6 +36,7 @@ export default async function ObrasPage(props: {
     .from("artworks")
     .select(
       `id, code, title, category, status, price, show_price, created_at,
+       width_cm, height_cm,
        artwork_images(cloudinary_url, cloudinary_public_id, is_primary, position)`,
       { count: "exact" }
     )

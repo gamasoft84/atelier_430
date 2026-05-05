@@ -15,6 +15,8 @@ export interface ArtworkRow {
   status: ArtworkStatus
   price: number | null
   show_price: boolean
+  width_cm: number | null
+  height_cm: number | null
   created_at: string
   artwork_images: {
     cloudinary_url: string
@@ -52,6 +54,13 @@ function formatPrice(price: number | null, show: boolean): string {
   if (!show) return "Privado"
   if (price === null) return "—"
   return `$${price.toLocaleString("es-MX")}`
+}
+
+function formatSize(widthCm: number | null, heightCm: number | null): string {
+  if (typeof widthCm === "number" && typeof heightCm === "number") return `${widthCm} × ${heightCm}`
+  if (typeof widthCm === "number") return `${widthCm} × —`
+  if (typeof heightCm === "number") return `— × ${heightCm}`
+  return "—"
 }
 
 function buildPageUrl(params: Record<string, string | undefined>, page: number): string {
@@ -127,6 +136,7 @@ export default function ArtworksTable({
               <th className="text-left px-4 py-3 font-medium text-stone-500 w-24">Código</th>
               <th className="text-left px-4 py-3 font-medium text-stone-500">Título</th>
               <th className="text-left px-4 py-3 font-medium text-stone-500 hidden md:table-cell w-28">Categoría</th>
+              <th className="text-left px-4 py-3 font-medium text-stone-500 hidden md:table-cell w-24">Tamaño</th>
               <th className="text-left px-4 py-3 font-medium text-stone-500 w-28">Estado</th>
               <th className="text-right px-4 py-3 font-medium text-stone-500 hidden sm:table-cell w-28">Precio</th>
               <th className="text-right px-4 py-3 font-medium text-stone-500 w-20">Acciones</th>
@@ -178,6 +188,13 @@ export default function ArtworksTable({
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className="text-stone-600 text-xs">
                       {CATEGORY_LABELS[artwork.category]}
+                    </span>
+                  </td>
+
+                  {/* Size */}
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <span className="text-stone-600 text-xs font-mono whitespace-nowrap">
+                      {formatSize(artwork.width_cm, artwork.height_cm)}
                     </span>
                   </td>
 
