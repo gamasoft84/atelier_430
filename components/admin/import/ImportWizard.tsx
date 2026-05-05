@@ -46,7 +46,7 @@ export default function ImportWizard() {
               stepNum === 0
                 ? templateDownloaded
                 : stepNum === 1
-                  ? validationResult !== null && validationResult.withErrors === 0
+                  ? validationResult !== null && validationResult.total > 0 && validationResult.withErrors === 0
                   : false
             const isAccessible = canAccessStep(stepNum)
 

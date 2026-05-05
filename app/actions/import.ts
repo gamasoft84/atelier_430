@@ -49,7 +49,7 @@ function validateRow(
   } else {
     seenCodes.add(code)
     if (existingCodes.has(code)) {
-      warnings.push(`Código "${code}" ya existe en la base de datos — se sobreescribirá`)
+      warnings.push(`Código "${code}" ya existe en la base de datos — se omitirá en el paso 3`)
     }
   }
 
