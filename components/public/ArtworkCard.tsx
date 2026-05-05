@@ -46,15 +46,17 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
           ].join(" ")}
         >
           {hasRenderableImage ? (
-            <div className="absolute inset-2 overflow-hidden rounded-md bg-stone-100">
-              <Image
-                src={primaryImage!.cloudinary_url}
-                alt={primaryImage.alt_text ?? artwork.title}
-                fill
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                className={`${isHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
-                priority={priority}
-              />
+            <div className="h-full w-full p-2">
+              <div className="relative h-full w-full overflow-hidden rounded-md bg-stone-100">
+                <Image
+                  src={primaryImage!.cloudinary_url}
+                  alt={primaryImage.alt_text ?? artwork.title}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className={`${isHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
+                  priority={priority}
+                />
+              </div>
             </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-stone-100">

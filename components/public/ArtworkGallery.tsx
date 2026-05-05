@@ -52,15 +52,17 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
           isActiveHorizontal ? "aspect-[4/3]" : "aspect-[3/4]",
         ].join(" ")}
       >
-        <div className="absolute inset-2 overflow-hidden rounded-lg">
-          <Image
-            src={active.cloudinary_url}
-            alt={active.alt_text ?? title}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className={`${isActiveHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03]`}
-            priority
-          />
+        <div className="h-full w-full p-2">
+          <div className="relative h-full w-full overflow-hidden rounded-lg bg-stone-100">
+            <Image
+              src={active.cloudinary_url}
+              alt={active.alt_text ?? title}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className={`${isActiveHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03]`}
+              priority
+            />
+          </div>
         </div>
       </div>
 

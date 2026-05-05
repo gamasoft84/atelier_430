@@ -48,13 +48,15 @@ function CategoryCard({ category, count, thumbnail }: CategoryCardProps) {
       ].join(" ")}
     >
       {thumbnail ? (
-        <Image
-          src={thumbnail.url}
-          alt={meta.label}
-          fill
-          sizes="(max-width: 640px) 50vw, 25vw"
-          className="object-cover scale-[0.98] transition-transform duration-500 group-hover:scale-100"
-        />
+        <div className="relative h-full w-full">
+          <Image
+            src={thumbnail.url}
+            alt={meta.label}
+            fill
+            sizes="(max-width: 640px) 50vw, 25vw"
+            className="object-cover scale-[0.98] transition-transform duration-500 group-hover:scale-100"
+          />
+        </div>
       ) : (
         <div className="absolute inset-0 bg-stone-200" />
       )}
