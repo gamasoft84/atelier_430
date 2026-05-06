@@ -19,6 +19,7 @@ export interface ArtworkRow {
   width_cm: number | null
   height_cm: number | null
   price_locked: boolean
+  stock_quantity: number
   created_at: string
   artwork_images: {
     cloudinary_url: string
@@ -231,8 +232,15 @@ export default function ArtworksTable({
 
                   {/* Code */}
                   <td className="px-4 py-3">
-                    <span className="font-mono text-xs text-stone-500 bg-stone-100 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs text-stone-500 bg-stone-100 px-2 py-0.5 rounded inline-flex items-center gap-1">
                       {artwork.code}
+                      {artwork.category === "religiosa" &&
+                        artwork.status === "available" &&
+                        (artwork.stock_quantity ?? 1) > 1 && (
+                          <span className="text-[10px] font-semibold text-green-700 tabular-nums">
+                            ×{artwork.stock_quantity}
+                          </span>
+                        )}
                     </span>
                   </td>
 
@@ -314,6 +322,8 @@ export default function ArtworksTable({
                       code={artwork.code}
                       title={artwork.title}
                       status={artwork.status}
+                      category={artwork.category}
+                      stockQuantity={artwork.stock_quantity ?? 1}
                     />
                   </td>
                 </tr>

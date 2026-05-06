@@ -25,6 +25,8 @@ export interface Artwork {
   manually_edited: boolean
   category: ArtworkCategory
   subcategory: string | null
+  /** Unidades en inventario (religiosa puede ser >1; resto del catálogo suele ser 1). */
+  stock_quantity: number
   tags: string[] | null
   technique: string | null
   width_cm: number | null
@@ -68,6 +70,7 @@ export interface ArtworkFormData {
   description: string
   category: ArtworkCategory
   subcategory: string
+  stock_quantity?: number
   technique: string
   width_cm: number | null
   height_cm: number | null
@@ -90,6 +93,8 @@ export interface SellArtworkData {
   sold_channel: SoldChannel
   sold_buyer_name: string
   sold_buyer_contact: string
+  /** Solo religiosa con stock > 1; si se omite se vende todo el remanente. */
+  quantity_sold?: number
 }
 
 export interface ReserveArtworkData {

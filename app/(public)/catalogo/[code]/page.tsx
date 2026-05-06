@@ -193,6 +193,14 @@ export default async function ArtworkDetailPage({
           {/* Code */}
           <p className="text-xs text-stone-400 font-mono">{artwork.code}</p>
 
+          {artwork.category === "religiosa" &&
+            !isSold &&
+            artwork.stock_quantity > 1 && (
+            <p className="text-sm text-stone-600">
+              {artwork.stock_quantity} piezas disponibles
+            </p>
+          )}
+
           {/* Price */}
           {showPrices && !isSold ? (
             artwork.show_price && artwork.price ? (

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import type { ArtworkFormData, SellArtworkData, ReserveArtworkData, ArtworkCategory } from "@/types/artwork"
+import { normalizeStockQuantityForSave } from "@/lib/stock"
 import type { UploadedImage } from "@/hooks/useImageUpload"
 
 // ─── Code generation ──────────────────────────────────────────────────────
@@ -49,11 +50,13 @@ export async function createArtwork(
   if (!user) return { error: "No autorizado" }
 
   const code = await generateArtworkCode(formData.category)
+  const stockQty = normalizeStockQuantityForSave(formData.category, formData.stock_quantity)
 
   const { data: artwork, error: artworkError } = await supabase
     .from("artworks")
     .insert({
       code,
+      stock_quantity: stockQty,
       title: formData.title,
       artist: formData.artist?.trim() ? formData.artist.trim() : null,
       description: formData.description || null,
@@ -130,9 +133,12 @@ export async function updateArtwork(
 
   if (!user) return { error: "No autorizado" }
 
+  const stockQty = normalizeStockQuantityForSave(formData.category, formData.stock_quantity)
+
   const { error: artworkError } = await supabase
     .from("artworks")
     .update({
+      stock_quantity: stockQty,
       title: formData.title,
       artist: formData.artist?.trim() ? formData.artist.trim() : null,
       description: formData.description || null,
@@ -254,10 +260,58 @@ export async function sellArtwork(
 
   if (!user) return { error: "No autorizado" }
 
+  const { data: row, error: fetchErr } = await supabase
+    .from("artworks")
+    .select("id, status, category, stock_quantity")
+    .eq("id", id)
+    .single()
+
+  if (fetchErr || !row) return { error: "Obra no encontrada" }
+  if (row.status === "sold") return { error: "La obra ya está marcada como vendida" }
+
+  let qty =
+    row.category === "religiosa"
+      ? data.quantity_sold ?? row.stock_quantity ?? 1
+      : row.stock_quantity ?? 1
+  const maxQty = Math.max(1, row.stock_quantity ?? 1)
+  qty = Math.min(Math.max(1, Math.floor(qty)), maxQty)
+
+  const remaining = (row.stock_quantity ?? 1) - qty
+
+  if (remaining > 0) {
+    const { error } = await supabase
+      .from("artworks")
+      .update({
+        stock_quantity: remaining,
+      })
+      .eq("id", id)
+
+    if (error) return { error: error.message }
+
+    await supabase.from("admin_activity").insert({
+      action: "artwork_partial_sale",
+      entity_type: "artwork",
+      entity_id: id,
+      details: {
+        quantity_sold: qty,
+        sold_price: data.sold_price,
+        sold_channel: data.sold_channel,
+        remaining_stock: remaining,
+      },
+    })
+
+    revalidatePath("/admin/obras")
+    revalidatePath("/admin/reportes")
+    revalidatePath("/admin/dashboard")
+    revalidatePath("/catalogo")
+    return { success: true }
+  }
+
   const { error } = await supabase
     .from("artworks")
     .update({
       status: "sold",
+      stock_quantity: 0,
       sold_at: new Date().toISOString(),
       sold_price: data.sold_price,
       sold_channel: data.sold_channel,
@@ -272,11 +326,14 @@ export async function sellArtwork(
     action: "artwork_sold",
     entity_type: "artwork",
     entity_id: id,
-    details: { sold_price: data.sold_price, sold_channel: data.sold_channel },
+    details: { sold_price: data.sold_price, sold_channel: data.sold_channel, quantity_sold: qty },
   })
 
   revalidatePath("/admin/obras")
   revalidatePath("/admin/ventas")
+  revalidatePath("/admin/reportes")
+  revalidatePath("/admin/dashboard")
+  revalidatePath("/catalogo")
   return { success: true }
 }
 

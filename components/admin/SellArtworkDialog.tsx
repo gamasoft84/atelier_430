@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -32,19 +32,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { sellArtwork } from "@/app/actions/artworks"
-
-// ─── Schema ───────────────────────────────────────────────────────────────
-
-const sellSchema = z.object({
-  sold_price: z.coerce.number().min(1, "El precio debe ser mayor a 0"),
-  sold_channel: z.enum(["whatsapp", "presencial", "mercadolibre", "marketplace", "instagram", "otro"]),
-  sold_buyer_name: z.string().max(100).optional().default(""),
-  sold_buyer_contact: z.string().max(200).optional().default(""),
-})
-
-type SellFormValues = z.infer<typeof sellSchema>
-
-// ─── Channel labels ────────────────────────────────────────────────────────
+import type { ArtworkCategory } from "@/types/artwork"
 
 const CHANNEL_LABELS: Record<string, string> = {
   whatsapp:    "WhatsApp",
@@ -55,12 +43,36 @@ const CHANNEL_LABELS: Record<string, string> = {
   otro:        "Otro",
 }
 
-// ─── Component ────────────────────────────────────────────────────────────
+function buildSellSchema(maxUnits: number, allowQuantity: boolean) {
+  return z
+    .object({
+      sold_price: z.coerce.number().min(1, "El precio debe ser mayor a 0"),
+      sold_channel: z.enum(["whatsapp", "presencial", "mercadolibre", "marketplace", "instagram", "otro"]),
+      sold_buyer_name: z.string().max(100).optional().default(""),
+      sold_buyer_contact: z.string().max(200).optional().default(""),
+      quantity_sold: z.coerce.number().int().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (!allowQuantity) return
+      const q = data.quantity_sold ?? maxUnits
+      if (q < 1 || q > maxUnits) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Indica entre 1 y ${maxUnits} unidades.`,
+          path: ["quantity_sold"],
+        })
+      }
+    })
+}
+
+type SellFormValues = z.infer<ReturnType<typeof buildSellSchema>>
 
 interface SellArtworkDialogProps {
   artworkId: string
   artworkCode: string
   artworkTitle: string
+  category: ArtworkCategory
+  stockQuantity: number
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess?: () => void
@@ -70,6 +82,8 @@ export default function SellArtworkDialog({
   artworkId,
   artworkCode,
   artworkTitle,
+  category,
+  stockQuantity,
   open,
   onOpenChange,
   onSuccess,
@@ -77,27 +91,56 @@ export default function SellArtworkDialog({
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
 
+  const allowQuantity = category === "religiosa" && stockQuantity > 1
+  const maxUnits = Math.max(1, stockQuantity)
+
+  const schema = useMemo(
+    () => buildSellSchema(maxUnits, allowQuantity),
+    [maxUnits, allowQuantity]
+  )
+
   const form = useForm<SellFormValues>({
-    resolver: zodResolver(sellSchema) as never,
+    resolver: zodResolver(schema) as never,
     defaultValues: {
       sold_price: undefined,
       sold_channel: undefined,
       sold_buyer_name: "",
       sold_buyer_contact: "",
+      quantity_sold: maxUnits,
     },
   })
+
+  useEffect(() => {
+    if (!open) return
+    form.reset({
+      sold_price: undefined,
+      sold_channel: undefined,
+      sold_buyer_name: "",
+      sold_buyer_contact: "",
+      quantity_sold: maxUnits,
+    })
+  }, [open, maxUnits, form])
 
   const handleSubmit = async (values: SellFormValues) => {
     setIsSaving(true)
     try {
+      const quantitySold =
+        allowQuantity ? values.quantity_sold ?? maxUnits : undefined
+
       const result = await sellArtwork(artworkId, {
         sold_price: values.sold_price,
         sold_channel: values.sold_channel,
         sold_buyer_name: values.sold_buyer_name ?? "",
         sold_buyer_contact: values.sold_buyer_contact ?? "",
+        quantity_sold: quantitySold,
       })
       if ("error" in result) throw new Error(result.error)
-      toast.success(`Obra ${artworkCode} marcada como vendida`)
+
+      if (allowQuantity && quantitySold !== undefined && quantitySold < maxUnits) {
+        toast.success(`Venta registrada: ${quantitySold} unidad(es). Quedan ${maxUnits - quantitySold} en stock.`)
+      } else {
+        toast.success(`Obra ${artworkCode} marcada como vendida`)
+      }
       form.reset()
       onOpenChange(false)
       onSuccess?.()
@@ -115,18 +158,46 @@ export default function SellArtworkDialog({
         <DialogHeader>
           <DialogTitle>Registrar venta</DialogTitle>
           <DialogDescription>
-            Esta acción cambia el estado de la obra a "Vendida".
+            {allowQuantity
+              ? "Indica cuántas piezas vendiste y el precio total de esta venta. Las ventas parciales no aparecen en la página de Ventas hasta agotar el stock."
+              : "Esta acción marca la referencia como vendida."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="rounded-lg bg-stone-50 border border-stone-200 px-4 py-3 mb-2">
           <p className="text-xs text-stone-500 font-mono mb-0.5">{artworkCode}</p>
           <p className="text-sm font-medium text-carbon-900 line-clamp-2">{artworkTitle}</p>
+          {allowQuantity && (
+            <p className="text-xs text-stone-500 mt-2">
+              Stock actual: <span className="font-semibold text-carbon-900">{maxUnits}</span> piezas
+            </p>
+          )}
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {/* Precio de venta */}
+            {allowQuantity && (
+              <FormField
+                control={form.control}
+                name="quantity_sold"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unidades vendidas <span className="text-error">*</span></FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={maxUnits}
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="sold_price"
@@ -150,7 +221,6 @@ export default function SellArtworkDialog({
               )}
             />
 
-            {/* Canal */}
             <FormField
               control={form.control}
               name="sold_channel"
@@ -174,7 +244,6 @@ export default function SellArtworkDialog({
               )}
             />
 
-            {/* Comprador (opcional) */}
             <FormField
               control={form.control}
               name="sold_buyer_name"
@@ -189,7 +258,6 @@ export default function SellArtworkDialog({
               )}
             />
 
-            {/* Contacto (opcional) */}
             <FormField
               control={form.control}
               name="sold_buyer_contact"

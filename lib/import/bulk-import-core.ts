@@ -206,6 +206,7 @@ export async function runBulkImportCore(
       .from("artworks")
       .insert({
         code,
+        stock_quantity: 1,
         title,
         description,
         category,

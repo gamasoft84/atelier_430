@@ -53,6 +53,19 @@ const artworkSchema = z.object({
   location_in_storage: z.string().max(50).optional().default(""),
   admin_notes: z.string().max(500).optional().default(""),
   tags: z.string().optional().default(""),
+  stock_quantity: z.coerce.number().int().min(0).max(99999).default(1),
+}).superRefine((data, ctx) => {
+  if (
+    data.category === "religiosa" &&
+    data.status === "available" &&
+    (data.stock_quantity ?? 0) < 1
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "En disponible debe haber al menos 1 unidad.",
+      path: ["stock_quantity"],
+    })
+  }
 })
 
 type ArtworkFormValues = z.infer<typeof artworkSchema>
@@ -62,9 +75,12 @@ type ArtworkFormValues = z.infer<typeof artworkSchema>
 const SUBCATEGORIES: Record<string, Array<{ value: string; label: string }>> = {
   religiosa: [
     { value: "virgen_guadalupe",   label: "Virgen de Guadalupe" },
+    { value: "virgen_guadalupe_tepeyac", label: "Virgen de Guadalupe (Tepeyac)" },
     { value: "san_charbel",        label: "San Charbel" },
     { value: "san_judas_tadeo",    label: "San Judas Tadeo" },
+    { value: "san_judas_tadeo_dorado_grande", label: "San Judas Tadeo (marco grande dorado)" },
     { value: "san_miguel_arcangel",label: "San Miguel Arcángel" },
+    { value: "san_miguel_arcangel_dorado", label: "San Miguel Arcángel (marco grande dorado)" },
     { value: "la_sagrada_familia", label: "La Sagrada Familia" },
     { value: "la_ultima_cena",     label: "La Última Cena" },
   ],
@@ -193,11 +209,13 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       location_in_storage: artwork?.location_in_storage ?? "",
       admin_notes: artwork?.admin_notes ?? "",
       tags: artwork?.tags?.join(", ") ?? "",
+      stock_quantity: artwork?.stock_quantity ?? 1,
     },
   })
 
   const watchCategory = form.watch("category")
   const watchHasFrame = form.watch("has_frame")
+  const watchStatus = form.watch("status")
 
   // Load configurable defaults for create mode (from `site_settings`)
   useEffect(() => {
@@ -246,6 +264,12 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       cancelled = true
     }
   }, [artwork, createDefaultsLoaded, form, mode])
+
+  useEffect(() => {
+    if (watchCategory !== "religiosa") {
+      form.setValue("stock_quantity", 1, { shouldDirty: false })
+    }
+  }, [watchCategory, form])
 
   // Auto-fill defaults when switching to "religiosa" in create mode
   useEffect(() => {
@@ -434,6 +458,10 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       price_locked: values.price_locked,
       status: asDraft ? ("hidden" as const) : values.status,
       tags: values.tags ? values.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+      stock_quantity:
+        values.category === "religiosa"
+          ? Math.max(0, Math.min(99999, Math.round(values.stock_quantity ?? 1)))
+          : 1,
     }
 
     try {
@@ -611,6 +639,34 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   )}
                 />
               </div>
+
+              {watchCategory === "religiosa" && (
+                <FormField
+                  control={form.control}
+                  name="stock_quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Unidades en stock</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={99999}
+                          disabled={watchStatus === "sold"}
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value === "" ? 0 : e.target.value)}
+                        />
+                      </FormControl>
+                      <p className="text-xs text-stone-500">
+                        Misma imagen con varias piezas físicas. Precio listado es por pieza. Si la obra está
+                        vendida, el stock queda en 0.
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

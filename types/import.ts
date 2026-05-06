@@ -18,7 +18,7 @@ export const EXCEL_COLUMN_DEFS = [
   },
   {
     key: "subcategory", label: "subcategory", required: false, width: 18,
-    tooltip: "Subcategoría (opcional). Religiosa: virgen_guadalupe, san_charbel… Nacional: Paisaje rural…",
+    tooltip: "Subcategoría (opcional). Religiosa: virgen_guadalupe, virgen_guadalupe_tepeyac, san_judas_tadeo_dorado_grande, san_miguel_arcangel_dorado, san_charbel… Nacional: Paisaje rural…",
   },
   {
     key: "technique", label: "technique", required: true, width: 14,

@@ -17,16 +17,25 @@ import SellArtworkDialog from "@/components/admin/SellArtworkDialog"
 import DeleteArtworkDialog from "@/components/admin/DeleteArtworkDialog"
 import SocialPostModal from "@/components/admin/SocialPostModal"
 import { toggleArtworkVisibility } from "@/app/actions/artworks"
-import type { ArtworkStatus } from "@/types/artwork"
+import type { ArtworkCategory, ArtworkStatus } from "@/types/artwork"
 
 interface ArtworkActionsMenuProps {
   id: string
   code: string
   title: string
   status: ArtworkStatus
+  category: ArtworkCategory
+  stockQuantity: number
 }
 
-export default function ArtworkActionsMenu({ id, code, title, status }: ArtworkActionsMenuProps) {
+export default function ArtworkActionsMenu({
+  id,
+  code,
+  title,
+  status,
+  category,
+  stockQuantity,
+}: ArtworkActionsMenuProps) {
   const router = useRouter()
   const [sellOpen,   setSellOpen]   = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -117,6 +126,8 @@ export default function ArtworkActionsMenu({ id, code, title, status }: ArtworkA
         artworkId={id}
         artworkCode={code}
         artworkTitle={title}
+        category={category}
+        stockQuantity={stockQuantity}
         open={sellOpen}
         onOpenChange={setSellOpen}
       />

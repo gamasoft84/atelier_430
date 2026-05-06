@@ -2,12 +2,16 @@ import { createClient } from "@/lib/supabase/server"
 
 export interface InventoryStats {
   total: number
+  /** Referencias (filas) con estado disponible. */
   available: number
+  /** Piezas físicas en stock (suma de stock_quantity en disponibles). */
+  availablePieces: number
   reserved: number
   sold: number
   hidden: number
   draft: number
-  inventoryValue: number   // suma price obras available
+  /** Suma (precio listado × unidades) obras disponibles. */
+  inventoryValue: number
 }
 
 export interface SalesStat {
@@ -47,15 +51,25 @@ export async function getInventoryStats(): Promise<InventoryStats> {
 
   const { data, error } = await supabase
     .from("artworks")
-    .select("status, price")
+    .select("status, price, stock_quantity")
 
   if (error || !data) {
-    return { total: 0, available: 0, reserved: 0, sold: 0, hidden: 0, draft: 0, inventoryValue: 0 }
+    return {
+      total: 0,
+      available: 0,
+      availablePieces: 0,
+      reserved: 0,
+      sold: 0,
+      hidden: 0,
+      draft: 0,
+      inventoryValue: 0,
+    }
   }
 
   const stats: InventoryStats = {
     total: data.length,
     available: 0,
+    availablePieces: 0,
     reserved: 0,
     sold: 0,
     hidden: 0,
@@ -67,7 +81,9 @@ export async function getInventoryStats(): Promise<InventoryStats> {
     const s = row.status as string
     if (s === "available") {
       stats.available++
-      stats.inventoryValue += Number(row.price ?? 0)
+      const units = Math.max(0, Number((row as { stock_quantity?: number }).stock_quantity ?? 1))
+      stats.availablePieces += units
+      stats.inventoryValue += Number(row.price ?? 0) * units
     } else if (s === "reserved") stats.reserved++
     else if (s === "sold")      stats.sold++
     else if (s === "hidden")    stats.hidden++

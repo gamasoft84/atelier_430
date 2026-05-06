@@ -87,6 +87,14 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
           <p className="font-display text-sm leading-snug text-carbon-900 line-clamp-2 group-hover:text-gold-500 transition-colors">
             {artwork.title}
           </p>
+          {artwork.category === "religiosa" &&
+            artwork.status === "available" &&
+            typeof artwork.stock_quantity === "number" &&
+            artwork.stock_quantity > 1 && (
+            <p className="text-xs text-stone-500">
+              {artwork.stock_quantity} disponibles
+            </p>
+          )}
           {showPrice && artwork.show_price && artwork.price ? (
             <p className="text-sm font-semibold text-carbon-900">
               ${artwork.price.toLocaleString("es-MX")} MXN

@@ -14,6 +14,7 @@ export interface Database {
           manually_edited: boolean
           category: "religiosa" | "nacional" | "europea" | "moderna"
           subcategory: string | null
+          stock_quantity: number
           tags: string[] | null
           technique: string | null
           width_cm: number | null
@@ -53,6 +54,7 @@ export interface Database {
           manually_edited?: boolean
           category: "religiosa" | "nacional" | "europea" | "moderna"
           subcategory?: string | null
+          stock_quantity?: number
           tags?: string[] | null
           technique?: string | null
           width_cm?: number | null
@@ -92,6 +94,7 @@ export interface Database {
           manually_edited?: boolean
           category?: "religiosa" | "nacional" | "europea" | "moderna"
           subcategory?: string | null
+          stock_quantity?: number
           tags?: string[] | null
           technique?: string | null
           width_cm?: number | null

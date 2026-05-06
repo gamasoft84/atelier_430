@@ -83,7 +83,8 @@ async function DashboardContent() {
           Hola, {displayName}
         </h1>
         <p className="text-stone-500 text-sm mt-1">
-          {inv.total} obras en inventario · {inv.available} disponibles
+          {inv.total} referencias en inventario · {inv.availablePieces} piezas disponibles ·{" "}
+          {inv.available} referencias listadas
         </p>
       </div>
 
@@ -100,8 +101,8 @@ async function DashboardContent() {
           />
           <MetricCard
             label="Disponibles"
-            value={fmt(inv.available)}
-            sub={fmtMXN(inv.inventoryValue) + " MXN"}
+            value={fmt(inv.availablePieces)}
+            sub={`${fmt(inv.available)} ref. · ${fmtMXN(inv.inventoryValue)} MXN`}
             icon={Eye}
             accent
           />

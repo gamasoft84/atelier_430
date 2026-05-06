@@ -38,7 +38,7 @@ Analiza la imagen adjunta y genera:
 
 3. **Tags** (5-8 palabras clave para SEO): conceptos visuales y temáticos.
 
-4. **Subcategoría**: elige la más adecuada según la categoría indicada. Para "religiosa" usa exactamente uno de estos valores (slug): virgen_guadalupe, san_charbel, san_judas_tadeo, san_miguel_arcangel, la_sagrada_familia, la_ultima_cena. Para "nacional": Paisaje rural, Paisaje marino, Paisaje urbano, Puente, Montaña, Bosque, u Otro. Para "europea": Paisaje clásico, Retrato, Bodegón, Mitología, Arquitectura, u Otro. Para "moderna": Abstracto, Geométrico, Expresionista, Minimalista, u Otro.
+4. **Subcategoría**: elige la más adecuada según la categoría indicada. Para "religiosa" usa exactamente uno de estos valores (slug): virgen_guadalupe, virgen_guadalupe_tepeyac, san_charbel, san_judas_tadeo, san_judas_tadeo_dorado_grande, san_miguel_arcangel, san_miguel_arcangel_dorado, la_sagrada_familia, la_ultima_cena. Para "nacional": Paisaje rural, Paisaje marino, Paisaje urbano, Puente, Montaña, Bosque, u Otro. Para "europea": Paisaje clásico, Retrato, Bodegón, Mitología, Arquitectura, u Otro. Para "moderna": Abstracto, Geométrico, Expresionista, Minimalista, u Otro.
 
 5. **Sugerencia de precio** (solo si se proporcionó el costo de adquisición): propón tres niveles de precio en MXN basado en la tabla de referencia, el tamaño, la técnica, si tiene marco, y la categoría. Los precios deben ser múltiplos de 50 y realistas para el mercado mexicano de decoración.
    - aggressive: precio mínimo para venta rápida (margen ≥ 2.5x costo si hay costo, o extremo inferior de tabla)
@@ -108,7 +108,7 @@ CATEGORÍAS PERMITIDAS (elige exactamente una):
 SUBCATEGORÍAS — elige el valor exacto según la categoría, o null si no encaja ninguno:
 
 Si category = "religiosa" (usa slug exacto):
-- "virgen_guadalupe", "san_charbel", "san_judas_tadeo", "san_miguel_arcangel", "la_sagrada_familia", "la_ultima_cena"
+- "virgen_guadalupe", "virgen_guadalupe_tepeyac", "san_charbel", "san_judas_tadeo", "san_judas_tadeo_dorado_grande", "san_miguel_arcangel", "san_miguel_arcangel_dorado", "la_sagrada_familia", "la_ultima_cena"
 
 Si category = "nacional":
 - "Paisaje rural", "Paisaje marino", "Paisaje urbano", "Puente", "Montaña", "Bosque"

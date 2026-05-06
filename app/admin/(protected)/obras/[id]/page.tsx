@@ -34,8 +34,10 @@ export default async function EditarObraPage({
 
   if (!raw) notFound()
 
+  const r = raw as Artwork & { stock_quantity?: number }
   const artwork: Artwork = {
     ...raw,
+    stock_quantity: typeof r.stock_quantity === "number" ? r.stock_quantity : 1,
     images: (raw.artwork_images as ArtworkImage[]).sort((a, b) => a.position - b.position),
   }
 
