@@ -31,15 +31,17 @@ interface WSWithValidations extends ExcelJS.Worksheet {
 
 // ─── Example rows ──────────────────────────────────────────────────────────
 
-const EXAMPLE_ROWS = [
-  ["R-001", "religiosa", "virgen_guadalupe", "impresion", 55, 65, "si", "pino", "dorado", 200, 850, "A-1", ""],
-  ["N-001", "nacional", "Paisaje rural", "oleo", 60, 80, "no", "", "", 150, "", "B-2", "Paisaje verde"],
-  ["E-001", "europea", "Retrato", "oleo", 70, 90, "si", "importada_europea", "café", 300, 1800, "C-1", ""],
-]
-
 // ─── Build Obras sheet ─────────────────────────────────────────────────────
 
-function buildObrasSheet(wb: ExcelJS.Workbook) {
+function buildObrasSheet(
+  wb: ExcelJS.Workbook,
+  exampleCodes: { r: string; n: string; e: string }
+) {
+  const EXAMPLE_ROWS = [
+    [exampleCodes.r, "religiosa", "virgen_guadalupe", "impresion", 55, 65, "si", "pino", "dorado", 200, 850, "A-1", ""],
+    [exampleCodes.n, "nacional", "Paisaje rural", "oleo", 60, 80, "no", "", "", 150, "", "B-2", "Paisaje verde"],
+    [exampleCodes.e, "europea", "Retrato", "oleo", 70, 90, "si", "importada_europea", "café", 300, 1800, "C-1", ""],
+  ]
   const ws = wb.addWorksheet("Obras", {
     views: [{ state: "frozen", ySplit: 1 }],
     pageSetup: { fitToPage: true, fitToWidth: 1, orientation: "landscape" },
@@ -262,13 +264,96 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 })
   }
 
+  const getNextCode = async (prefix: string): Promise<string> => {
+    const { data } = await supabase
+      .from("artworks")
+      .select("code")
+      .like("code", `${prefix}-%`)
+      .order("code", { ascending: false })
+      .limit(1)
+    const last = data?.[0]?.code
+    if (!last) return `${prefix}-001`
+    const lastNum = parseInt(last.split("-")[1] ?? "0", 10)
+    const next = String(lastNum + 1).padStart(3, "0")
+    return `${prefix}-${next}`
+  }
+
+  const [nextR, nextN, nextE, nextM] = await Promise.all([
+    getNextCode("R"),
+    getNextCode("N"),
+    getNextCode("E"),
+    getNextCode("M"),
+  ])
+
   const wb = new ExcelJS.Workbook()
   wb.creator  = "Atelier 430"
   wb.created  = new Date()
   wb.modified = new Date()
 
-  buildObrasSheet(wb)
-  buildInstruccionesSheet(wb)
+  buildObrasSheet(wb, { r: nextR, n: nextN, e: nextE })
+  // Pass next-code hints into instructions
+  ;(() => {
+    const ws = wb.addWorksheet("Instrucciones")
+    ws.getColumn("A").width = 85
+
+    const addTitle = (text: string, row: number) => {
+      const cell = ws.getCell(`A${row}`)
+      cell.value = text
+      cell.font  = { bold: true, size: 13, color: { argb: CARBON_ARGB }, name: "Calibri" }
+      cell.fill  = solidFill(GOLD_LIGHT)
+      cell.alignment = { vertical: "middle", indent: 1 }
+      ws.getRow(row).height = 24
+    }
+
+    const addLine = (
+      text: string,
+      row: number,
+      opts?: { bold?: boolean; indent?: number; color?: string }
+    ) => {
+      const cell = ws.getCell(`A${row}`)
+      cell.value = text
+      cell.font  = {
+        size: 10, name: "Calibri",
+        bold: opts?.bold ?? false,
+        color: { argb: opts?.color ?? "FF374151" },
+      }
+      cell.alignment = { vertical: "middle", indent: opts?.indent ?? 1, wrapText: true }
+      ws.getRow(row).height = 16
+    }
+
+    let r = 1
+    addTitle("INSTRUCCIONES — ATELIER 430 IMPORTACION MASIVA", r++)
+    r++
+    addLine("1. COMO LLENAR LA PLANTILLA", r++, { bold: true })
+    addLine("Llena la hoja 'Obras'. No modifiques los encabezados (fila 1).", r++, { indent: 2 })
+    addLine("Columnas con fondo DORADO son obligatorias. Las de fondo NEGRO son opcionales.", r++, { indent: 2 })
+    addLine("Elimina las 3 filas de ejemplo (filas 2-4) antes de subir.", r++, { indent: 2 })
+    addLine("Maximo 500 obras por importacion.", r++, { indent: 2 })
+    r++
+    addLine("2. CONVENCION DE CODIGOS", r++, { bold: true })
+    addLine(`R-001, R-002 ...  Obras religiosas (siguiente sugerido: ${nextR})`, r++, { indent: 2 })
+    addLine(`N-001, N-002 ...  Obras nacionales (paisajes) (siguiente sugerido: ${nextN})`, r++, { indent: 2 })
+    addLine(`E-001, E-002 ...  Obras europeas (reproducciones) (siguiente sugerido: ${nextE})`, r++, { indent: 2 })
+    addLine(`M-001, M-002 ...  Obras modernas (siguiente sugerido: ${nextM})`, r++, { indent: 2 })
+    addLine("Los codigos deben ser unicos en el archivo y no repetir codigos ya existentes en el sistema.", r++, { indent: 2 })
+    r++
+    addLine("3. FOTOS PARA EL PASO 3 (Session 2)", r++, { bold: true })
+    addLine("Guarda las fotos con el nombre:  CODIGO-NUMERO.jpg  ej: R-001-1.jpg, R-001-2.jpg", r++, { indent: 2 })
+    addLine("La primera foto (sufijo -1) sera la imagen principal.", r++, { indent: 2 })
+    addLine("Agrupa todas las fotos en un ZIP para subirlas en el Paso 3.", r++, { indent: 2 })
+    r++
+    addLine("4. TABLA DE PRECIOS DE REFERENCIA (MXN)", r++, { bold: true })
+    addLine("Tamano < 50 cm    Sin marco: $800-$1,500    Con marco: $1,200-$2,200", r++, { indent: 2 })
+    addLine("Tamano 50-80 cm   Sin marco: $1,500-$3,500  Con marco: $2,500-$5,000", r++, { indent: 2 })
+    addLine("Tamano > 80 cm    Sin marco: $3,000-$7,000  Con marco: $5,000-$12,000", r++, { indent: 2 })
+    addLine("Las obras religiosas y reproducciones europeas tienen mayor margen.", r++, { indent: 2 })
+    r++
+    addLine("5. LO QUE HACE LA IA AUTOMATICAMENTE (Session 2)", r++, { bold: true })
+    addLine("Genera titulo y descripcion para cada obra segun su foto.", r++, { indent: 2 })
+    addLine("Sugiere subcategoria si no la capturaste.", r++, { indent: 2 })
+    addLine("Sugiere precio en 3 niveles (agresivo / recomendado / premium).", r++, { indent: 2 })
+    addLine("Todo queda como borrador para que lo revises antes de publicar.", r++, { indent: 2 })
+  })()
   buildResumenSheet(wb)
 
   const buffer = await wb.xlsx.writeBuffer()
