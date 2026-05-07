@@ -3,6 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { ArtworkPublic } from "@/types/artwork"
+import { getCloudinaryUrl } from "@/lib/cloudinary/transform"
 import ArtworkSizeBadge from "@/components/public/ArtworkSizeBadge"
 import WishlistHeartButton from "@/components/public/WishlistHeartButton"
 
@@ -28,7 +29,11 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
   const primaryImage =
     artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
   const hasRenderableImage =
-    typeof primaryImage?.cloudinary_url === "string" && primaryImage.cloudinary_url.length > 0
+    typeof primaryImage?.cloudinary_public_id === "string" && primaryImage.cloudinary_public_id.length > 0
+
+  const cardSrc = hasRenderableImage
+    ? getCloudinaryUrl(primaryImage!.cloudinary_public_id, "card")
+    : ""
 
   const badge = STATUS_BADGE[artwork.status]
   const isSold = artwork.status === "sold"
@@ -49,13 +54,14 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
             <div className="h-full w-full p-2">
               <div className="relative h-full w-full overflow-hidden rounded-md bg-stone-100">
                 <Image
-                  src={primaryImage!.cloudinary_url}
-                  alt={primaryImage.alt_text ?? artwork.title}
+                  src={cardSrc}
+                  alt={primaryImage!.alt_text ?? artwork.title}
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   className={`${isHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}
                   priority={priority}
                   loading={priority ? "eager" : "lazy"}
+                  unoptimized
                 />
               </div>
             </div>

@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { motion, type Variants } from "framer-motion"
 import type { ArtworkCategory } from "@/types/artwork"
+import { injectCloudinaryTransform } from "@/lib/cloudinary/transform"
 
 const CATEGORY_META: Record<ArtworkCategory, { label: string; description: string; color: string }> = {
   religiosa: {
@@ -53,11 +54,12 @@ function CategoryCard({ category, count, thumbnail }: CategoryCardProps) {
       {thumbnail ? (
         <div className="relative h-full w-full">
           <Image
-            src={thumbnail.url}
+            src={injectCloudinaryTransform(thumbnail.url, "card")}
             alt={meta.label}
             fill
             sizes="(max-width: 640px) 50vw, 25vw"
             className="object-cover scale-[0.98] transition-transform duration-500 group-hover:scale-100"
+            unoptimized
           />
         </div>
       ) : (

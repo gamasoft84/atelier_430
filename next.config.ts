@@ -2,6 +2,8 @@ import type { NextConfig } from "next"
 import { PERMISSIONS_POLICY } from "./lib/http/permissions-policy"
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+
   // Import masivo (ZIP + JSON): defaults Next son 1 MB (Server Actions) y ~10 MB (proxy).
   experimental: {
     serverActions: {
@@ -9,6 +11,9 @@ const nextConfig: NextConfig = {
     },
     proxyClientMaxBodySize: "100mb",
   },
+
+  // Cloudinary sirve f_auto (WebP/AVIF) + q_auto directamente.
+  // unoptimized en los componentes evita el doble-proxy /_next/image.
   images: {
     remotePatterns: [
       {
@@ -18,11 +23,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
   async headers() {
     return [
       {
         source: "/:path*",
         headers: [{ key: "Permissions-Policy", value: PERMISSIONS_POLICY }],
+      },
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
       },
     ]
   },
