@@ -7,6 +7,7 @@ import {
   ImageIcon,
   FileSpreadsheet,
   ClipboardList,
+  Images,
   ShoppingBag,
   Mail,
   BarChart3,
@@ -25,7 +26,8 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/obras", label: "Obras", icon: ImageIcon, exactMatch: true },
-  { href: "/admin/obras/importar", label: "Importar masivo", icon: FileSpreadsheet, sub: true },
+  { href: "/admin/obras/carga-masiva", label: "Carga de fotos", icon: Images, sub: true },
+  { href: "/admin/obras/importar", label: "Importar Excel+ZIP", icon: FileSpreadsheet, sub: true },
   { href: "/admin/obras/importar/revision", label: "Revisar borradores", icon: ClipboardList, sub: true },
   { href: "/admin/ventas", label: "Ventas", icon: ShoppingBag },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
@@ -46,7 +48,8 @@ export default function AdminSidebar() {
     if (item.exactMatch) {
       return pathname === item.href || (
         pathname.startsWith(item.href + "/") &&
-        !pathname.startsWith("/admin/obras/importar")
+        !pathname.startsWith("/admin/obras/importar") &&
+        !pathname.startsWith("/admin/obras/carga-masiva")
       )
     }
     return pathname === item.href || pathname.startsWith(item.href + "/")
