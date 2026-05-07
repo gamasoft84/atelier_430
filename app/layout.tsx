@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Sora, Playfair_Display } from "next/font/google"
 import { WishlistProvider } from "@/components/public/WishlistProvider"
 import { Toaster } from "@/components/ui/sonner"
@@ -15,6 +15,12 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   display: "swap",
 })
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+}
 
 export const metadata: Metadata = {
   title: {

@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useTransition } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES } from "@/lib/constants"
 import type { SizeOption, MarcoOption } from "@/types/catalog"
@@ -239,29 +240,41 @@ export default function FilterSidebar({
       </aside>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-carbon-900/40"
-            onClick={onMobileClose}
-          />
-          {/* Drawer */}
-          <div className="relative ml-auto w-72 max-w-[85vw] h-full bg-white shadow-xl flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-              <p className="font-semibold text-carbon-900">Filtros</p>
-              <button
-                type="button"
-                onClick={onMobileClose}
-                className="p-1.5 rounded-lg hover:bg-stone-100 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto px-5 py-5">{content}</div>
+      <AnimatePresence>
+        {mobileOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 flex">
+            {/* Backdrop */}
+            <motion.div
+              className="absolute inset-0 bg-carbon-900/40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={onMobileClose}
+            />
+            {/* Drawer */}
+            <motion.div
+              className="relative ml-auto w-72 max-w-[85vw] h-full bg-white shadow-xl flex flex-col"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.25, ease: "easeOut" }}
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
+                <p className="font-semibold text-carbon-900">Filtros</p>
+                <button
+                  type="button"
+                  onClick={onMobileClose}
+                  className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-5 py-5">{content}</div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </>
   )
 }

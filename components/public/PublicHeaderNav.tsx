@@ -10,13 +10,13 @@ export default function PublicHeaderNav() {
     <nav className="flex items-center gap-5 sm:gap-6">
       <Link
         href="/catalogo"
-        className="text-sm font-medium text-stone-600 hover:text-carbon-900 transition-colors"
+        className="py-2 px-1 text-sm font-medium text-stone-600 hover:text-carbon-900 transition-colors"
       >
         Catálogo
       </Link>
       <Link
         href="/favoritos"
-        className="text-sm font-medium text-stone-600 hover:text-carbon-900 transition-colors inline-flex items-center gap-1.5"
+        className="py-2 px-1 text-sm font-medium text-stone-600 hover:text-carbon-900 transition-colors inline-flex items-center gap-1.5"
       >
         Favoritos
         {ready && count > 0 ? (

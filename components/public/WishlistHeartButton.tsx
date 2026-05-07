@@ -18,7 +18,7 @@ export default function WishlistHeartButton({
   const { has, toggle, ready } = useWishlist()
   const active = has(artworkId)
   const iconSize = size === "md" ? "h-6 w-6" : "h-4 w-4"
-  const pad = size === "md" ? "p-2.5" : "p-1.5"
+  const pad = size === "md" ? "p-2.5" : "p-2"
 
   return (
     <button

@@ -109,19 +109,19 @@ function Breadcrumb({
   title: string
 }) {
   return (
-    <nav className="flex items-center gap-1.5 text-xs text-stone-400 mb-6">
-      <Link href="/" className="hover:text-stone-600 transition-colors">Inicio</Link>
-      <span>/</span>
-      <Link href="/catalogo" className="hover:text-stone-600 transition-colors">Catálogo</Link>
-      <span>/</span>
+    <nav className="flex items-center gap-1.5 text-xs text-stone-400 mb-6 overflow-hidden">
+      <Link href="/" className="hover:text-stone-600 transition-colors whitespace-nowrap">Inicio</Link>
+      <span className="flex-shrink-0">/</span>
+      <Link href="/catalogo" className="hover:text-stone-600 transition-colors whitespace-nowrap">Catálogo</Link>
+      <span className="flex-shrink-0">/</span>
       <Link
         href={`/catalogo?categoria=${category}`}
-        className="hover:text-stone-600 transition-colors capitalize"
+        className="hover:text-stone-600 transition-colors capitalize whitespace-nowrap"
       >
         {CATEGORY_LABEL[category] ?? category}
       </Link>
-      <span>/</span>
-      <span className="text-stone-600 line-clamp-1">{title}</span>
+      <span className="flex-shrink-0">/</span>
+      <span className="text-stone-600 truncate min-w-0">{title}</span>
     </nav>
   )
 }
