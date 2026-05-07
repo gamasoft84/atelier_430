@@ -8,6 +8,7 @@ import ArtworkWishlistButton from "@/components/public/ArtworkWishlistButton"
 import WhatsAppButton from "@/components/public/WhatsAppButton"
 import ShareButton from "@/components/public/ShareButton"
 import RelatedArtworks from "@/components/public/RelatedArtworks"
+import ViewTracker from "@/components/public/ViewTracker"
 import {
   getArtworkByCode,
   getRelatedArtworks,
@@ -157,6 +158,7 @@ export default async function ArtworkDetailPage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <ViewTracker artworkId={artwork.id} />
       <Breadcrumb category={artwork.category} title={artwork.title} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
@@ -286,6 +288,7 @@ export default async function ArtworkDetailPage({
           {!isSold && (
             <div className="space-y-3 pt-2">
               <WhatsAppButton
+                artworkId={artwork.id}
                 code={artwork.code}
                 title={artwork.title}
                 widthCm={artwork.width_cm}

@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { WHATSAPP_NUMBER, SITE_URL } from "@/lib/constants"
+import { trackWhatsAppClick } from "@/app/actions/tracking"
 
 interface WhatsAppButtonProps {
+  artworkId: string
   code: string
   title: string
   widthCm: number | null
@@ -13,6 +15,7 @@ interface WhatsAppButtonProps {
 }
 
 export default function WhatsAppButton({
+  artworkId,
   code,
   title,
   widthCm,
@@ -50,6 +53,7 @@ export default function WhatsAppButton({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => { trackWhatsAppClick(artworkId).catch(() => {}) }}
       className="flex items-center justify-center gap-3 w-full py-3.5 rounded-lg font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
       style={{ backgroundColor: "#25D366" }}
     >

@@ -368,7 +368,16 @@ export interface Database {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      increment_artwork_views: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      increment_artwork_whatsapp_clicks: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }
