@@ -1,8 +1,10 @@
-import Link from "next/link"
 import { Suspense } from "react"
-import ArtworkCard from "@/components/public/ArtworkCard"
+import HeroText from "@/components/public/HeroText"
+import FeaturedGrid from "@/components/public/FeaturedGrid"
+import FadeIn from "@/components/public/motion/FadeIn"
 import CategorySection from "@/components/public/CategorySection"
 import NewsletterForm from "@/components/public/NewsletterForm"
+import Link from "next/link"
 import {
   getAvailableCount,
   getFeaturedArtworks,
@@ -34,23 +36,7 @@ function HeroSection() {
             <HeroCounter />
           </Suspense>
 
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl text-carbon-900 leading-tight">
-            Arte curado,
-            <br />
-            <span className="text-gold-500">listo para tu hogar</span>
-          </h1>
-
-          <p className="text-base sm:text-lg text-stone-600 leading-relaxed max-w-lg">
-            Piezas seleccionadas de paisajes nacionales, arte religioso,
-            reproducciones europeas y arte moderno. Todas listas para colgar.
-          </p>
-
-          <Link
-            href="/catalogo"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gold-500 text-white font-semibold text-sm hover:bg-gold-400 transition-colors"
-          >
-            Ver catálogo
-          </Link>
+          <HeroText />
         </div>
       </div>
 
@@ -72,7 +58,7 @@ async function FeaturedSection() {
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <FadeIn className="flex items-center justify-between mb-8">
         <h2 className="font-display text-2xl sm:text-3xl text-carbon-900">Obras destacadas</h2>
         <Link
           href="/catalogo"
@@ -80,18 +66,9 @@ async function FeaturedSection() {
         >
           Ver todas
         </Link>
-      </div>
+      </FadeIn>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-        {artworks.map((artwork, i) => (
-          <ArtworkCard
-            key={artwork.id}
-            artwork={artwork}
-            showPrice={showPrices}
-            priority={i < 4}
-          />
-        ))}
-      </div>
+      <FeaturedGrid artworks={artworks} showPrices={showPrices} />
     </section>
   )
 }
@@ -117,7 +94,7 @@ export default async function HomePage() {
 
       {/* Newsletter */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="max-w-xl">
+        <FadeIn className="max-w-xl">
           <p className="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-3">
             Mantente al tanto
           </p>
@@ -129,7 +106,7 @@ export default async function HomePage() {
             Sin spam — solo arte.
           </p>
           <NewsletterForm />
-        </div>
+        </FadeIn>
       </section>
     </>
   )

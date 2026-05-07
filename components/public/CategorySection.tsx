@@ -1,5 +1,8 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
+import { motion, type Variants } from "framer-motion"
 import type { ArtworkCategory } from "@/types/artwork"
 
 const CATEGORY_META: Record<ArtworkCategory, { label: string; description: string; color: string }> = {
@@ -81,20 +84,45 @@ interface CategorySectionProps {
   }>
 }
 
+const container: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+}
+
+const cardVariant: Variants = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+}
+
 export default function CategorySection({ stats }: CategorySectionProps) {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <h2 className="font-display text-2xl sm:text-3xl text-carbon-900 mb-8">Por categoría</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.h2
+        className="font-display text-2xl sm:text-3xl text-carbon-900 mb-8"
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        Por categoría
+      </motion.h2>
+      <motion.div
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+        variants={container}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-60px" }}
+      >
         {stats.map(({ category, count, thumbnail }) => (
-          <CategoryCard
-            key={category}
-            category={category}
-            count={count}
-            thumbnail={thumbnail}
-          />
+          <motion.div key={category} variants={cardVariant}>
+            <CategoryCard
+              category={category}
+              count={count}
+              thumbnail={thumbnail}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   )
 }

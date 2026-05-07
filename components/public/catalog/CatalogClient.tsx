@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { motion, AnimatePresence, type Variants } from "framer-motion"
 import ArtworkCard from "@/components/public/ArtworkCard"
 import FilterSidebar from "@/components/public/catalog/FilterSidebar"
 import CatalogToolbar from "@/components/public/catalog/CatalogToolbar"
@@ -10,6 +11,16 @@ import EmptyState from "@/components/public/catalog/EmptyState"
 import type { ArtworkPublic } from "@/types/artwork"
 import type { CatalogParams, SortOption, SizeOption, MarcoOption } from "@/types/catalog"
 import { hasActiveFilters } from "@/types/catalog"
+
+const gridVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.04 } },
+}
+
+const cardVariant: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+}
 
 interface CatalogClientProps {
   artworks: ArtworkPublic[]
@@ -78,13 +89,21 @@ export default function CatalogClient({
           />
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {artworks.map((artwork, i) => (
-                <div key={artwork.id}>
-                  <ArtworkCard artwork={artwork} showPrice={showPrices} priority={i < 8} />
-                </div>
-              ))}
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={page}
+                className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
+                variants={gridVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {artworks.map((artwork, i) => (
+                  <motion.div key={artwork.id} variants={cardVariant}>
+                    <ArtworkCard artwork={artwork} showPrice={showPrices} priority={i < 8} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
 
             <Pagination page={page} totalPages={totalPages} buildHref={buildHref} />
           </>
