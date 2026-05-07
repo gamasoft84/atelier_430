@@ -12,6 +12,7 @@ interface WhatsAppButtonProps {
   heightCm: number | null
   price: number | null
   showPrice: boolean
+  primaryImageUrl?: string | null
 }
 
 export default function WhatsAppButton({
@@ -22,6 +23,7 @@ export default function WhatsAppButton({
   heightCm,
   price,
   showPrice,
+  primaryImageUrl,
 }: WhatsAppButtonProps) {
   const [pageUrl, setPageUrl] = useState(SITE_URL)
 

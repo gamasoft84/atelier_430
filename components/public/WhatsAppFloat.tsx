@@ -1,11 +1,39 @@
 "use client"
 
 import { WHATSAPP_NUMBER, WHATSAPP_DEFAULT_MESSAGE } from "@/lib/constants"
+import { useArtworkWhatsApp } from "@/contexts/ArtworkWhatsAppContext"
+import { trackWhatsAppClick } from "@/app/actions/tracking"
+
+function buildArtworkMessage(data: NonNullable<ReturnType<typeof useArtworkWhatsApp>["data"]>) {
+  const dimensions =
+    data.widthCm && data.heightCm
+      ? `${data.widthCm} x ${data.heightCm}`
+      : data.widthCm
+        ? `${data.widthCm}`
+        : data.heightCm
+          ? `${data.heightCm}`
+          : null
+
+  return [
+    `¡Hola Atelier 430! Me interesa esta obra:`,
+    `🎨 ${data.code} - "${data.title}"`,
+    dimensions ? `📐 ${dimensions} cm` : null,
+    data.showPrice && data.price ? `💰 $${data.price.toLocaleString("es-MX")} MXN` : null,
+    `🔗 ${data.pageUrl}`,
+    ``,
+    `¿Sigue disponible?`,
+  ]
+    .filter((l) => l !== null)
+    .join("\n")
+}
 
 export default function WhatsAppFloat() {
+  const { data } = useArtworkWhatsApp()
+
   if (!WHATSAPP_NUMBER) return null
 
-  const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_DEFAULT_MESSAGE)}`
+  const message = data ? buildArtworkMessage(data) : WHATSAPP_DEFAULT_MESSAGE
+  const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 
   return (
     <a
@@ -13,6 +41,7 @@ export default function WhatsAppFloat() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"
+      onClick={data ? () => { trackWhatsAppClick(data.artworkId).catch(() => {}) } : undefined}
       className="fixed right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-110 active:scale-95"
       style={{
         backgroundColor: "#25D366",

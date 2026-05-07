@@ -7,6 +7,7 @@ import ArtworkSizeBadge from "@/components/public/ArtworkSizeBadge"
 import ArtworkARViewerIsland from "@/components/public/ArtworkARViewerIsland"
 import ArtworkWishlistButton from "@/components/public/ArtworkWishlistButton"
 import WhatsAppButton from "@/components/public/WhatsAppButton"
+import ArtworkWhatsAppSetter from "@/components/public/ArtworkWhatsAppSetter"
 import ShareButton from "@/components/public/ShareButton"
 import RelatedArtworks from "@/components/public/RelatedArtworks"
 import ViewTracker from "@/components/public/ViewTracker"
@@ -156,10 +157,22 @@ export default async function ArtworkDetailPage({
 
   const isSold = artwork.status === "sold"
   const images = artwork.images ?? []
+  const primaryImage = images.find((i) => i.is_primary) ?? images[0] ?? null
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <ViewTracker artworkId={artwork.id} />
+      <ArtworkWhatsAppSetter
+        artworkId={artwork.id}
+        code={artwork.code}
+        title={artwork.title}
+        price={artwork.price}
+        showPrice={showPrices && artwork.show_price}
+        widthCm={artwork.width_cm}
+        heightCm={artwork.height_cm}
+        primaryImageUrl={primaryImage?.cloudinary_url ?? null}
+        pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
+      />
       <Breadcrumb category={artwork.category} title={artwork.title} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
@@ -296,6 +309,7 @@ export default async function ArtworkDetailPage({
                 heightCm={artwork.height_cm}
                 price={artwork.price}
                 showPrice={showPrices && artwork.show_price}
+                primaryImageUrl={primaryImage?.cloudinary_url ?? null}
               />
               <div className="grid grid-cols-2 gap-3">
                 <ShareButton title={artwork.title} />
