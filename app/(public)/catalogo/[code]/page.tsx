@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import { FileDown } from "lucide-react"
 import type { Metadata } from "next"
 import ArtworkGallery from "@/components/public/ArtworkGallery"
 import ArtworkSizeBadge from "@/components/public/ArtworkSizeBadge"
@@ -296,7 +297,18 @@ export default async function ArtworkDetailPage({
                 price={artwork.price}
                 showPrice={showPrices && artwork.show_price}
               />
-              <ShareButton title={artwork.title} />
+              <div className="grid grid-cols-2 gap-3">
+                <ShareButton title={artwork.title} />
+                <a
+                  href={`/api/artworks/${artwork.code}/ficha`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-stone-200 text-sm font-medium text-stone-600 hover:border-stone-300 hover:text-carbon-900 transition-colors"
+                >
+                  <FileDown size={15} />
+                  Ficha PDF
+                </a>
+              </div>
             </div>
           )}
 
@@ -305,7 +317,18 @@ export default async function ArtworkDetailPage({
               <p className="text-sm text-stone-500 text-center">
                 Esta obra ya fue vendida. Contáctanos para ver obras similares.
               </p>
-              <ShareButton title={artwork.title} />
+              <div className="grid grid-cols-2 gap-3">
+                <ShareButton title={artwork.title} />
+                <a
+                  href={`/api/artworks/${artwork.code}/ficha`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-stone-200 text-sm font-medium text-stone-600 hover:border-stone-300 hover:text-carbon-900 transition-colors"
+                >
+                  <FileDown size={15} />
+                  Ficha PDF
+                </a>
+              </div>
             </div>
           )}
         </div>
