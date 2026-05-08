@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useCallback } from "react"
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
 import Image from "next/image"
 import { useDropzone } from "react-dropzone"
 import {
@@ -138,23 +138,46 @@ function SortableThumb({ image, onRemove, onSetPrimary }: ThumbProps) {
 
 // ─── Main Component ────────────────────────────────────────────────────────
 
+export interface ImageUploaderHandle {
+  clearPendingDeletes: () => void
+}
+
 export interface ImageUploaderProps {
   uploadId: string
   onChange: (images: UploadedImage[]) => void
+  /** Notifica los public_id de imágenes ya en BD que el usuario quitó del form pero aún no se borran de Cloudinary */
+  onPendingDeletesChange?: (publicIds: string[]) => void
   initialImages?: Omit<UploadedImage, "tempId" | "status" | "progress" | "file_name">[]
   maxImages?: number
   className?: string
 }
 
-export default function ImageUploader({
-  uploadId,
-  onChange,
-  initialImages,
-  maxImages = MAX_IMAGES_PER_ARTWORK,
-  className,
-}: ImageUploaderProps) {
-  const { images, isUploading, canAddMore, doneImages, upload, remove, reorder, setPrimary, initialize } =
-    useImageUpload()
+const ImageUploader = forwardRef<ImageUploaderHandle, ImageUploaderProps>(function ImageUploader(
+  {
+    uploadId,
+    onChange,
+    onPendingDeletesChange,
+    initialImages,
+    maxImages = MAX_IMAGES_PER_ARTWORK,
+    className,
+  },
+  ref,
+) {
+  const {
+    images,
+    isUploading,
+    canAddMore,
+    doneImages,
+    pendingDeletes,
+    upload,
+    remove,
+    reorder,
+    setPrimary,
+    initialize,
+    clearPendingDeletes,
+  } = useImageUpload()
+
+  useImperativeHandle(ref, () => ({ clearPendingDeletes }), [clearPendingDeletes])
 
   // Initialize with existing images (edit mode) — only on first mount
   const initializedRef = useRef(false)
@@ -169,6 +192,10 @@ export default function ImageUploader({
   const onChangeRef = useRef(onChange)
   useEffect(() => { onChangeRef.current = onChange }, [onChange])
   useEffect(() => { onChangeRef.current(doneImages) }, [doneImages])
+
+  const onPendingDeletesChangeRef = useRef(onPendingDeletesChange)
+  useEffect(() => { onPendingDeletesChangeRef.current = onPendingDeletesChange }, [onPendingDeletesChange])
+  useEffect(() => { onPendingDeletesChangeRef.current?.(pendingDeletes) }, [pendingDeletes])
 
   // ── File handling ─────────────────────────────────────────────────────────
 
@@ -320,4 +347,6 @@ export default function ImageUploader({
       )}
     </div>
   )
-}
+})
+
+export default ImageUploader

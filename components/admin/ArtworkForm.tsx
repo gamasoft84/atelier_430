@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
-import ImageUploader from "@/components/admin/ImageUploader"
+import ImageUploader, { type ImageUploaderHandle } from "@/components/admin/ImageUploader"
 import { createArtwork, updateArtwork } from "@/app/actions/artworks"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES } from "@/lib/constants"
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client"
@@ -148,6 +148,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [images, setImages] = useState<UploadedImage[]>([])
+  const [pendingDeletes, setPendingDeletes] = useState<string[]>([])
+  const uploaderRef = useRef<ImageUploaderHandle>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [aiGenerated, setAiGenerated] = useState(false)
@@ -284,6 +286,10 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
 
   const handleImagesChange = useCallback((imgs: UploadedImage[]) => {
     setImages(imgs)
+  }, [])
+
+  const handlePendingDeletesChange = useCallback((ids: string[]) => {
+    setPendingDeletes(ids)
   }, [])
 
   // ── AI classification (step 1) ──────────────────────────────────────────
@@ -466,8 +472,10 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
 
     try {
       if (mode === "edit" && artwork) {
-        const result = await updateArtwork(artwork.id, formData, images)
+        const result = await updateArtwork(artwork.id, formData, images, pendingDeletes)
         if ("error" in result) throw new Error(result.error)
+        // BD ya está consistente: el server action ya disparó los deletes a Cloudinary
+        uploaderRef.current?.clearPendingDeletes()
         toast.success("Obra actualizada")
         router.push("/admin/obras")
       } else {
@@ -538,8 +546,10 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                 <p className="text-sm text-stone-500 mt-0.5">Sube hasta 5 fotos. La primera se usará como portada.</p>
               </div>
               <ImageUploader
+                ref={uploaderRef}
                 uploadId={uploadId}
                 onChange={handleImagesChange}
+                onPendingDeletesChange={handlePendingDeletesChange}
                 initialImages={artwork?.images?.map((img) => ({
                   cloudinary_url: img.cloudinary_url,
                   cloudinary_public_id: img.cloudinary_public_id,

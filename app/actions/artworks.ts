@@ -124,7 +124,11 @@ export async function createArtwork(
 export async function updateArtwork(
   id: string,
   formData: ArtworkFormData,
-  images: UploadedImage[]
+  images: UploadedImage[],
+  /** Imágenes que estaban en BD y el usuario quitó del form. Se borran de Cloudinary
+   *  solo después de que el commit en BD haya tenido éxito, para no dejar inconsistencia
+   *  si el guardado falla o el usuario cancela en algún punto previo. */
+  pendingDeletes: string[] = []
 ): Promise<{ success: true } | { error: string }> {
   const supabase = await createClient()
   const {
@@ -182,6 +186,27 @@ export async function updateArtwork(
 
     const { error: imgError } = await supabase.from("artwork_images").insert(imageRows)
     if (imgError) return { error: "Error al actualizar las imágenes" }
+  }
+
+  // BD ya está consistente. Ahora sí borrar de Cloudinary los assets que el usuario
+  // quitó en el form pero que aún existían (sólo public_ids que no estén en `images`,
+  // por si el usuario los volvió a agregar / restauró el orden).
+  if (pendingDeletes.length > 0) {
+    const keptIds = new Set(images.map((i) => i.cloudinary_public_id))
+    const toActuallyDelete = pendingDeletes.filter((id) => !keptIds.has(id))
+    if (toActuallyDelete.length > 0) {
+      const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+      // Fire-and-forget: si Cloudinary falla, BD ya está bien y solo queda asset huérfano
+      Promise.all(
+        toActuallyDelete.map((publicId) =>
+          fetch(`${origin}/api/upload`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ public_id: publicId }),
+          }).catch(console.error),
+        ),
+      )
+    }
   }
 
   await supabase.from("admin_activity").insert({

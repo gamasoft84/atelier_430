@@ -16,6 +16,13 @@ export interface UploadedImage {
   status: "uploading" | "done" | "error"
   progress: number
   error?: string
+  /**
+   * true si la imagen viene de BD (initialize). En ese caso el remove() difiere el
+   * delete a Cloudinary hasta que el padre llame a clearPendingDeletes() tras un
+   * guardado exitoso. Para imágenes subidas en esta sesión el delete es inmediato
+   * (no hay nada que dejar inconsistente en BD).
+   */
+  isFromInitial?: boolean
 }
 
 export interface ValidationError {
@@ -109,16 +116,21 @@ export interface UseImageUploadReturn {
   isUploading: boolean
   canAddMore: boolean
   doneImages: UploadedImage[]
+  /** public_ids de imágenes existentes en BD que el usuario removió en el form pero aún no se borran de Cloudinary */
+  pendingDeletes: string[]
   upload: (files: File[], uploadId: string) => Promise<ValidationError[]>
   remove: (tempId: string) => void
   reorder: (activeId: string, overId: string) => void
   setPrimary: (tempId: string) => void
   initialize: (existing: Omit<UploadedImage, "tempId" | "status" | "progress" | "file_name">[]) => void
+  /** Limpia la cola de pendingDeletes (llamar tras guardar exitoso si Cloudinary ya se notificó del delete) */
+  clearPendingDeletes: () => void
   reset: () => void
 }
 
 export function useImageUpload(): UseImageUploadReturn {
   const [images, _setImages] = useState<UploadedImage[]>([])
+  const [pendingDeletes, setPendingDeletes] = useState<string[]>([])
   // Mirror state in a ref so callbacks always see latest value without stale closures
   const imagesRef = useRef<UploadedImage[]>([])
 
@@ -186,9 +198,11 @@ export function useImageUpload(): UseImageUploadReturn {
       await Promise.all(
         validFiles.map(async (file, i) => {
           const tempId = newImages[i].tempId
-          const position = currentDone + i
           const folder = `atelier430/artworks/${uploadId}`
-          const publicId = `${uploadId}-${position + 1}`
+          // Sufijo aleatorio (no basado en posición) para evitar colisiones en edición:
+          // borrar una imagen del medio + subir otra reusaba un public_id ya en uso
+          // y sobreescribía el asset existente.
+          const publicId = `${uploadId}-${crypto.randomUUID().slice(0, 8)}`
           const timestamp = Math.round(Date.now() / 1000)
 
           try {
@@ -245,13 +259,22 @@ export function useImageUpload(): UseImageUploadReturn {
       setImages((prev) => {
         const image = prev.find((i) => i.tempId === tempId)
 
-        // Fire-and-forget delete from Cloudinary
         if (image?.status === "done" && image.cloudinary_public_id) {
-          fetch("/api/upload", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ public_id: image.cloudinary_public_id }),
-          }).catch(console.error)
+          if (image.isFromInitial) {
+            // Imagen ya existe en BD: diferir el delete hasta que el padre confirme
+            // que el guardado fue exitoso. Si el usuario cancela, BD y Cloudinary
+            // quedan consistentes (la imagen sigue ahí).
+            setPendingDeletes((q) =>
+              q.includes(image.cloudinary_public_id) ? q : [...q, image.cloudinary_public_id]
+            )
+          } else {
+            // Imagen subida en esta sesión: aún no está en BD, podemos borrarla ya.
+            fetch("/api/upload", {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ public_id: image.cloudinary_public_id }),
+            }).catch(console.error)
+          }
         }
 
         const filtered = prev.filter((i) => i.tempId !== tempId)
@@ -312,24 +335,32 @@ export function useImageUpload(): UseImageUploadReturn {
           file_name: img.cloudinary_public_id.split("/").pop() ?? "",
           status: "done",
           progress: 100,
+          isFromInitial: true,
         }))
       setImages(initialized)
     },
     [setImages]
   )
 
-  const reset = useCallback(() => setImages([]), [setImages])
+  const clearPendingDeletes = useCallback(() => setPendingDeletes([]), [])
+
+  const reset = useCallback(() => {
+    setImages([])
+    setPendingDeletes([])
+  }, [setImages])
 
   return {
     images,
     isUploading,
     canAddMore,
     doneImages,
+    pendingDeletes,
     upload,
     remove,
     reorder,
     setPrimary,
     initialize,
+    clearPendingDeletes,
     reset,
   }
 }
