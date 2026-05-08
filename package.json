@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "purge:dev": "node --env-file=.env scripts/purge-dev-data.mjs"
+    "purge:dev": "node --env-file=.env scripts/purge-dev-data.mjs",
+    "generate:splash": "node scripts/generate-splash.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
