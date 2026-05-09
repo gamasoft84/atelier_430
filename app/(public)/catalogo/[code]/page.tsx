@@ -11,6 +11,7 @@ import ArtworkWhatsAppSetter from "@/components/public/ArtworkWhatsAppSetter"
 import ShareButton from "@/components/public/ShareButton"
 import RelatedArtworks from "@/components/public/RelatedArtworks"
 import ViewTracker from "@/components/public/ViewTracker"
+import PhotoPreviewLauncher from "@/components/public/PhotoPreview/PhotoPreviewLauncher"
 import {
   getArtworkByCode,
   getRelatedArtworks,
@@ -296,6 +297,29 @@ export default async function ArtworkDetailPage({
                 </p>
               </div>
             )}
+
+            {primaryImage &&
+              typeof artwork.width_cm === "number" &&
+              typeof artwork.height_cm === "number" && (
+                <div className="pt-1 space-y-2">
+                  <p className="text-[11px] uppercase tracking-widest text-stone-400 font-medium">
+                    O mejor: con tu propia foto
+                  </p>
+                  <PhotoPreviewLauncher
+                    artworkId={artwork.id}
+                    artworkCode={artwork.code}
+                    title={artwork.title}
+                    widthCm={artwork.width_cm}
+                    heightCm={artwork.height_cm}
+                    artworkImageUrl={primaryImage.cloudinary_url}
+                    pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
+                  />
+                  <p className="text-[11px] text-stone-400 leading-relaxed">
+                    Sube una foto de tu pared, marca un objeto de medida conocida y la obra se
+                    escalará a su tamaño real. La foto nunca sale de tu dispositivo.
+                  </p>
+                </div>
+              )}
           </section>
 
           {/* CTAs */}
