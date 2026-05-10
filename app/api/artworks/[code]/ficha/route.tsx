@@ -61,10 +61,10 @@ const s = StyleSheet.create({
   headerDate:  { fontSize: 7, color: STONE, textAlign: "right" },
 
   // Body — two-column layout
-  body: { flexDirection: "row", gap: 20, flex: 1 },
+  body: { flexDirection: "row", gap: 22, flex: 1 },
 
   // Left column: image
-  imageCol: { width: "45%", flexShrink: 0 },
+  imageCol: { width: "52%", flexShrink: 0 },
   image: { width: "100%", borderRadius: 4 },
   imagePlaceholder: {
     width: "100%",
@@ -107,6 +107,8 @@ const s = StyleSheet.create({
   specRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 6 },
   specLabel: { fontSize: 7, color: STONE, width: 70, letterSpacing: 0.5 },
   specValue: { fontSize: 8, color: CARBON, flex: 1, lineHeight: 1.4 },
+  specValueCol: { flex: 1, flexDirection: "column" },
+  specValueText: { fontSize: 8, color: CARBON, lineHeight: 1.4 },
 
   // Price
   priceBlock: { marginTop: 4 },
@@ -152,14 +154,23 @@ function pdfImageUrl(url: string): string {
   const marker = "/image/upload/"
   const i = url.indexOf(marker)
   if (i === -1) return url
-  return url.slice(0, i + marker.length) + "w_800,c_limit,q_80,f_jpg/" + url.slice(i + marker.length)
+  // 1200px en c_limit es suficiente para A4 a 150dpi sin reventar el peso del PDF.
+  return url.slice(0, i + marker.length) + "w_1200,c_limit,q_85,f_jpg/" + url.slice(i + marker.length)
 }
 
-function dims(a: ArtworkPublic): string {
+function innerDims(a: ArtworkPublic): string {
   if (a.width_cm && a.height_cm) return `${a.width_cm} × ${a.height_cm} cm`
   if (a.width_cm) return `${a.width_cm} cm`
   if (a.height_cm) return `${a.height_cm} cm`
   return "—"
+}
+
+function outerDims(a: ArtworkPublic): string | null {
+  if (!a.has_frame) return null
+  if (a.frame_outer_width_cm && a.frame_outer_height_cm) {
+    return `${a.frame_outer_width_cm} × ${a.frame_outer_height_cm} cm`
+  }
+  return null
 }
 
 function frameDesc(a: ArtworkPublic): string {
@@ -182,8 +193,7 @@ function ArtworkFicha({
   const img = artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
   const imgUrl = img?.cloudinary_url ? pdfImageUrl(img.cloudinary_url) : null
 
-  const isHorizontal =
-    img?.width && img?.height && img.width > img.height
+  const outer = outerDims(artwork)
 
   return (
     <Document
@@ -203,13 +213,12 @@ function ArtworkFicha({
 
         {/* Body */}
         <View style={s.body}>
-          {/* Left — image */}
+          {/* Left — image
+              Sin aspectRatio: @react-pdf/renderer respeta el tamaño natural de
+              la imagen (con `width: 100%` el alto se calcula proporcionalmente). */}
           <View style={s.imageCol}>
             {imgUrl ? (
-              <PdfImage
-                src={imgUrl}
-                style={[s.image, { aspectRatio: isHorizontal ? "4/3" : "3/4" }]}
-              />
+              <PdfImage src={imgUrl} style={s.image} />
             ) : (
               <View style={s.imagePlaceholder} />
             )}
@@ -235,7 +244,14 @@ function ArtworkFicha({
             </View>
             <View style={s.specRow}>
               <Text style={s.specLabel}>Medidas</Text>
-              <Text style={s.specValue}>{dims(artwork)}</Text>
+              <View style={s.specValueCol}>
+                <Text style={s.specValueText}>
+                  {outer ? `Obra: ${innerDims(artwork)}` : innerDims(artwork)}
+                </Text>
+                {outer ? (
+                  <Text style={s.specValueText}>Con marco: {outer}</Text>
+                ) : null}
+              </View>
             </View>
             <View style={s.specRow}>
               <Text style={s.specLabel}>Marco</Text>
@@ -282,6 +298,12 @@ function ArtworkFicha({
 }
 
 // ─── Route handler ─────────────────────────────────────────────────────────
+
+// El PDF debe reflejar siempre el estado actual de la obra en BD; sin esto
+// Next.js puede cachear el GET y devolver un PDF generado con datos viejos
+// (p. ej. sin las columnas frame_outer_*).
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export async function GET(
   _request: Request,
