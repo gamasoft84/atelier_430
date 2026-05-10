@@ -222,6 +222,24 @@ Cuando generes copy o contenido para el sitio:
 
 ---
 
+## 🛠️ Scripts utilitarios
+
+Scripts de mantenimiento y diagnóstico que viven en `scripts/`. Todos los que tocan
+Supabase/Cloudinary necesitan las credenciales en `.env`
+(`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`).
+
+| Comando | Hace |
+|---|---|
+| `npm run inspect:artwork -- <CODE>` | Imprime medidas, marco e imágenes registradas en BD para una obra (ej. `npm run inspect:artwork -- N-011`). Detecta `cloudinary_public_id` o URLs duplicadas. |
+| `npm run generate:splash` | Regenera los splash screens de iOS desde `public/icon-master-1024x1024.png` hacia `public/splash/`. |
+| `npm run purge:dev` | Borra datos de prueba en Supabase + Cloudinary. **Usa `--dry-run` primero** para ver qué tocaría sin borrar. |
+
+> Nota: `npm run inspect:artwork` requiere `--` antes del código de la obra para
+> que npm pase el argumento al script (ej. `npm run inspect:artwork -- E-006`).
+
+---
+
 ## 📚 Referencias del proyecto
 
 - `docs/design-system.md` — Documento maestro completo
