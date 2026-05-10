@@ -22,6 +22,8 @@ export interface Database {
           has_frame: boolean
           frame_material: string | null
           frame_color: string | null
+          frame_outer_width_cm: number | null
+          frame_outer_height_cm: number | null
           price: number | null
           original_price: number | null
           cost: number | null
@@ -62,6 +64,8 @@ export interface Database {
           has_frame?: boolean
           frame_material?: string | null
           frame_color?: string | null
+          frame_outer_width_cm?: number | null
+          frame_outer_height_cm?: number | null
           price?: number | null
           original_price?: number | null
           cost?: number | null
@@ -102,6 +106,8 @@ export interface Database {
           has_frame?: boolean
           frame_material?: string | null
           frame_color?: string | null
+          frame_outer_width_cm?: number | null
+          frame_outer_height_cm?: number | null
           price?: number | null
           original_price?: number | null
           cost?: number | null

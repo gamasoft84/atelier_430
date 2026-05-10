@@ -156,6 +156,13 @@ export default async function ArtworkDetailPage({
           ? `${artwork.height_cm} cm de alto`
           : null
 
+  const outerDimensions =
+    artwork.has_frame &&
+    artwork.frame_outer_width_cm &&
+    artwork.frame_outer_height_cm
+      ? `${artwork.frame_outer_width_cm} × ${artwork.frame_outer_height_cm} cm con marco`
+      : null
+
   const isSold = artwork.status === "sold"
   const images = artwork.images ?? []
   const primaryImage = images.find((i) => i.is_primary) ?? images[0] ?? null
@@ -171,6 +178,9 @@ export default async function ArtworkDetailPage({
         showPrice={showPrices && artwork.show_price}
         widthCm={artwork.width_cm}
         heightCm={artwork.height_cm}
+        hasFrame={artwork.has_frame}
+        frameOuterWidthCm={artwork.frame_outer_width_cm}
+        frameOuterHeightCm={artwork.frame_outer_height_cm}
         primaryImageUrl={primaryImage?.cloudinary_url ?? null}
         pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
       />
@@ -245,6 +255,11 @@ export default async function ArtworkDetailPage({
                   {dimensions}
                 </span>
               )}
+              {outerDimensions && (
+                <span className="px-3 py-1.5 rounded-lg bg-amber-50 border border-gold-500/20 text-xs text-stone-700">
+                  {outerDimensions}
+                </span>
+              )}
               <ArtworkSizeBadge
                 variant="chip"
                 widthCm={artwork.width_cm}
@@ -309,14 +324,23 @@ export default async function ArtworkDetailPage({
                     artworkId={artwork.id}
                     artworkCode={artwork.code}
                     title={artwork.title}
-                    widthCm={artwork.width_cm}
-                    heightCm={artwork.height_cm}
+                    widthCm={
+                      artwork.has_frame && artwork.frame_outer_width_cm
+                        ? artwork.frame_outer_width_cm
+                        : artwork.width_cm
+                    }
+                    heightCm={
+                      artwork.has_frame && artwork.frame_outer_height_cm
+                        ? artwork.frame_outer_height_cm
+                        : artwork.height_cm
+                    }
                     artworkImageUrl={primaryImage.cloudinary_url}
                     pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
                   />
                   <p className="text-[11px] text-stone-400 leading-relaxed">
-                    Sube una foto de tu pared, marca un objeto de medida conocida y la obra se
-                    escalará a su tamaño real. La foto nunca sale de tu dispositivo.
+                    {artwork.has_frame && artwork.frame_outer_width_cm
+                      ? "Se escala al tamaño exterior con marco. La foto nunca sale de tu dispositivo."
+                      : "Sube una foto de tu pared, marca un objeto de medida conocida y la obra se escalará a su tamaño real. La foto nunca sale de tu dispositivo."}
                   </p>
                 </div>
               )}
@@ -331,6 +355,9 @@ export default async function ArtworkDetailPage({
                 title={artwork.title}
                 widthCm={artwork.width_cm}
                 heightCm={artwork.height_cm}
+                hasFrame={artwork.has_frame}
+                frameOuterWidthCm={artwork.frame_outer_width_cm}
+                frameOuterHeightCm={artwork.frame_outer_height_cm}
                 price={artwork.price}
                 showPrice={showPrices && artwork.show_price}
                 primaryImageUrl={primaryImage?.cloudinary_url ?? null}

@@ -34,6 +34,10 @@ export interface Artwork {
   has_frame: boolean
   frame_material: string | null
   frame_color: string | null
+  /** Ancho total con marco (cm). NULL si no tiene marco o si aún no se midió. */
+  frame_outer_width_cm: number | null
+  /** Alto total con marco (cm). NULL si no tiene marco o si aún no se midió. */
+  frame_outer_height_cm: number | null
   price: number | null
   original_price: number | null
   cost: number | null
@@ -77,6 +81,8 @@ export interface ArtworkFormData {
   has_frame: boolean
   frame_material: string
   frame_color: string
+  frame_outer_width_cm: number | null
+  frame_outer_height_cm: number | null
   price: number | null
   original_price: number | null
   price_locked?: boolean

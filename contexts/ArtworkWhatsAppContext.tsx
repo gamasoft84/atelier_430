@@ -10,6 +10,9 @@ export interface ArtworkWhatsAppData {
   showPrice: boolean
   widthCm: number | null
   heightCm: number | null
+  hasFrame?: boolean
+  frameOuterWidthCm?: number | null
+  frameOuterHeightCm?: number | null
   primaryImageUrl: string | null
   pageUrl: string
 }

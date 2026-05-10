@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { WHATSAPP_NUMBER, SITE_URL } from "@/lib/constants"
 import { trackWhatsAppClick } from "@/app/actions/tracking"
+import { buildArtworkWhatsAppMessage } from "@/lib/whatsapp/message"
 
 interface WhatsAppButtonProps {
   artworkId: string
@@ -10,6 +11,9 @@ interface WhatsAppButtonProps {
   title: string
   widthCm: number | null
   heightCm: number | null
+  hasFrame?: boolean
+  frameOuterWidthCm?: number | null
+  frameOuterHeightCm?: number | null
   price: number | null
   showPrice: boolean
   primaryImageUrl?: string | null
@@ -21,9 +25,11 @@ export default function WhatsAppButton({
   title,
   widthCm,
   heightCm,
+  hasFrame,
+  frameOuterWidthCm,
+  frameOuterHeightCm,
   price,
   showPrice,
-  primaryImageUrl,
 }: WhatsAppButtonProps) {
   const [pageUrl, setPageUrl] = useState(SITE_URL)
 
@@ -33,22 +39,20 @@ export default function WhatsAppButton({
 
   if (!WHATSAPP_NUMBER) return null
 
-  const dimensions =
-    widthCm && heightCm ? `${widthCm} x ${heightCm}` : widthCm ? `${widthCm}` : heightCm ? `${heightCm}` : null
+  const message = buildArtworkWhatsAppMessage({
+    code,
+    title,
+    widthCm,
+    heightCm,
+    hasFrame,
+    frameOuterWidthCm,
+    frameOuterHeightCm,
+    price,
+    showPrice,
+    pageUrl,
+  })
 
-  const lines = [
-    `¡Hola Atelier 430! Me interesa esta obra:`,
-    `🎨 ${code} - "${title}"`,
-    dimensions ? `📐 ${dimensions} cm` : null,
-    showPrice && price ? `💰 $${price.toLocaleString("es-MX")} MXN` : null,
-    `🔗 ${pageUrl}`,
-    ``,
-    `¿Sigue disponible?`,
-  ]
-    .filter((l) => l !== null)
-    .join("\n")
-
-  const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines)}`
+  const href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
 
   return (
     <a

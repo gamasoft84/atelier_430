@@ -42,6 +42,8 @@ const artworkSchema = z.object({
   has_frame: z.boolean().default(false),
   frame_material: z.string().max(50).optional().default(""),
   frame_color: z.string().max(50).optional().default(""),
+  frame_outer_width_cm: z.coerce.number().min(1).max(500).nullable().optional(),
+  frame_outer_height_cm: z.coerce.number().min(1).max(500).nullable().optional(),
   price: z.coerce.number().min(0).nullable().optional(),
   original_price: z.coerce.number().min(0).nullable().optional(),
   price_locked: z.boolean().default(false),
@@ -64,6 +66,32 @@ const artworkSchema = z.object({
       code: z.ZodIssueCode.custom,
       message: "En disponible debe haber al menos 1 unidad.",
       path: ["stock_quantity"],
+    })
+  }
+
+  if (
+    data.has_frame &&
+    typeof data.width_cm === "number" &&
+    typeof data.frame_outer_width_cm === "number" &&
+    data.frame_outer_width_cm < data.width_cm
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Con marco no puede ser menor que la obra.",
+      path: ["frame_outer_width_cm"],
+    })
+  }
+
+  if (
+    data.has_frame &&
+    typeof data.height_cm === "number" &&
+    typeof data.frame_outer_height_cm === "number" &&
+    data.frame_outer_height_cm < data.height_cm
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Con marco no puede ser menor que la obra.",
+      path: ["frame_outer_height_cm"],
     })
   }
 })
@@ -198,6 +226,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
         (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.has_frame : false),
       frame_material: artwork?.frame_material ?? "",
       frame_color: artwork?.frame_color ?? "",
+      frame_outer_width_cm: artwork?.frame_outer_width_cm ?? undefined,
+      frame_outer_height_cm: artwork?.frame_outer_height_cm ?? undefined,
       price:
         artwork?.price ??
         (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.price : undefined),
@@ -272,6 +302,14 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       form.setValue("stock_quantity", 1, { shouldDirty: false })
     }
   }, [watchCategory, form])
+
+  // Si el usuario quita el marco, limpia las medidas externas (ya no aplican)
+  useEffect(() => {
+    if (!watchHasFrame) {
+      form.setValue("frame_outer_width_cm", null, { shouldDirty: false })
+      form.setValue("frame_outer_height_cm", null, { shouldDirty: false })
+    }
+  }, [watchHasFrame, form])
 
   // Auto-fill defaults when switching to "religiosa" in create mode
   useEffect(() => {
@@ -458,6 +496,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       artist: values.artist?.trim() || "",
       width_cm: values.width_cm ?? null,
       height_cm: values.height_cm ?? null,
+      frame_outer_width_cm: values.has_frame ? (values.frame_outer_width_cm ?? null) : null,
+      frame_outer_height_cm: values.has_frame ? (values.frame_outer_height_cm ?? null) : null,
       price: values.price ?? null,
       original_price: values.original_price ?? null,
       cost: values.cost ?? null,
@@ -761,31 +801,86 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                 />
 
                 {watchHasFrame && (
-                  <div className="grid grid-cols-2 gap-4 pl-7">
-                    <FormField
-                      control={form.control}
-                      name="frame_material"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Material del marco</FormLabel>
-                          <FormControl>
-                            <Input placeholder="pino, importado europeo…" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="frame_color"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Color del marco</FormLabel>
-                          <FormControl>
-                            <Input placeholder="dorado, negro, natural…" {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                  <div className="space-y-4 pl-7">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="frame_material"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Material del marco</FormLabel>
+                            <FormControl>
+                              <Input placeholder="pino, importado europeo…" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="frame_color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Color del marco</FormLabel>
+                            <FormControl>
+                              <Input placeholder="dorado, negro, natural…" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-stone-500">
+                        Medidas exteriores (con marco)
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="frame_outer_width_cm"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Ancho con marco (cm)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="70"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value === "" ? null : e.target.value)
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="frame_outer_height_cm"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Alto con marco (cm)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="90"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value === "" ? null : e.target.value)
+                                  }
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <p className="text-xs text-stone-400">
+                        Tamaño total que ocupará en la pared. Útil para que el cliente sepa si cabe.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
