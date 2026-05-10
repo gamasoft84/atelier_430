@@ -83,7 +83,7 @@ const s = StyleSheet.create({
     marginBottom: 6,
   },
   title: {
-    fontSize: 17,
+    fontSize: 14,
     color: CARBON,
     fontFamily: "Helvetica-Bold",
     lineHeight: 1.25,
@@ -109,6 +109,11 @@ const s = StyleSheet.create({
   specValue: { fontSize: 8, color: CARBON, flex: 1, lineHeight: 1.4 },
   specValueCol: { flex: 1, flexDirection: "column" },
   specValueText: { fontSize: 8, color: CARBON, lineHeight: 1.4 },
+
+  // Sub-grid para medidas: alinea verticalmente los números bajo "Obra" y "Con marco".
+  measureRow: { flexDirection: "row" },
+  measureKey: { fontSize: 8, color: CARBON, width: 58, lineHeight: 1.4 },
+  measureVal: { fontSize: 8, color: CARBON, lineHeight: 1.4 },
 
   // Price
   priceBlock: { marginTop: 4 },
@@ -245,11 +250,19 @@ function ArtworkFicha({
             <View style={s.specRow}>
               <Text style={s.specLabel}>Medidas</Text>
               <View style={s.specValueCol}>
-                <Text style={s.specValueText}>
-                  {outer ? `Obra: ${innerDims(artwork)}` : innerDims(artwork)}
-                </Text>
                 {outer ? (
-                  <Text style={s.specValueText}>Con marco: {outer}</Text>
+                  <View style={s.measureRow}>
+                    <Text style={s.measureKey}>Obra:</Text>
+                    <Text style={s.measureVal}>{innerDims(artwork)}</Text>
+                  </View>
+                ) : (
+                  <Text style={s.specValueText}>{innerDims(artwork)}</Text>
+                )}
+                {outer ? (
+                  <View style={s.measureRow}>
+                    <Text style={s.measureKey}>Con marco:</Text>
+                    <Text style={s.measureVal}>{outer}</Text>
+                  </View>
                 ) : null}
               </View>
             </View>
