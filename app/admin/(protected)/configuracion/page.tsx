@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import ArtworkCreateDefaultsSettings from "@/components/admin/settings/ArtworkCreateDefaultsSettings"
 import BulkPricingBySize from "@/components/admin/settings/BulkPricingBySize"
+import CatalogImagePreference from "@/components/admin/settings/CatalogImagePreference"
 import { getSizeGroups } from "@/app/actions/bulk-pricing"
 
 export const metadata: Metadata = {
@@ -19,6 +20,8 @@ export default async function AdminConfiguracionPage() {
       </div>
 
       <ArtworkCreateDefaultsSettings />
+
+      <CatalogImagePreference />
 
       {/* Bulk pricing */}
       <BulkPricingBySize groups={groups} />

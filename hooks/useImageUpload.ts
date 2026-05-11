@@ -12,6 +12,8 @@ export interface UploadedImage {
   height: number
   position: number
   is_primary: boolean
+  /** Imagen "para vender" (render/styled). Ortogonal a is_primary. */
+  is_premium: boolean
   file_name: string
   status: "uploading" | "done" | "error"
   progress: number
@@ -122,6 +124,8 @@ export interface UseImageUploadReturn {
   remove: (tempId: string) => void
   reorder: (activeId: string, overId: string) => void
   setPrimary: (tempId: string) => void
+  /** Toggle: si la imagen ya era premium la desmarca; si no, la marca y desmarca al resto. */
+  togglePremium: (tempId: string) => void
   initialize: (existing: Omit<UploadedImage, "tempId" | "status" | "progress" | "file_name">[]) => void
   /** Limpia la cola de pendingDeletes (llamar tras guardar exitoso si Cloudinary ya se notificó del delete) */
   clearPendingDeletes: () => void
@@ -187,6 +191,7 @@ export function useImageUpload(): UseImageUploadReturn {
         height: 0,
         position: currentDone + i,
         is_primary: currentDone === 0 && currentPending === 0 && i === 0,
+        is_premium: false,
         file_name: file.name,
         status: "uploading",
         progress: 0,
@@ -325,6 +330,22 @@ export function useImageUpload(): UseImageUploadReturn {
     [setImages]
   )
 
+  const togglePremium = useCallback(
+    (tempId: string) => {
+      setImages((prev) => {
+        const target = prev.find((i) => i.tempId === tempId)
+        // Si la imagen ya es premium, la desmarca (nadie queda como premium).
+        // Si no, la marca como premium y desmarca al resto.
+        const turningOff = target?.is_premium === true
+        return prev.map((img) => ({
+          ...img,
+          is_premium: turningOff ? false : img.tempId === tempId,
+        }))
+      })
+    },
+    [setImages]
+  )
+
   const initialize = useCallback(
     (existing: Omit<UploadedImage, "tempId" | "status" | "progress" | "file_name">[]) => {
       const initialized: UploadedImage[] = existing
@@ -359,6 +380,7 @@ export function useImageUpload(): UseImageUploadReturn {
     remove,
     reorder,
     setPrimary,
+    togglePremium,
     initialize,
     clearPendingDeletes,
     reset,

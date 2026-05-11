@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import type { ArtworkPublic } from "@/types/artwork"
 import { getCloudinaryUrl } from "@/lib/cloudinary/transform"
+import { selectShowcaseImage } from "@/lib/images/select-showcase"
 import ArtworkSizeBadge from "@/components/public/ArtworkSizeBadge"
 import WishlistHeartButton from "@/components/public/WishlistHeartButton"
 
@@ -23,23 +24,33 @@ interface ArtworkCardProps {
   artwork: ArtworkPublic
   showPrice?: boolean
   priority?: boolean
+  /**
+   * Si true, prefiere la imagen marcada como premium (render styled). El page
+   * que renderiza el listado decide leyendo `site_settings.prefer_premium_in_catalog`.
+   * Default: false, mantiene la imagen principal técnica.
+   */
+  preferPremium?: boolean
 }
 
-export default function ArtworkCard({ artwork, showPrice = true, priority = false }: ArtworkCardProps) {
-  const primaryImage =
-    artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
+export default function ArtworkCard({
+  artwork,
+  showPrice = true,
+  priority = false,
+  preferPremium = false,
+}: ArtworkCardProps) {
+  const showcase = selectShowcaseImage(artwork.images, preferPremium)
   const hasRenderableImage =
-    typeof primaryImage?.cloudinary_public_id === "string" && primaryImage.cloudinary_public_id.length > 0
+    typeof showcase?.cloudinary_public_id === "string" && showcase.cloudinary_public_id.length > 0
 
   const cardSrc = hasRenderableImage
-    ? getCloudinaryUrl(primaryImage!.cloudinary_public_id, "card")
+    ? getCloudinaryUrl(showcase!.cloudinary_public_id, "card")
     : ""
 
   const badge = STATUS_BADGE[artwork.status]
   const isSold = artwork.status === "sold"
   const isHorizontal =
-    Boolean(primaryImage?.width && primaryImage?.height) &&
-    (primaryImage!.width as number) > (primaryImage!.height as number)
+    Boolean(showcase?.width && showcase?.height) &&
+    (showcase!.width as number) > (showcase!.height as number)
 
   return (
     <div className="relative">
@@ -55,7 +66,7 @@ export default function ArtworkCard({ artwork, showPrice = true, priority = fals
               <div className="relative h-full w-full overflow-hidden rounded-md bg-stone-100">
                 <Image
                   src={cardSrc}
-                  alt={primaryImage!.alt_text ?? artwork.title}
+                  alt={showcase!.alt_text ?? artwork.title}
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   className={`${isHorizontal ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-[1.03] ${isSold ? "opacity-60" : ""}`}

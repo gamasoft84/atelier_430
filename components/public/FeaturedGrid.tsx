@@ -17,9 +17,10 @@ const card: Variants = {
 interface FeaturedGridProps {
   artworks: ArtworkPublic[]
   showPrices: boolean
+  preferPremium?: boolean
 }
 
-export default function FeaturedGrid({ artworks, showPrices }: FeaturedGridProps) {
+export default function FeaturedGrid({ artworks, showPrices, preferPremium = false }: FeaturedGridProps) {
   return (
     <motion.div
       className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
@@ -30,7 +31,12 @@ export default function FeaturedGrid({ artworks, showPrices }: FeaturedGridProps
     >
       {artworks.map((artwork, i) => (
         <motion.div key={artwork.id} variants={card}>
-          <ArtworkCard artwork={artwork} showPrice={showPrices} priority={i < 4} />
+          <ArtworkCard
+            artwork={artwork}
+            showPrice={showPrices}
+            priority={i < 4}
+            preferPremium={preferPremium}
+          />
         </motion.div>
       ))}
     </motion.div>

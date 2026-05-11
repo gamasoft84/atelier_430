@@ -9,6 +9,7 @@ import {
   getAvailableCount,
   getFeaturedArtworks,
   getCategoryStats,
+  getPreferPremiumInCatalog,
   getShowPrices,
 } from "@/lib/supabase/queries/public"
 
@@ -49,9 +50,10 @@ function HeroSection() {
 // ─── Featured artworks ─────────────────────────────────────────────────────
 
 async function FeaturedSection() {
-  const [artworks, showPrices] = await Promise.all([
+  const [artworks, showPrices, preferPremium] = await Promise.all([
     getFeaturedArtworks(8),
     getShowPrices(),
+    getPreferPremiumInCatalog(),
   ])
 
   if (artworks.length === 0) return null
@@ -68,7 +70,7 @@ async function FeaturedSection() {
         </Link>
       </FadeIn>
 
-      <FeaturedGrid artworks={artworks} showPrices={showPrices} />
+      <FeaturedGrid artworks={artworks} showPrices={showPrices} preferPremium={preferPremium} />
     </section>
   )
 }

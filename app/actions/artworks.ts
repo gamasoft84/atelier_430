@@ -100,6 +100,7 @@ export async function createArtwork(
       height: img.height,
       position: img.position,
       is_primary: img.is_primary,
+      is_premium: img.is_premium,
       alt_text: artwork.code,
     }))
 
@@ -222,6 +223,7 @@ export async function updateArtwork(
       height: img.height,
       position: img.position,
       is_primary: img.is_primary,
+      is_premium: img.is_premium,
       alt_text: formData.title,
     }))
 

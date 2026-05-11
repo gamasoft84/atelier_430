@@ -11,6 +11,8 @@ export interface ArtworkImage {
   height: number | null
   position: number
   is_primary: boolean
+  /** Imagen "premium" (render o styled) destinada a marketing/venta. */
+  is_premium: boolean
   alt_text: string | null
   created_at: string
 }

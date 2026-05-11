@@ -3,7 +3,7 @@ import { Suspense } from "react"
 import type { Metadata } from "next"
 import CatalogClient from "@/components/public/catalog/CatalogClient"
 import { getFilteredArtworks, getPriceRange } from "@/lib/supabase/queries/catalog"
-import { getShowPrices } from "@/lib/supabase/queries/public"
+import { getShowPrices, getPreferPremiumInCatalog } from "@/lib/supabase/queries/public"
 import { parseCatalogParams } from "@/types/catalog"
 import type { ArtworkCategory } from "@/types/artwork"
 
@@ -70,10 +70,11 @@ export default async function CategoryPage({
   // Force the category into parsed params (locked, non-overridable)
   const catalogParams = parseCatalogParams({ ...raw, categoria: category })
 
-  const [result, showPrices, priceRange] = await Promise.all([
+  const [result, showPrices, priceRange, preferPremium] = await Promise.all([
     getFilteredArtworks(catalogParams),
     getShowPrices(),
     getPriceRange(),
+    getPreferPremiumInCatalog(),
   ])
 
   return (
@@ -97,6 +98,7 @@ export default async function CategoryPage({
           showPrices={showPrices}
           priceRange={priceRange}
           lockedCategory={category}
+          preferPremium={preferPremium}
         />
       </Suspense>
     </div>

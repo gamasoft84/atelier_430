@@ -19,7 +19,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Star, X, Upload, ImageIcon } from "lucide-react"
+import { Star, Sparkles, X, Upload, ImageIcon } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { MAX_IMAGES_PER_ARTWORK } from "@/lib/constants"
@@ -31,9 +31,10 @@ interface ThumbProps {
   image: UploadedImage
   onRemove: (tempId: string) => void
   onSetPrimary: (tempId: string) => void
+  onTogglePremium: (tempId: string) => void
 }
 
-function SortableThumb({ image, onRemove, onSetPrimary }: ThumbProps) {
+function SortableThumb({ image, onRemove, onSetPrimary, onTogglePremium }: ThumbProps) {
   const {
     attributes,
     listeners,
@@ -54,6 +55,8 @@ function SortableThumb({ image, onRemove, onSetPrimary }: ThumbProps) {
         image.status === "done" && "cursor-grab active:cursor-grabbing",
         isDragging && "opacity-50 shadow-xl z-10 scale-105",
         image.is_primary && image.status === "done" && "ring-2 ring-gold-500",
+        image.is_premium && image.status === "done" && !image.is_primary && "ring-2 ring-amber-700",
+        image.is_primary && image.is_premium && image.status === "done" && "ring-2 ring-amber-600",
         image.status === "error" && "ring-2 ring-error"
       )}
     >
@@ -102,11 +105,20 @@ function SortableThumb({ image, onRemove, onSetPrimary }: ThumbProps) {
         <>
           <div className="absolute inset-0 bg-carbon-900/0 group-hover:bg-carbon-900/35 transition-colors duration-150" />
 
-          {image.is_primary && (
-            <div className="absolute top-1.5 left-1.5 bg-gold-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded leading-tight pointer-events-none">
-              Principal
-            </div>
-          )}
+          {/* Badges (esquina superior izquierda, apilados verticalmente) */}
+          <div className="absolute top-1.5 left-1.5 flex flex-col gap-1 pointer-events-none">
+            {image.is_primary && (
+              <div className="bg-gold-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded leading-tight">
+                Principal
+              </div>
+            )}
+            {image.is_premium && (
+              <div className="bg-amber-700 text-white text-[9px] font-bold px-1.5 py-0.5 rounded leading-tight flex items-center gap-0.5">
+                <Sparkles size={9} className="shrink-0" />
+                Premium
+              </div>
+            )}
+          </div>
 
           <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             {!image.is_primary && (
@@ -114,12 +126,26 @@ function SortableThumb({ image, onRemove, onSetPrimary }: ThumbProps) {
                 type="button"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); onSetPrimary(image.tempId) }}
-                title="Establecer como principal"
+                title="Marcar como imagen principal"
                 className="w-6 h-6 rounded bg-white/90 hover:bg-gold-500 hover:text-white text-stone-600 flex items-center justify-center transition-colors shadow-sm"
               >
                 <Star size={11} fill="currentColor" />
               </button>
             )}
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); onTogglePremium(image.tempId) }}
+              title={image.is_premium ? "Quitar marca premium" : "Marcar como imagen premium (para vender)"}
+              className={cn(
+                "w-6 h-6 rounded flex items-center justify-center transition-colors shadow-sm",
+                image.is_premium
+                  ? "bg-amber-700 text-white hover:bg-amber-800"
+                  : "bg-white/90 text-stone-600 hover:bg-amber-700 hover:text-white",
+              )}
+            >
+              <Sparkles size={11} fill={image.is_premium ? "currentColor" : "none"} />
+            </button>
             <button
               type="button"
               onPointerDown={(e) => e.stopPropagation()}
@@ -173,6 +199,7 @@ const ImageUploader = forwardRef<ImageUploaderHandle, ImageUploaderProps>(functi
     remove,
     reorder,
     setPrimary,
+    togglePremium,
     initialize,
     clearPendingDeletes,
   } = useImageUpload()
@@ -326,13 +353,31 @@ const ImageUploader = forwardRef<ImageUploaderHandle, ImageUploaderProps>(functi
           <SortableContext items={sortableIds} strategy={rectSortingStrategy}>
             <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {doneImages.map((image) => (
-                <SortableThumb key={image.tempId} image={image} onRemove={remove} onSetPrimary={setPrimary} />
+                <SortableThumb
+                  key={image.tempId}
+                  image={image}
+                  onRemove={remove}
+                  onSetPrimary={setPrimary}
+                  onTogglePremium={togglePremium}
+                />
               ))}
               {uploadingImages.map((image) => (
-                <SortableThumb key={image.tempId} image={image} onRemove={remove} onSetPrimary={setPrimary} />
+                <SortableThumb
+                  key={image.tempId}
+                  image={image}
+                  onRemove={remove}
+                  onSetPrimary={setPrimary}
+                  onTogglePremium={togglePremium}
+                />
               ))}
               {errorImages.map((image) => (
-                <SortableThumb key={image.tempId} image={image} onRemove={remove} onSetPrimary={setPrimary} />
+                <SortableThumb
+                  key={image.tempId}
+                  image={image}
+                  onRemove={remove}
+                  onSetPrimary={setPrimary}
+                  onTogglePremium={togglePremium}
+                />
               ))}
             </div>
           </SortableContext>
@@ -340,9 +385,10 @@ const ImageUploader = forwardRef<ImageUploaderHandle, ImageUploaderProps>(functi
       )}
 
       {/* Helper */}
-      {doneImages.length > 1 && (
+      {doneImages.length > 0 && (
         <p className="text-xs text-stone-400">
-          Arrastra para reordenar · ★ establece la imagen principal
+          {doneImages.length > 1 ? "Arrastra para reordenar · " : ""}
+          ★ imagen principal (técnica) · ✦ imagen premium (para vender, usada en PDF y redes)
         </p>
       )}
     </div>

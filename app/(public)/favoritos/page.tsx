@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import FavoritosPageClient from "@/components/public/favoritos/FavoritosPageClient"
-import { getShowPrices } from "@/lib/supabase/queries/public"
+import { getShowPrices, getPreferPremiumInCatalog } from "@/lib/supabase/queries/public"
 import { getWishlistArtworksForSession } from "@/lib/supabase/queries/wishlist"
 
 export const metadata: Metadata = {
@@ -20,9 +20,10 @@ export default async function FavoritosPage({
   const sharedSessionId =
     typeof list === "string" && LIST_PARAM_UUID.test(list) ? list : null
 
-  const [showPrices, sharedArtworks] = await Promise.all([
+  const [showPrices, sharedArtworks, preferPremium] = await Promise.all([
     getShowPrices(),
     sharedSessionId ? getWishlistArtworksForSession(sharedSessionId) : Promise.resolve(null),
+    getPreferPremiumInCatalog(),
   ])
 
   return (
@@ -30,6 +31,7 @@ export default async function FavoritosPage({
       showPrices={showPrices}
       sharedSessionId={sharedSessionId}
       sharedArtworks={sharedArtworks}
+      preferPremium={preferPremium}
     />
   )
 }

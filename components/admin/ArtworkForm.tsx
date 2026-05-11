@@ -615,6 +615,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   height: img.height ?? 0,
                   position: img.position,
                   is_primary: img.is_primary,
+                  is_premium: img.is_premium,
                 }))}
               />
             </div>

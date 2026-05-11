@@ -10,6 +10,7 @@ import {
 } from "@react-pdf/renderer"
 import { createAnonSupabaseClient } from "@/lib/supabase/anon"
 import { ARTWORK_SELECT, normalizeArtworkRow } from "@/lib/supabase/queries/artwork-row"
+import { selectPremiumImage } from "@/lib/images/select-showcase"
 import type { ArtworkPublic } from "@/types/artwork"
 
 // ─── Constants ─────────────────────────────────────────────────────────────
@@ -195,7 +196,8 @@ function ArtworkFicha({
   showPrice: boolean
   generatedAt: string
 }) {
-  const img = artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
+  // PDF de ficha es B2B / venta — siempre prefiere la imagen premium si existe.
+  const img = selectPremiumImage(artwork.images)
   const imgUrl = img?.cloudinary_url ? pdfImageUrl(img.cloudinary_url) : null
 
   const outer = outerDims(artwork)

@@ -4,9 +4,14 @@ import type { ArtworkPublic } from "@/types/artwork"
 interface RelatedArtworksProps {
   artworks: ArtworkPublic[]
   showPrice: boolean
+  preferPremium?: boolean
 }
 
-export default function RelatedArtworks({ artworks, showPrice }: RelatedArtworksProps) {
+export default function RelatedArtworks({
+  artworks,
+  showPrice,
+  preferPremium = false,
+}: RelatedArtworksProps) {
   if (artworks.length === 0) return null
 
   return (
@@ -14,7 +19,12 @@ export default function RelatedArtworks({ artworks, showPrice }: RelatedArtworks
       <h2 className="font-display text-2xl text-carbon-900 mb-6">Obras relacionadas</h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
         {artworks.map((artwork) => (
-          <ArtworkCard key={artwork.id} artwork={artwork} showPrice={showPrice} />
+          <ArtworkCard
+            key={artwork.id}
+            artwork={artwork}
+            showPrice={showPrice}
+            preferPremium={preferPremium}
+          />
         ))}
       </div>
     </section>

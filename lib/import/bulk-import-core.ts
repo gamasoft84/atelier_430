@@ -275,6 +275,7 @@ export async function runBulkImportCore(
         height:               primaryHeight,
         position:             0,
         is_primary:           true,
+        is_premium:           false,
         alt_text:             altText,
       },
       ...additionalUploads.map((u) => ({
@@ -285,6 +286,7 @@ export async function runBulkImportCore(
         height:               u.height,
         position:             u.position,
         is_primary:           false,
+        is_premium:           false,
         alt_text:             altText,
       })),
     ]

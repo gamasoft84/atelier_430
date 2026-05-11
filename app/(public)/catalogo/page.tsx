@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import type { Metadata } from "next"
 import CatalogClient from "@/components/public/catalog/CatalogClient"
 import { getFilteredArtworks, getPriceRange } from "@/lib/supabase/queries/catalog"
-import { getShowPrices } from "@/lib/supabase/queries/public"
+import { getShowPrices, getPreferPremiumInCatalog } from "@/lib/supabase/queries/public"
 import { parseCatalogParams } from "@/types/catalog"
 
 export const metadata: Metadata = { title: "Catálogo" }
@@ -29,10 +29,11 @@ export default async function CatalogoPage({
   const raw = await searchParams
   const params = parseCatalogParams(raw)
 
-  const [result, showPrices, priceRange] = await Promise.all([
+  const [result, showPrices, priceRange, preferPremium] = await Promise.all([
     getFilteredArtworks(params),
     getShowPrices(),
     getPriceRange(),
+    getPreferPremiumInCatalog(),
   ])
 
   return (
@@ -53,6 +54,7 @@ export default async function CatalogoPage({
           params={params}
           showPrices={showPrices}
           priceRange={priceRange}
+          preferPremium={preferPremium}
         />
       </Suspense>
     </div>

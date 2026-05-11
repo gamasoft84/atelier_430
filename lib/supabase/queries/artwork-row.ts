@@ -10,7 +10,7 @@ export const ARTWORK_SELECT = `
   created_at, updated_at, published_at,
   images:artwork_images(
     id, artwork_id, cloudinary_url, cloudinary_public_id,
-    width, height, position, is_primary, alt_text, created_at
+    width, height, position, is_primary, is_premium, alt_text, created_at
   )
 `.trim()
 

@@ -200,6 +200,36 @@ Cuando generes copy o contenido para el sitio:
 
 **Fases completadas:** 0 (Setup), 1 (Auth), 2 (CRUD obras), 3 (IA), 4 (Catálogo público), 5 (Wishlist), 6 (Carga masiva Excel + ZIP + borradores)
 
+### Imagen "premium" vs "principal" (mayo 2026)
+
+Cada imagen en `artwork_images` tiene dos flags ortogonales:
+
+- `is_primary` (★ dorado claro) → imagen **técnica** de la obra (la foto plana, sin styling). Default para vistas admin, AR, dashboard. Se elige automáticamente la primera al subir.
+- `is_premium` (✦ dorado oscuro) → imagen **para vender** (render styled, foto en sala, lifestyle). Opcional, manual. Una sola por obra (el form lo asegura, no hay constraint SQL).
+
+**Reglas de dónde se usa cada una:**
+
+| Contexto | Imagen | Setting global |
+|---|---|---|
+| PDF de ficha (`/api/artworks/[code]/ficha`) | premium con fallback a primary | No (siempre premium) |
+| PDF de catálogo (`/api/catalogo/pdf`) | premium con fallback | No (siempre premium) |
+| WhatsApp / OG image / Twitter card | premium con fallback (controlado por setting) | `prefer_premium_in_catalog` |
+| Catálogo público (listado, detalle) | controlado por setting | `prefer_premium_in_catalog` |
+| Preview "en tu pared" (PhotoPreviewLauncher) | siempre primary (necesita foto plana) | No |
+| AR (`/api/artwork-ar/[code]`) | siempre primary (textura del cuadro) | No |
+| Admin (tabla, dashboard, drafts) | siempre primary | No |
+
+El selector centralizado vive en `lib/images/select-showcase.ts`:
+- `selectPrimaryImage(images)` → estricta primary.
+- `selectPremiumImage(images)` → premium → fallback primary.
+- `selectShowcaseImage(images, preferPremium)` → según contexto.
+
+El setting `prefer_premium_in_catalog` se gestiona en `/admin/configuracion`
+(componente `CatalogImagePreference`). Default `true`.
+
+Migraciones DB requeridas en Supabase: `009_artwork_images_is_premium.sql` y
+`010_site_settings_prefer_premium.sql` deben estar aplicadas.
+
 **Próximos pasos (Fase 7 — referencia):**
 1. Form de suscripción público
 2. Integración Resend

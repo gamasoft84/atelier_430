@@ -31,6 +31,7 @@ interface CatalogClientProps {
   showPrices: boolean
   priceRange: { min: number; max: number }
   lockedCategory?: string
+  preferPremium?: boolean
 }
 
 export default function CatalogClient({
@@ -42,6 +43,7 @@ export default function CatalogClient({
   showPrices,
   priceRange,
   lockedCategory,
+  preferPremium = false,
 }: CatalogClientProps) {
   const searchParams = useSearchParams()
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
@@ -99,7 +101,12 @@ export default function CatalogClient({
               >
                 {artworks.map((artwork, i) => (
                   <motion.div key={artwork.id} variants={cardVariant}>
-                    <ArtworkCard artwork={artwork} showPrice={showPrices} priority={i < 8} />
+                    <ArtworkCard
+                      artwork={artwork}
+                      showPrice={showPrices}
+                      priority={i < 8}
+                      preferPremium={preferPremium}
+                    />
                   </motion.div>
                 ))}
               </motion.div>

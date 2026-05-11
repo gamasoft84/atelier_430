@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { renderToBuffer, Document, Page, View, Text, Image as PdfImage, StyleSheet, Font } from "@react-pdf/renderer"
 import { createClient } from "@/lib/supabase/server"
 import { ARTWORK_SELECT, normalizeArtworkRow } from "@/lib/supabase/queries/artwork-row"
+import { selectPremiumImage } from "@/lib/images/select-showcase"
 import type { ArtworkPublic, ArtworkCategory } from "@/types/artwork"
 
 // ─── Styles ────────────────────────────────────────────────────────────────
@@ -236,7 +237,8 @@ function CatalogPdf({
             {/* Cards grid */}
             <View style={styles.grid}>
               {pageItems.map((artwork) => {
-                const img = artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
+                // Catálogo PDF también es material de venta — prefiere premium.
+                const img = selectPremiumImage(artwork.images)
                 // Use Cloudinary URL with small transform for PDF size
                 const imgUrl = img?.cloudinary_url
                   ? img.cloudinary_url.replace("/upload/", "/upload/w_400,h_500,c_fill,q_70/")

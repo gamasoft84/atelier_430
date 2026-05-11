@@ -13,6 +13,7 @@ interface FavoritosPageClientProps {
   showPrices: boolean
   sharedSessionId: string | null
   sharedArtworks: ArtworkPublic[] | null
+  preferPremium?: boolean
 }
 
 function buildWhatsAppUrl(artworks: ArtworkPublic[]): string {
@@ -28,6 +29,7 @@ export default function FavoritosPageClient({
   showPrices,
   sharedSessionId,
   sharedArtworks,
+  preferPremium = false,
 }: FavoritosPageClientProps) {
   const { sessionId, ready, ids, add, refresh } = useWishlist()
   const [mine, setMine] = useState<ArtworkPublic[]>([])
@@ -121,6 +123,7 @@ export default function FavoritosPageClient({
                 artwork={artwork}
                 showPrice={showPrices}
                 priority={false}
+                preferPremium={preferPremium}
               />
             ))}
           </div>
@@ -187,6 +190,7 @@ export default function FavoritosPageClient({
               artwork={artwork}
               showPrice={showPrices}
               priority={i < 8}
+              preferPremium={preferPremium}
             />
           ))}
         </div>

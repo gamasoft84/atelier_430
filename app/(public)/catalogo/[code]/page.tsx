@@ -14,9 +14,14 @@ import ViewTracker from "@/components/public/ViewTracker"
 import PhotoPreviewLauncher from "@/components/public/PhotoPreview/PhotoPreviewLauncher"
 import {
   getArtworkByCode,
+  getPreferPremiumInCatalog,
   getRelatedArtworks,
   getShowPrices,
 } from "@/lib/supabase/queries/public"
+import {
+  selectPrimaryImage,
+  selectShowcaseImage,
+} from "@/lib/images/select-showcase"
 
 // ─── Metadata ──────────────────────────────────────────────────────────────
 
@@ -28,11 +33,13 @@ export async function generateMetadata({
   params: Promise<{ code: string }>
 }): Promise<Metadata> {
   const { code } = await params
-  const artwork = await getArtworkByCode(code)
+  const [artwork, preferPremium] = await Promise.all([
+    getArtworkByCode(code),
+    getPreferPremiumInCatalog(),
+  ])
   if (!artwork) return { title: "Obra no encontrada" }
 
-  const primaryImage =
-    artwork.images?.find((i) => i.is_primary) ?? artwork.images?.[0]
+  const ogImage = selectShowcaseImage(artwork.images, preferPremium)
   const url = `${SITE_URL}/catalogo/${code}`
   const description = artwork.description ?? `${artwork.title} — ${SITE_NAME}`
 
@@ -47,12 +54,12 @@ export async function generateMetadata({
       type: "website",
       siteName: SITE_NAME,
       locale: "es_MX",
-      ...(primaryImage && {
+      ...(ogImage && {
         images: [
           {
-            url: primaryImage.cloudinary_url,
-            width: primaryImage.width ?? 800,
-            height: primaryImage.height ?? 1066,
+            url: ogImage.cloudinary_url,
+            width: ogImage.width ?? 800,
+            height: ogImage.height ?? 1066,
             alt: artwork.title,
           },
         ],
@@ -62,7 +69,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: artwork.title,
       description,
-      ...(primaryImage && { images: [primaryImage.cloudinary_url] }),
+      ...(ogImage && { images: [ogImage.cloudinary_url] }),
     },
   }
 }
@@ -138,9 +145,10 @@ export default async function ArtworkDetailPage({
   params: Promise<{ code: string }>
 }) {
   const { code } = await params
-  const [artwork, showPrices] = await Promise.all([
+  const [artwork, showPrices, preferPremium] = await Promise.all([
     getArtworkByCode(code),
     getShowPrices(),
+    getPreferPremiumInCatalog(),
   ])
 
   if (!artwork) notFound()
@@ -165,7 +173,10 @@ export default async function ArtworkDetailPage({
 
   const isSold = artwork.status === "sold"
   const images = artwork.images ?? []
-  const primaryImage = images.find((i) => i.is_primary) ?? images[0] ?? null
+  // Imagen "para enviar" (WhatsApp, OG): depende del setting.
+  const showcaseImage = selectShowcaseImage(images, preferPremium) ?? null
+  // Imagen plana de la obra (sin styling) — necesaria para el "preview en tu pared".
+  const flatPrimaryImage = selectPrimaryImage(images) ?? null
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -181,7 +192,7 @@ export default async function ArtworkDetailPage({
         hasFrame={artwork.has_frame}
         frameOuterWidthCm={artwork.frame_outer_width_cm}
         frameOuterHeightCm={artwork.frame_outer_height_cm}
-        primaryImageUrl={primaryImage?.cloudinary_url ?? null}
+        primaryImageUrl={showcaseImage?.cloudinary_url ?? null}
         pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
       />
       <Breadcrumb category={artwork.category} title={artwork.title} />
@@ -313,7 +324,7 @@ export default async function ArtworkDetailPage({
               </div>
             )}
 
-            {primaryImage &&
+            {flatPrimaryImage &&
               typeof artwork.width_cm === "number" &&
               typeof artwork.height_cm === "number" && (
                 <div className="pt-1 space-y-2">
@@ -334,7 +345,7 @@ export default async function ArtworkDetailPage({
                         ? artwork.frame_outer_height_cm
                         : artwork.height_cm
                     }
-                    artworkImageUrl={primaryImage.cloudinary_url}
+                    artworkImageUrl={flatPrimaryImage.cloudinary_url}
                     pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
                   />
                   <p className="text-[11px] text-stone-400 leading-relaxed">
@@ -360,7 +371,7 @@ export default async function ArtworkDetailPage({
                 frameOuterHeightCm={artwork.frame_outer_height_cm}
                 price={artwork.price}
                 showPrice={showPrices && artwork.show_price}
-                primaryImageUrl={primaryImage?.cloudinary_url ?? null}
+                primaryImageUrl={showcaseImage?.cloudinary_url ?? null}
               />
               <div className="grid grid-cols-2 gap-3">
                 <ShareButton title={artwork.title} />
@@ -400,7 +411,7 @@ export default async function ArtworkDetailPage({
       </div>
 
       {/* Related artworks */}
-      <RelatedArtworks artworks={related} showPrice={showPrices} />
+      <RelatedArtworks artworks={related} showPrice={showPrices} preferPremium={preferPremium} />
 
       {/* Schema.org JSON-LD */}
       <script

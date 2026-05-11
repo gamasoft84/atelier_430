@@ -142,6 +142,7 @@ export async function processOnePhoto(formData: FormData): Promise<PhotoImportRe
     height,
     position:    0,
     is_primary:  true,
+    is_premium:  false,
     alt_text:    altText,
   })
 

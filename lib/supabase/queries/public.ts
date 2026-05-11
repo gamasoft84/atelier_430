@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { createAnonSupabaseClient } from "@/lib/supabase/anon"
 import { ARTWORK_SELECT, normalizeArtworkRow } from "@/lib/supabase/queries/artwork-row"
+import { selectShowcaseImage } from "@/lib/images/select-showcase"
 import { createClient } from "@/lib/supabase/server"
 import type { Database } from "@/types/database"
 import type { ArtworkPublic, ArtworkCategory } from "@/types/artwork"
@@ -38,6 +39,7 @@ export async function getCategoryStats(): Promise<
 > {
   const supabase = await createClient()
   const categories: ArtworkCategory[] = ["religiosa", "nacional", "europea", "moderna"]
+  const preferPremium = await getPreferPremiumInCatalog()
 
   const results = await Promise.all(
     categories.map(async (category) => {
@@ -49,7 +51,7 @@ export async function getCategoryStats(): Promise<
           .eq("category", category),
         supabase
           .from("artworks")
-          .select("images:artwork_images(cloudinary_url, width, height, is_primary, position)")
+          .select("images:artwork_images(cloudinary_url, width, height, is_primary, is_premium, position)")
           .eq("status", "available")
           .eq("category", category)
           .order("views_count", { ascending: false })
@@ -63,18 +65,19 @@ export async function getCategoryStats(): Promise<
           width: number | null
           height: number | null
           is_primary: boolean
+          is_premium: boolean
           position: number
         }> | null) ?? []
-      const primary = images.find((i) => i.is_primary) ?? images.sort((a, b) => a.position - b.position)[0]
+      const showcase = selectShowcaseImage(images, preferPremium)
 
       return {
         category,
         count: countRes.count ?? 0,
-        thumbnail: primary
+        thumbnail: showcase
           ? {
-              url: primary.cloudinary_url,
-              width: primary.width ?? null,
-              height: primary.height ?? null,
+              url: showcase.cloudinary_url,
+              width: showcase.width ?? null,
+              height: showcase.height ?? null,
             }
           : null,
       }
@@ -151,5 +154,26 @@ export async function getShowPrices(): Promise<boolean> {
   const v = data.value
   if (typeof v === "boolean") return v
   if (typeof v === "object" && v !== null && "enabled" in v) return Boolean((v as { enabled: unknown }).enabled)
+  return true
+}
+
+/**
+ * Si en `site_settings` el flag `prefer_premium_in_catalog` está activo, el
+ * catálogo público y la página de detalle muestran la imagen premium (cuando
+ * exista) en lugar de la primary. Default: `true`.
+ */
+export async function getPreferPremiumInCatalog(): Promise<boolean> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", "prefer_premium_in_catalog")
+    .maybeSingle()
+  if (!data) return true
+  const v = data.value
+  if (typeof v === "boolean") return v
+  if (typeof v === "object" && v !== null && "enabled" in v) {
+    return Boolean((v as { enabled: unknown }).enabled)
+  }
   return true
 }

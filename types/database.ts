@@ -142,6 +142,7 @@ export interface Database {
           height: number | null
           position: number
           is_primary: boolean
+          is_premium: boolean
           alt_text: string | null
           created_at: string
         }
@@ -154,6 +155,7 @@ export interface Database {
           height?: number | null
           position?: number
           is_primary?: boolean
+          is_premium?: boolean
           alt_text?: string | null
           created_at?: string
         }
@@ -166,6 +168,7 @@ export interface Database {
           height?: number | null
           position?: number
           is_primary?: boolean
+          is_premium?: boolean
           alt_text?: string | null
           created_at?: string
         }
