@@ -7,6 +7,7 @@ const classificationSchema = z.object({
   category: z.enum(["religiosa", "nacional", "europea", "moderna"]),
   subcategory: z.string().nullable(),
   has_frame: z.boolean(),
+  frame_material: z.string().nullable().optional().default(null),
   frame_color: z.string().nullable(),
   confidence: z.number().min(0).max(1),
 })
@@ -23,7 +24,7 @@ function extractJson(text: string): string {
 export async function classifyArtwork(imageUrl: string): Promise<ClassificationResult> {
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 256,
+    max_tokens: 384,
     messages: [
       {
         role: "user",

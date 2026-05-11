@@ -157,15 +157,21 @@ export async function runBulkImportCore(
 
     // AI classification on primary image only
     let subcategory: string | null = row.data.subcategory || null
+    let frameMaterial: string | null = row.data.frame_material || null
     let frameColor: string | null = row.data.frame_color || null
     let aiHint = false
     try {
       const cls = await classifyArtwork(primaryUrl)
       aiHint = true
       if (!subcategory && cls.subcategory) subcategory = cls.subcategory
+      if (!frameMaterial && cls.frame_material) frameMaterial = cls.frame_material
       if (!frameColor && cls.frame_color)  frameColor  = cls.frame_color
     } catch {
       // ok — continue without AI classification
+    }
+    // Defaults seguros si tiene marco pero no se determinó material.
+    if (hasFrame && !frameMaterial) {
+      frameMaterial = row.data.category === "religiosa" ? "polirresina" : "madera"
     }
 
     // AI content generation from primary image
@@ -182,7 +188,7 @@ export async function runBulkImportCore(
         width_cm:       row.data.width_cm ?? undefined,
         height_cm:      row.data.height_cm ?? undefined,
         has_frame:      hasFrame,
-        frame_material: row.data.frame_material || undefined,
+        frame_material: frameMaterial ?? undefined,
         frame_color:    frameColor ?? undefined,
         cost:           row.data.cost ?? undefined,
       })
@@ -215,7 +221,7 @@ export async function runBulkImportCore(
         width_cm:            row.data.width_cm,
         height_cm:           row.data.height_cm,
         has_frame:           hasFrame,
-        frame_material:      row.data.frame_material || null,
+        frame_material:      hasFrame ? frameMaterial : null,
         frame_color:         frameColor,
         price:               price ?? null,
         original_price:      null,

@@ -73,13 +73,22 @@ export async function processOnePhoto(formData: FormData): Promise<PhotoImportRe
   let category: ArtworkCategory = "nacional"
   let subcategory: string | null = null
   let hasFrame = false
+  let frameMaterial: string | null = null
   let frameColor: string | null = null
   try {
     const cls = await classifyArtwork(cloudinaryUrl)
-    category   = cls.category
-    subcategory = cls.subcategory ?? null
-    hasFrame   = cls.has_frame
-    frameColor = cls.frame_color ?? null
+    category      = cls.category
+    subcategory   = cls.subcategory ?? null
+    hasFrame      = cls.has_frame
+    frameMaterial = cls.frame_material ?? null
+    frameColor    = cls.frame_color ?? null
+    // Defaults razonables si la IA detectó marco pero no material/color.
+    if (hasFrame && !frameMaterial) {
+      frameMaterial = category === "religiosa" ? "polirresina" : "madera"
+    }
+    if (hasFrame && !frameColor && category === "religiosa") {
+      frameColor = "dorado"
+    }
   } catch {
     // default to nacional if classification fails
   }
@@ -90,11 +99,12 @@ export async function processOnePhoto(formData: FormData): Promise<PhotoImportRe
   let tags: string[] | null = null
   try {
     const content = await generateArtworkContent({
-      image_url:   cloudinaryUrl,
+      image_url:      cloudinaryUrl,
       category,
-      subcategory: subcategory ?? undefined,
-      has_frame:   hasFrame,
-      frame_color: frameColor ?? undefined,
+      subcategory:    subcategory ?? undefined,
+      has_frame:      hasFrame,
+      frame_material: frameMaterial ?? undefined,
+      frame_color:    frameColor ?? undefined,
     })
     if (content.title?.trim()) title = content.title.trim()
     if (content.description?.trim()) description = content.description.trim()
@@ -117,6 +127,7 @@ export async function processOnePhoto(formData: FormData): Promise<PhotoImportRe
       category,
       subcategory,
       has_frame:       hasFrame,
+      frame_material:  hasFrame ? frameMaterial : null,
       frame_color:     frameColor,
       stock_quantity:  1,
       show_price:      false,
