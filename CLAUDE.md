@@ -234,9 +234,34 @@ Supabase/Cloudinary necesitan las credenciales en `.env`
 | `npm run inspect:artwork -- <CODE>` | Imprime medidas, marco e imágenes registradas en BD para una obra (ej. `npm run inspect:artwork -- N-011`). Detecta `cloudinary_public_id` o URLs duplicadas. |
 | `npm run generate:splash` | Regenera los splash screens de iOS desde `public/icon-master-1024x1024.png` hacia `public/splash/`. |
 | `npm run purge:dev` | Borra datos de prueba en Supabase + Cloudinary. **Usa `--dry-run` primero** para ver qué tocaría sin borrar. |
+| `npm run cloudinary:migrate -- --dry` | Lista qué imágenes en BD están en carpetas no canónicas (`tmp-*`, `IMP-*`) y mostraría a dónde se moverían. |
+| `npm run cloudinary:migrate` | Mueve en Cloudinary cada imagen de `tmp-*`/`IMP-*` a su carpeta canónica `atelier430/artworks/<CÓDIGO>/<CÓDIGO>-<sufijo>` y actualiza la BD con la nueva URL. Idempotente. |
+| `npm run cloudinary:cleanup -- --dry` | Lista assets en Cloudinary que NO tienen referencia en `artwork_images` (huérfanas), agrupados por carpeta. |
+| `npm run cloudinary:cleanup` | Borra los assets huérfanos. Pide confirmación interactiva (omite con `-- --yes`). |
+| `npm run cloudinary:purge-folders -- --dry` | Lista carpetas residuales `tmp-*`/`IMP-*` bajo `atelier430/artworks/`. |
+| `npm run cloudinary:purge-folders` | Borra esas carpetas si están vacías (Cloudinary salta automáticamente las que aún tienen contenido). Pide confirmación (omite con `-- --yes`). |
+| `npm run cloudinary:purge-folders -- --force` | Si una carpeta no está vacía, primero borra los assets huérfanos (no referenciados en `artwork_images`) y reintenta borrar la carpeta. Si algún asset SÍ tiene referencia en BD, respeta la carpeta y reporta a qué obra pertenece. Equivale a `cleanup` + `purge-folders` en una pasada. |
+| `npm run cloudinary:inspect-folder -- <carpeta>` | Inspecciona una carpeta específica (ej. `tmp-fe836d57`): lista cada asset adentro y marca cada uno como REFERENCIADO o HUÉRFANO según `artwork_images`. Útil cuando `purge-folders` reporta una carpeta como "no vacía". |
+| `npm run cloudinary:inspect-folder -- <carpeta> --force` | Borra los assets HUÉRFANOS de esa carpeta (deja intactos los referenciados). Pide confirmación (omite con `--yes`). Si la carpeta queda vacía la elimina también. |
 
 > Nota: `npm run inspect:artwork` requiere `--` antes del código de la obra para
 > que npm pase el argumento al script (ej. `npm run inspect:artwork -- E-006`).
+
+### Convención de carpetas en Cloudinary
+
+Todas las imágenes deben vivir bajo:
+
+```
+atelier430/artworks/<CÓDIGO>/<CÓDIGO>-<sufijo>
+```
+
+Ejemplo correcto: `atelier430/artworks/N-011/N-011-a3f9b2c1`.
+
+El form admin "Nueva obra" sube inicialmente a una carpeta temporal (`tmp-XXXXXXXX/`)
+porque el código se asigna al guardar; `createArtwork` y `processOnePhoto` mueven
+los assets a la carpeta canónica automáticamente tras commitear en BD. Si una obra
+queda con imágenes en `tmp-*`/`IMP-*` (por ejemplo de versiones anteriores del
+proyecto), `cloudinary:migrate` las normaliza.
 
 ---
 

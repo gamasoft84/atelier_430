@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { uploadBufferToCloudinary } from "@/lib/cloudinary/upload-server"
+import { normalizeImagesForCode } from "@/lib/cloudinary/normalize"
 import { classifyArtwork } from "@/lib/anthropic/services/artwork-classifier"
 import { generateArtworkContent } from "@/lib/anthropic/generate"
 import type { ArtworkCategory } from "@/types/artwork"
@@ -131,7 +132,7 @@ export async function processOnePhoto(formData: FormData): Promise<PhotoImportRe
     return { ok: false, error: insErr?.message ?? "Error al crear obra en BD" }
   }
 
-  // 6. Insert image record
+  // 6. Insert image record (con URL temporal IMP-XXX; el rename viene en el paso 7)
   const altText = title.length > 64 ? title.slice(0, 61) + "…" : title
   const { error: imgErr } = await supabase.from("artwork_images").insert({
     artwork_id:           artwork.id,
@@ -147,6 +148,23 @@ export async function processOnePhoto(formData: FormData): Promise<PhotoImportRe
   if (imgErr) {
     await supabase.from("artworks").delete().eq("id", artwork.id)
     return { ok: false, error: "Error al guardar imagen" }
+  }
+
+  // 7. Mover el asset de IMP-XXX a la carpeta canónica del código real
+  //    (atelier430/artworks/<code>/<code>-0). Si falla queda la URL vieja.
+  const [normalized] = await normalizeImagesForCode(
+    [{ cloudinary_url: cloudinaryUrl, cloudinary_public_id: cloudinaryPublicId }],
+    code,
+  )
+  if (normalized.changed) {
+    await supabase
+      .from("artwork_images")
+      .update({
+        cloudinary_url: normalized.cloudinary_url,
+        cloudinary_public_id: normalized.cloudinary_public_id,
+      })
+      .eq("artwork_id", artwork.id)
+      .eq("cloudinary_public_id", cloudinaryPublicId)
   }
 
   return { ok: true, code, title }

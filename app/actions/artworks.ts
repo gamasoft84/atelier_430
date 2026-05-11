@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import type { ArtworkFormData, SellArtworkData, ReserveArtworkData, ArtworkCategory } from "@/types/artwork"
 import { normalizeStockQuantityForSave } from "@/lib/stock"
+import { normalizeImagesForCode } from "@/lib/cloudinary/normalize"
 import type { UploadedImage } from "@/hooks/useImageUpload"
 
 // ─── Code generation ──────────────────────────────────────────────────────
@@ -107,6 +108,11 @@ export async function createArtwork(
       await supabase.from("artworks").delete().eq("id", artwork.id)
       return { error: "Error al guardar las imágenes" }
     }
+
+    // Cloudinary: mover assets de tmp-XXX/IMP-XXX a la carpeta canónica del
+    // código real (atelier430/artworks/<code>/<code>-<sufijo>). Si falla, queda
+    // la URL vieja en BD — la obra sigue funcionando, solo no queda canónica.
+    await syncImageRowsToCanonicalFolder(artwork.id, artwork.code, images)
   }
 
   // Activity log
@@ -119,6 +125,36 @@ export async function createArtwork(
 
   revalidatePath("/admin/obras")
   return { id: artwork.id, code: artwork.code }
+}
+
+/**
+ * Renombra en Cloudinary y actualiza `artwork_images` para dejar todas las
+ * imágenes de la obra bajo `atelier430/artworks/<code>/<code>-<sufijo>`.
+ *
+ * Idempotente: si una imagen ya está en la carpeta canónica, no la toca.
+ */
+async function syncImageRowsToCanonicalFolder(
+  artworkId: string,
+  code: string,
+  images: Pick<UploadedImage, "cloudinary_url" | "cloudinary_public_id">[],
+) {
+  const supabase = await createClient()
+  const normalized = await normalizeImagesForCode(images, code)
+
+  await Promise.all(
+    normalized.map((n, i) => {
+      if (!n.changed) return null
+      const original = images[i]
+      return supabase
+        .from("artwork_images")
+        .update({
+          cloudinary_url: n.cloudinary_url,
+          cloudinary_public_id: n.cloudinary_public_id,
+        })
+        .eq("artwork_id", artworkId)
+        .eq("cloudinary_public_id", original.cloudinary_public_id)
+    }),
+  )
 }
 
 // ─── Update artwork ───────────────────────────────────────────────────────
@@ -190,6 +226,17 @@ export async function updateArtwork(
 
     const { error: imgError } = await supabase.from("artwork_images").insert(imageRows)
     if (imgError) return { error: "Error al actualizar las imágenes" }
+
+    // Normaliza a la carpeta canónica las imágenes que aún vivan en tmp-XXX/IMP-XXX
+    // (típicamente herencia de obras creadas antes del fix de carpetas).
+    const { data: artworkRow } = await supabase
+      .from("artworks")
+      .select("code")
+      .eq("id", id)
+      .single()
+    if (artworkRow?.code) {
+      await syncImageRowsToCanonicalFolder(id, artworkRow.code, images)
+    }
   }
 
   // BD ya está consistente. Ahora sí borrar de Cloudinary los assets que el usuario

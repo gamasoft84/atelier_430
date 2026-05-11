@@ -10,7 +10,11 @@
     "lint": "eslint",
     "purge:dev": "node --env-file=.env scripts/purge-dev-data.mjs",
     "generate:splash": "node scripts/generate-splash.mjs",
-    "inspect:artwork": "node --env-file=.env scripts/inspect-artwork-images.mjs"
+    "inspect:artwork": "node --env-file=.env scripts/inspect-artwork-images.mjs",
+    "cloudinary:migrate": "node --env-file=.env scripts/migrate-cloudinary-folders.mjs",
+    "cloudinary:cleanup": "node --env-file=.env scripts/cleanup-orphan-cloudinary.mjs",
+    "cloudinary:purge-folders": "node --env-file=.env scripts/cleanup-empty-folders.mjs",
+    "cloudinary:inspect-folder": "node --env-file=.env scripts/inspect-cloudinary-folder.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
