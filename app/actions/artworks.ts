@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { ArtworkFormData, SellArtworkData, ReserveArtworkData, ArtworkCategory } from "@/types/artwork"
 import { normalizeStockQuantityForSave } from "@/lib/stock"
 import { normalizeImagesForCode } from "@/lib/cloudinary/normalize"
+import { destroyCloudinaryAsset } from "@/lib/cloudinary/admin"
 import type { UploadedImage } from "@/hooks/useImageUpload"
 
 // ─── Code generation ──────────────────────────────────────────────────────
@@ -242,21 +243,25 @@ export async function updateArtwork(
   // BD ya está consistente. Ahora sí borrar de Cloudinary los assets que el usuario
   // quitó en el form pero que aún existían (sólo public_ids que no estén en `images`,
   // por si el usuario los volvió a agregar / restauró el orden).
+  //
+  // Importante: se ESPERA (await) a que Cloudinary confirme. En entornos serverless
+  // (Vercel) los fire-and-forget se cortan al terminar la función, dejando assets
+  // huérfanos. El costo es ~150-300ms por imagen; aceptable y consistente.
   if (pendingDeletes.length > 0) {
     const keptIds = new Set(images.map((i) => i.cloudinary_public_id))
     const toActuallyDelete = pendingDeletes.filter((id) => !keptIds.has(id))
     if (toActuallyDelete.length > 0) {
-      const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-      // Fire-and-forget: si Cloudinary falla, BD ya está bien y solo queda asset huérfano
-      Promise.all(
-        toActuallyDelete.map((publicId) =>
-          fetch(`${origin}/api/upload`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ public_id: publicId }),
-          }).catch(console.error),
-        ),
+      const results = await Promise.allSettled(
+        toActuallyDelete.map((publicId) => destroyCloudinaryAsset(publicId)),
       )
+      results.forEach((r, i) => {
+        if (r.status === "rejected") {
+          console.error(
+            `[updateArtwork] No se pudo borrar de Cloudinary ${toActuallyDelete[i]}:`,
+            r.reason,
+          )
+        }
+      })
     }
   }
 
@@ -288,19 +293,21 @@ export async function deleteArtwork(id: string): Promise<{ success: true } | { e
     .select("cloudinary_public_id")
     .eq("artwork_id", id)
 
-  // Delete from Cloudinary (fire-and-forget — DB cascade handles the records)
+  // Delete from Cloudinary. Se ESPERA (await) la confirmación de Cloudinary
+  // antes de borrar la fila de BD; en serverless el fire-and-forget se cortaba
+  // dejando assets huérfanos.
   if (images && images.length > 0) {
-    const origin =
-      process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-    Promise.all(
-      images.map((img) =>
-        fetch(`${origin}/api/upload`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ public_id: img.cloudinary_public_id }),
-        }).catch(console.error)
-      )
+    const results = await Promise.allSettled(
+      images.map((img) => destroyCloudinaryAsset(img.cloudinary_public_id)),
     )
+    results.forEach((r, i) => {
+      if (r.status === "rejected") {
+        console.error(
+          `[deleteArtwork] No se pudo borrar de Cloudinary ${images[i].cloudinary_public_id}:`,
+          r.reason,
+        )
+      }
+    })
   }
 
   const { data: artwork } = await supabase

@@ -542,8 +542,13 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       return tag === "input" || tag === "textarea" || tag === "select"
     }
 
+    const submitFinal = () => {
+      if (isSubmitting) return
+      void form.handleSubmit((v) => onSubmit(v, false))()
+    }
+
     const onKeyDown = (e: KeyboardEvent) => {
-      // Save draft
+      // Save as draft — funciona desde cualquier lugar
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault()
         if (isSubmitting) return
@@ -551,12 +556,25 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
         return
       }
 
-      // Step navigation (avoid hijacking cursor navigation while typing)
+      // Publicar (Opt+Enter) — funciona desde cualquier lugar, incluso dentro
+      // de un input/textarea, para que Rick pueda guardar sin sacar las manos
+      // del teclado tras llenar el último campo.
+      if (e.altKey && e.key === "Enter") {
+        e.preventDefault()
+        submitFinal()
+        return
+      }
+
+      // Step navigation (no robar el shortcut nativo de macOS Opt+Left/Right
+      // para mover por palabras mientras estás escribiendo).
       if (isEditableTarget(e.target)) return
 
       if (e.altKey && e.key === "ArrowRight") {
         e.preventDefault()
-        next()
+        // En el último paso, Opt+Right también publica (atajo simétrico a
+        // "presioná Siguiente hasta el final y luego guardar").
+        if (step >= 4) submitFinal()
+        else next()
         return
       }
       if (e.altKey && e.key === "ArrowLeft") {
@@ -567,7 +585,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
 
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [form, isSubmitting, next, onSubmit, prev])
+  }, [form, isSubmitting, next, onSubmit, prev, step])
 
   // ── Render steps ────────────────────────────────────────────────────────
 
@@ -1247,6 +1265,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
               <Button
                 type="button"
                 onClick={next}
+                title="Opt + →"
                 className="gap-1.5 bg-carbon-900 hover:bg-carbon-800 text-white"
               >
                 Siguiente
@@ -1259,6 +1278,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   variant="outline"
                   onClick={() => form.handleSubmit((v) => onSubmit(v, true))()}
                   disabled={isSubmitting}
+                  title="Cmd/Ctrl + S"
                   className="border-stone-200 text-stone-600"
                 >
                   Guardar como borrador
@@ -1267,6 +1287,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   type="button"
                   onClick={() => form.handleSubmit((v) => onSubmit(v, false))()}
                   disabled={isSubmitting}
+                  title="Opt + Enter  ·  Opt + →"
                   className="bg-gold-500 hover:bg-gold-400 text-white font-semibold gap-1.5"
                 >
                   {isSubmitting && <Loader2 size={14} className="animate-spin" />}
