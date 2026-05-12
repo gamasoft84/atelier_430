@@ -81,6 +81,25 @@ function buildPageUrl(params: Record<string, string | undefined>, page: number):
   return qs ? `/admin/obras?${qs}` : "/admin/obras"
 }
 
+/**
+ * Querystring que representa el estado actual de la lista (filtros + page).
+ * Se pasa como `?from=<qs>` a la pantalla de edición para que al guardar
+ * podamos restaurar la lista exactamente como estaba.
+ */
+function buildCurrentListQs(params: Record<string, string | undefined>, page: number): string {
+  const url = new URLSearchParams()
+  Object.entries({ ...params, page: String(page) }).forEach(([k, v]) => {
+    if (v && !(k === "page" && page === 1)) url.set(k, v)
+  })
+  return url.toString()
+}
+
+function buildEditUrl(id: string, currentQs: string): string {
+  return currentQs
+    ? `/admin/obras/${id}?from=${encodeURIComponent(currentQs)}`
+    : `/admin/obras/${id}`
+}
+
 function buildSortUrl(
   params: Record<string, string | undefined>,
   sort: string
@@ -179,6 +198,7 @@ export default function ArtworksTable({
   currentParams,
 }: ArtworksTableProps) {
   const isFiltered = !!(currentParams.q || currentParams.category || currentParams.status)
+  const currentListQs = buildCurrentListQs(currentParams, page)
 
   if (artworks.length === 0) {
     return (
@@ -247,7 +267,7 @@ export default function ArtworksTable({
                   {/* Title */}
                   <td className="px-4 py-3">
                     <Link
-                      href={`/admin/obras/${artwork.id}`}
+                      href={buildEditUrl(artwork.id, currentListQs)}
                       className="font-medium text-carbon-900 hover:text-gold-500 transition-colors line-clamp-2 leading-snug"
                     >
                       {artwork.title}
@@ -324,6 +344,7 @@ export default function ArtworksTable({
                       status={artwork.status}
                       category={artwork.category}
                       stockQuantity={artwork.stock_quantity ?? 1}
+                      editHref={buildEditUrl(artwork.id, currentListQs)}
                     />
                   </td>
                 </tr>

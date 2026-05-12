@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -176,6 +176,14 @@ interface ArtworkFormProps {
 
 export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  // `from` recibe el querystring (ya url-encoded por la lista) que representa
+  // el estado de filtros + page con el que el usuario entró a editar. Al
+  // guardar volvemos a la lista exactamente como estaba.
+  const returnUrl = useMemo(() => {
+    const from = searchParams.get("from")
+    return from ? `/admin/obras?${from}` : "/admin/obras"
+  }, [searchParams])
   const [step, setStep] = useState(0)
   const [images, setImages] = useState<UploadedImage[]>([])
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([])
@@ -519,12 +527,12 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
         // BD ya está consistente: el server action ya disparó los deletes a Cloudinary
         uploaderRef.current?.clearPendingDeletes()
         toast.success("Obra actualizada")
-        router.push("/admin/obras")
+        router.push(returnUrl)
       } else {
         const result = await createArtwork(formData, images)
         if ("error" in result) throw new Error(result.error)
         toast.success(`Obra ${result.code} creada`)
-        router.push("/admin/obras")
+        router.push(returnUrl)
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error inesperado")

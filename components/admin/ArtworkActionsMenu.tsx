@@ -26,6 +26,12 @@ interface ArtworkActionsMenuProps {
   status: ArtworkStatus
   category: ArtworkCategory
   stockQuantity: number
+  /**
+   * URL del botón "Editar" (incluye `?from=<qs>` con el estado actual de la
+   * lista para que al guardar el form regresemos a los mismos filtros).
+   * Si no se provee, cae al link plano `/admin/obras/${id}`.
+   */
+  editHref?: string
 }
 
 export default function ArtworkActionsMenu({
@@ -35,6 +41,7 @@ export default function ArtworkActionsMenu({
   status,
   category,
   stockQuantity,
+  editHref,
 }: ArtworkActionsMenuProps) {
   const router = useRouter()
   const [sellOpen,   setSellOpen]   = useState(false)
@@ -77,7 +84,7 @@ export default function ArtworkActionsMenu({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuItem asChild>
-            <Link href={`/admin/obras/${id}`} className="flex items-center gap-2 cursor-pointer">
+            <Link href={editHref ?? `/admin/obras/${id}`} className="flex items-center gap-2 cursor-pointer">
               <Pencil size={13} />
               Editar
             </Link>
