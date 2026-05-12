@@ -1,5 +1,5 @@
 export const IMPORT_CATEGORIES = ["religiosa", "nacional", "europea", "moderna"] as const
-export const IMPORT_TECHNIQUES = ["oleo", "impresion", "mixta", "acrilico"] as const
+export const IMPORT_TECHNIQUES = ["oleo", "impresion"] as const
 export const IMPORT_FRAME_MATERIALS = ["pino", "importada_europea", "sin_marco"] as const
 export const CODE_REGEX = /^[RNEM]-\d{3}$/
 export const MAX_IMPORT_ROWS = 500
@@ -22,7 +22,7 @@ export const EXCEL_COLUMN_DEFS = [
   },
   {
     key: "technique", label: "technique", required: true, width: 14,
-    tooltip: "Técnica. Valores: oleo, impresion, mixta, acrilico",
+    tooltip: "Técnica. Valores: oleo, impresion",
   },
   {
     key: "width_cm", label: "width_cm", required: true, width: 12,

@@ -763,6 +763,16 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        {field.value &&
+                          !(ARTWORK_TECHNIQUES as readonly string[]).includes(field.value) && (
+                          <SelectItem value={field.value} className="text-stone-600">
+                            {field.value === "mixta"
+                              ? "Técnica mixta (histórico)"
+                              : field.value === "acrilico"
+                                ? "Acrílico (histórico)"
+                                : `${field.value} (histórico)`}
+                          </SelectItem>
+                        )}
                         {ARTWORK_TECHNIQUES.map((t) => (
                           <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
                         ))}

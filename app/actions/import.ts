@@ -66,7 +66,7 @@ function validateRow(
   if (!technique) {
     errors.push("Técnica requerida (columna D)")
   } else if (!(IMPORT_TECHNIQUES as readonly string[]).includes(technique)) {
-    errors.push(`Técnica "${technique}" inválida — usa: oleo, impresion, mixta, acrilico`)
+    errors.push(`Técnica "${technique}" inválida — usa: oleo, impresion`)
   }
 
   // width_cm

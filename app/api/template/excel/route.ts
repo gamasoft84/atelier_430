@@ -75,10 +75,10 @@ function buildObrasSheet(
   })
   ws.dataValidations.add("D2:D501", {
     type: "list", allowBlank: false,
-    formulae: ['"oleo,impresion,mixta,acrilico"'],
+    formulae: ['"oleo,impresion"'],
     showErrorMessage: true, errorStyle: "error",
     errorTitle: "Técnica inválida",
-    error: "Usa: oleo · impresion · mixta · acrilico",
+    error: "Usa: oleo · impresion",
   })
   ws.dataValidations.add("G2:G501", {
     type: "list", allowBlank: false,

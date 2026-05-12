@@ -47,7 +47,7 @@ const VALID_SIZES: SizeOption[] = ["chico", "mediano", "grande", "xl"]
 const VALID_MARCO: MarcoOption[] = ["con", "sin"]
 const VALID_FORMATOS: CatalogFormat[] = ["horizontal", "vertical"]
 const VALID_CATEGORIES = ["religiosa", "nacional", "europea", "moderna"]
-const VALID_TECHNIQUES = ["oleo", "impresion", "mixta", "acrilico"]
+const VALID_TECHNIQUES = ["oleo", "impresion"]
 
 export function parseCatalogParams(raw: RawParams): CatalogParams {
   const categorias = str(raw.categoria)

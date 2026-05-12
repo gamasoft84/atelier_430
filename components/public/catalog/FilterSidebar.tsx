@@ -18,8 +18,6 @@ const CATEGORY_LABEL: Record<string, string> = {
 const TECHNIQUE_LABEL: Record<string, string> = {
   oleo:      "Óleo",
   impresion: "Impresión",
-  mixta:     "Técnica mixta",
-  acrilico:  "Acrílico",
 }
 
 const SIZE_OPTIONS: { value: SizeOption; label: string; desc: string }[] = [
@@ -30,8 +28,8 @@ const SIZE_OPTIONS: { value: SizeOption; label: string; desc: string }[] = [
 ]
 
 const FORMAT_OPTIONS: { value: CatalogFormat; label: string; desc: string }[] = [
-  { value: "horizontal", label: "Horizontal", desc: "tile ancho en catálogo" },
-  { value: "vertical", label: "Vertical", desc: "tile alto en catálogo" },
+  { value: "horizontal", label: "Horizontal", desc: "" },
+  { value: "vertical", label: "Vertical", desc: "" },
 ]
 
 interface FilterSidebarProps {

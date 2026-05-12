@@ -15,7 +15,7 @@ export const ARTWORK_STATUSES = ["available", "reserved", "sold", "hidden", "dra
 
 /** Límite por ejecución (IA + Cloudinary) para evitar timeouts en Vercel */
 export const BULK_IMPORT_MAX_ROWS = 60
-export const ARTWORK_TECHNIQUES = ["oleo", "impresion", "mixta", "acrilico"] as const
+export const ARTWORK_TECHNIQUES = ["oleo", "impresion"] as const
 export const SOLD_CHANNELS = [
   "whatsapp",
   "presencial",
