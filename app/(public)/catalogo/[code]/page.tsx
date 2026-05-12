@@ -90,6 +90,11 @@ const TECHNIQUE_LABEL: Record<string, string> = {
   acrilico:  "Acrílico",
 }
 
+const CATALOG_FORMAT_LABEL: Record<string, string> = {
+  horizontal: "Formato horizontal (catálogo)",
+  vertical:   "Formato vertical (catálogo)",
+}
+
 // ─── Status badge ──────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
@@ -259,13 +264,20 @@ export default async function ArtworkDetailPage({
           ) : null}
 
           {/* Specs */}
-          {(dimensions || artwork.technique || artwork.has_frame) && (
+          {(dimensions ||
+            outerDimensions ||
+            artwork.technique ||
+            artwork.has_frame ||
+            artwork.catalog_format) && (
             <div className="flex flex-wrap gap-2">
               {dimensions && (
                 <span className="px-3 py-1.5 rounded-lg bg-stone-100 text-xs text-stone-600">
                   {dimensions}
                 </span>
               )}
+              <span className="px-3 py-1.5 rounded-lg bg-stone-100 text-xs text-stone-600">
+                {CATALOG_FORMAT_LABEL[artwork.catalog_format] ?? artwork.catalog_format}
+              </span>
               {outerDimensions && (
                 <span className="px-3 py-1.5 rounded-lg bg-amber-50 border border-gold-500/20 text-xs text-stone-700">
                   {outerDimensions}

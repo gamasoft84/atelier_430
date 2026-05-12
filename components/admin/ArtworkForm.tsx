@@ -37,6 +37,7 @@ const artworkSchema = z.object({
   category: z.enum(["religiosa", "nacional", "europea", "moderna"]),
   subcategory: z.string().max(50).optional().default(""),
   technique: z.string().max(50).optional().default(""),
+  catalog_format: z.enum(["horizontal", "vertical"]).default("horizontal"),
   width_cm: z.coerce.number().min(1).max(500).nullable().optional(),
   height_cm: z.coerce.number().min(1).max(500).nullable().optional(),
   has_frame: z.boolean().default(false),
@@ -225,6 +226,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
       technique:
         artwork?.technique ??
         (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.technique : ""),
+      catalog_format:
+        artwork?.catalog_format === "vertical" ? "vertical" : "horizontal",
       width_cm:
         artwork?.width_cm ??
         (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.width_cm : undefined),
@@ -808,6 +811,32 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="catalog_format"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Formato en catálogo</FormLabel>
+                    <p className="text-xs text-stone-500 mb-2">
+                      Cómo se muestra la tarjeta en el grid público. Por defecto horizontal; elige vertical si
+                      la pieza se ve mejor en tile alto (independiente de las medidas en cm).
+                    </p>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="horizontal">Horizontal (tile ancho)</SelectItem>
+                        <SelectItem value="vertical">Vertical (tile alto)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Frame */}
               <div className="space-y-3">

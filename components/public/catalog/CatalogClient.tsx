@@ -64,6 +64,7 @@ export default function CatalogClient({
         categorias={params.categorias}
         tecnicas={params.tecnicas}
         tamanos={params.tamanos as SizeOption[]}
+        formatos={params.formatos}
         marco={params.marco as MarcoOption | null}
         precioMin={params.precio_min}
         precioMax={params.precio_max}
@@ -81,6 +82,7 @@ export default function CatalogClient({
           hasFilters={active}
           currentSort={params.orden as SortOption}
           currentQ={params.q}
+          clearFiltersHref={clearHref}
           onMobileFilterToggle={() => setMobileFiltersOpen(true)}
         />
 

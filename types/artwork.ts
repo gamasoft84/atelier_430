@@ -1,6 +1,8 @@
 export type ArtworkCategory = "religiosa" | "nacional" | "europea" | "moderna"
 export type ArtworkStatus = "available" | "reserved" | "sold" | "hidden" | "draft"
 export type SoldChannel = "whatsapp" | "presencial" | "mercadolibre" | "marketplace" | "instagram" | "otro"
+/** Presentación en grid del catálogo público (no inferido de medidas en cm). */
+export type CatalogFormat = "horizontal" | "vertical"
 
 export interface ArtworkImage {
   id: string
@@ -31,6 +33,7 @@ export interface Artwork {
   stock_quantity: number
   tags: string[] | null
   technique: string | null
+  catalog_format: CatalogFormat
   width_cm: number | null
   height_cm: number | null
   has_frame: boolean
@@ -78,6 +81,7 @@ export interface ArtworkFormData {
   subcategory: string
   stock_quantity?: number
   technique: string
+  catalog_format: CatalogFormat
   width_cm: number | null
   height_cm: number | null
   has_frame: boolean

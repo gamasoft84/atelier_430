@@ -48,9 +48,8 @@ export default function ArtworkCard({
 
   const badge = STATUS_BADGE[artwork.status]
   const isSold = artwork.status === "sold"
-  const isHorizontal =
-    Boolean(showcase?.width && showcase?.height) &&
-    (showcase!.width as number) > (showcase!.height as number)
+  const isVertical = artwork.catalog_format === "vertical"
+  const isHorizontal = !isVertical
 
   return (
     <div className="relative">

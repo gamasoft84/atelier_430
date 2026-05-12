@@ -117,6 +117,10 @@ export async function getFilteredArtworks(
     )
   }
 
+  if (params.formatos.length > 0) {
+    rows = rows.filter((a) => params.formatos.includes(a.catalog_format))
+  }
+
   // Size sort (JS layer)
   if (needsSizeSort) {
     rows.sort((a, b) => {

@@ -65,6 +65,7 @@ export async function createArtwork(
       category: formData.category,
       subcategory: formData.subcategory || null,
       technique: formData.technique || null,
+      catalog_format: formData.catalog_format,
       width_cm: formData.width_cm,
       height_cm: formData.height_cm,
       has_frame: formData.has_frame,
@@ -126,6 +127,8 @@ export async function createArtwork(
   })
 
   revalidatePath("/admin/obras")
+  revalidatePath("/catalogo")
+  revalidatePath(`/catalogo/${artwork.code}`)
   return { id: artwork.id, code: artwork.code }
 }
 
@@ -189,6 +192,7 @@ export async function updateArtwork(
       category: formData.category,
       subcategory: formData.subcategory || null,
       technique: formData.technique || null,
+      catalog_format: formData.catalog_format,
       width_cm: formData.width_cm,
       height_cm: formData.height_cm,
       has_frame: formData.has_frame,
@@ -265,6 +269,12 @@ export async function updateArtwork(
         }
       })
     }
+  }
+
+  const { data: revalidateRow } = await supabase.from("artworks").select("code").eq("id", id).single()
+  if (revalidateRow?.code) {
+    revalidatePath("/catalogo")
+    revalidatePath(`/catalogo/${revalidateRow.code}`)
   }
 
   await supabase.from("admin_activity").insert({

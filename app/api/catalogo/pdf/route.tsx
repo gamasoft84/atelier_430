@@ -78,9 +78,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: LIGHT,
   },
-  cardImage: {
+  cardImageHorizontal: {
     width: "100%",
-    height: 170,
+    height: 152,
+    objectFit: "contain",
+  },
+  cardImageVertical: {
+    width: "100%",
+    height: 198,
     objectFit: "cover",
   },
   cardImagePlaceholder: {
@@ -173,6 +178,10 @@ function frameLabel(a: ArtworkPublic) {
   return parts.length ? `Marco ${parts.join(" ")}` : "Con marco"
 }
 
+function catalogFormatLabel(a: ArtworkPublic) {
+  return a.catalog_format === "vertical" ? "Vertical" : "Horizontal"
+}
+
 // ─── PDF Document ──────────────────────────────────────────────────────────
 
 function CatalogPdf({
@@ -239,15 +248,23 @@ function CatalogPdf({
               {pageItems.map((artwork) => {
                 // Catálogo PDF también es material de venta — prefiere premium.
                 const img = selectPremiumImage(artwork.images)
-                // Use Cloudinary URL with small transform for PDF size
+                const isVertical = artwork.catalog_format === "vertical"
                 const imgUrl = img?.cloudinary_url
-                  ? img.cloudinary_url.replace("/upload/", "/upload/w_400,h_500,c_fill,q_70/")
+                  ? img.cloudinary_url.replace(
+                      "/upload/",
+                      isVertical
+                        ? "/upload/w_360,h_520,c_fill,q_70/"
+                        : "/upload/w_520,h_320,c_fill,q_70/",
+                    )
                   : null
 
                 return (
                   <View key={artwork.id} style={styles.card}>
                     {imgUrl ? (
-                      <PdfImage src={imgUrl} style={styles.cardImage} />
+                      <PdfImage
+                        src={imgUrl}
+                        style={isVertical ? styles.cardImageVertical : styles.cardImageHorizontal}
+                      />
                     ) : (
                       <View style={styles.cardImagePlaceholder} />
                     )}
@@ -255,7 +272,7 @@ function CatalogPdf({
                       <Text style={styles.cardCategory}>{artwork.category}</Text>
                       <Text style={styles.cardTitle}>{artwork.title}</Text>
                       <Text style={styles.cardMeta}>
-                        {[techLabel(artwork.technique), sizeLabel(artwork), frameLabel(artwork)]
+                        {[techLabel(artwork.technique), sizeLabel(artwork), catalogFormatLabel(artwork), frameLabel(artwork)]
                           .filter(Boolean)
                           .join("  ·  ")}
                       </Text>

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES } from "@/lib/constants"
 import type { SizeOption, MarcoOption } from "@/types/catalog"
+import type { CatalogFormat } from "@/types/artwork"
 
 const CATEGORY_LABEL: Record<string, string> = {
   religiosa: "Religiosa",
@@ -28,10 +29,16 @@ const SIZE_OPTIONS: { value: SizeOption; label: string; desc: string }[] = [
   { value: "xl",      label: "XL",      desc: "> 120 cm" },
 ]
 
+const FORMAT_OPTIONS: { value: CatalogFormat; label: string; desc: string }[] = [
+  { value: "horizontal", label: "Horizontal", desc: "tile ancho en catálogo" },
+  { value: "vertical", label: "Vertical", desc: "tile alto en catálogo" },
+]
+
 interface FilterSidebarProps {
   categorias: string[]
   tecnicas: string[]
   tamanos: SizeOption[]
+  formatos: CatalogFormat[]
   marco: MarcoOption | null
   precioMin: number | null
   precioMax: number | null
@@ -47,6 +54,7 @@ export default function FilterSidebar({
   categorias,
   tecnicas,
   tamanos,
+  formatos,
   marco,
   precioMin,
   precioMax,
@@ -144,6 +152,29 @@ export default function FilterSidebar({
               />
               <span className="text-sm text-stone-600 group-hover:text-carbon-900 transition-colors">
                 {TECHNIQUE_LABEL[t]}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Formato en catálogo */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">
+          Formato
+        </p>
+        <div className="space-y-2">
+          {FORMAT_OPTIONS.map(({ value, label, desc }) => (
+            <label key={value} className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={formatos.includes(value)}
+                onChange={() => toggleList("formato", formatos, value)}
+                className="w-4 h-4 accent-gold-500"
+              />
+              <span className="text-sm text-stone-600 group-hover:text-carbon-900 transition-colors">
+                {label}
+                <span className="text-stone-400 ml-1">{desc}</span>
               </span>
             </label>
           ))}

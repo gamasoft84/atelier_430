@@ -17,6 +17,7 @@ export interface Database {
           stock_quantity: number
           tags: string[] | null
           technique: string | null
+          catalog_format: "horizontal" | "vertical"
           width_cm: number | null
           height_cm: number | null
           has_frame: boolean
@@ -59,6 +60,7 @@ export interface Database {
           stock_quantity?: number
           tags?: string[] | null
           technique?: string | null
+          catalog_format?: "horizontal" | "vertical"
           width_cm?: number | null
           height_cm?: number | null
           has_frame?: boolean
@@ -101,6 +103,7 @@ export interface Database {
           stock_quantity?: number
           tags?: string[] | null
           technique?: string | null
+          catalog_format?: "horizontal" | "vertical"
           width_cm?: number | null
           height_cm?: number | null
           has_frame?: boolean

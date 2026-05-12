@@ -18,6 +18,8 @@ interface CatalogToolbarProps {
   hasFilters: boolean
   currentSort: SortOption
   currentQ: string
+  /** Base path al limpiar filtros (respeta página de categoría). Default `/catalogo`. */
+  clearFiltersHref?: string
   onMobileFilterToggle: () => void
 }
 
@@ -26,6 +28,7 @@ export default function CatalogToolbar({
   hasFilters,
   currentSort,
   currentQ,
+  clearFiltersHref = "/catalogo",
   onMobileFilterToggle,
 }: CatalogToolbarProps) {
   const router = useRouter()
@@ -70,7 +73,7 @@ export default function CatalogToolbar({
 
   const clearFilters = () => {
     startTransition(() => {
-      router.push("/catalogo", { scroll: false })
+      router.push(clearFiltersHref, { scroll: false })
     })
   }
 

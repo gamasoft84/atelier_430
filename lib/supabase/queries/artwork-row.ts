@@ -2,6 +2,7 @@ import type { ArtworkPublic } from "@/types/artwork"
 
 export const ARTWORK_SELECT = `
   id, code, title, artist, description, category, subcategory, stock_quantity, tags, technique,
+  catalog_format,
   width_cm, height_cm, has_frame, frame_material, frame_color,
   frame_outer_width_cm, frame_outer_height_cm,
   price, original_price, show_price, status,
@@ -24,5 +25,9 @@ export function normalizeArtworkRow(row: unknown): ArtworkPublic {
           (a as { position: number }).position - (b as { position: number }).position
       )
     : []
-  return { ...r, images } as ArtworkPublic
+  return {
+    ...r,
+    catalog_format: r.catalog_format === "vertical" ? "vertical" : "horizontal",
+    images,
+  } as ArtworkPublic
 }

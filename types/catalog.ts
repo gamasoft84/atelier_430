@@ -1,3 +1,5 @@
+import type { CatalogFormat } from "@/types/artwork"
+
 export type SortOption =
   | "recientes"
   | "precio_asc"
@@ -12,6 +14,8 @@ export interface CatalogParams {
   categorias: string[]
   tecnicas: string[]
   tamanos: SizeOption[]
+  /** Subconjunto de formatos a mostrar; vacío = todos. */
+  formatos: CatalogFormat[]
   marco: MarcoOption | null
   precio_min: number | null
   precio_max: number | null
@@ -41,6 +45,7 @@ const VALID_SORTS: SortOption[] = [
 ]
 const VALID_SIZES: SizeOption[] = ["chico", "mediano", "grande", "xl"]
 const VALID_MARCO: MarcoOption[] = ["con", "sin"]
+const VALID_FORMATOS: CatalogFormat[] = ["horizontal", "vertical"]
 const VALID_CATEGORIES = ["religiosa", "nacional", "europea", "moderna"]
 const VALID_TECHNIQUES = ["oleo", "impresion", "mixta", "acrilico"]
 
@@ -59,6 +64,11 @@ export function parseCatalogParams(raw: RawParams): CatalogParams {
     .split(",")
     .map((s) => s.trim())
     .filter((s): s is SizeOption => VALID_SIZES.includes(s as SizeOption))
+
+  const formatos = str(raw.formato)
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s): s is CatalogFormat => VALID_FORMATOS.includes(s as CatalogFormat))
 
   const marcoRaw = str(raw.marco)
   const marco = VALID_MARCO.includes(marcoRaw as MarcoOption)
@@ -81,6 +91,7 @@ export function parseCatalogParams(raw: RawParams): CatalogParams {
     categorias,
     tecnicas,
     tamanos,
+    formatos,
     marco,
     precio_min,
     precio_max,
@@ -97,6 +108,7 @@ export function hasActiveFilters(p: CatalogParams): boolean {
     p.categorias.length > 0 ||
     p.tecnicas.length > 0 ||
     p.tamanos.length > 0 ||
+    p.formatos.length > 0 ||
     p.marco !== null ||
     p.precio_min !== null ||
     p.precio_max !== null ||
