@@ -27,10 +27,7 @@ const SIZE_OPTIONS: { value: SizeOption; label: string; desc: string }[] = [
   { value: "xl",      label: "XL",      desc: "> 120 cm" },
 ]
 
-const FORMAT_OPTIONS: { value: CatalogFormat; label: string; desc: string }[] = [
-  { value: "horizontal", label: "Horizontal", desc: "" },
-  { value: "vertical", label: "Vertical", desc: "" },
-]
+const FORMAT_BUTTONS: CatalogFormat[] = ["horizontal", "vertical"]
 
 interface FilterSidebarProps {
   categorias: string[]
@@ -156,26 +153,29 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* Formato en catálogo */}
+      {/* Formato en catálogo (mismo patrón que Marco) */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">
           Formato
         </p>
-        <div className="space-y-2">
-          {FORMAT_OPTIONS.map(({ value, label, desc }) => (
-            <label key={value} className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={formatos.includes(value)}
-                onChange={() => toggleList("formato", formatos, value)}
-                className="w-4 h-4 accent-gold-500"
-              />
-              <span className="text-sm text-stone-600 group-hover:text-carbon-900 transition-colors">
-                {label}
-                <span className="text-stone-400 ml-1">{desc}</span>
-              </span>
-            </label>
-          ))}
+        <div className="flex gap-2">
+          {FORMAT_BUTTONS.map((m) => {
+            const active = formatos.length === 1 && formatos[0] === m
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => updateParam("formato", active ? null : m)}
+                className={`flex-1 min-w-0 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                  active
+                    ? "border-gold-500 bg-gold-100 text-gold-500 font-medium"
+                    : "border-stone-200 text-stone-600 hover:border-stone-300"
+                }`}
+              >
+                {m === "horizontal" ? "Horizontal" : "Vertical"}
+              </button>
+            )
+          })}
         </div>
       </div>
 

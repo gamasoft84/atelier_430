@@ -65,11 +65,14 @@ export function parseCatalogParams(raw: RawParams): CatalogParams {
     .map((s) => s.trim())
     .filter((s): s is SizeOption => VALID_SIZES.includes(s as SizeOption))
 
-  const formatos = str(raw.formato)
+  const formatosRaw = str(raw.formato)
     .split(",")
     .map((s) => s.trim())
     .filter((s): s is CatalogFormat => VALID_FORMATOS.includes(s as CatalogFormat))
-
+  const formatosUnique = [...new Set(formatosRaw)]
+  /** Un solo valor; si venían ambos (ex‑multi‑check) equivale a sin filtro. */
+  const formatos: CatalogFormat[] =
+    formatosUnique.length === 2 ? [] : formatosUnique.length === 1 ? [formatosUnique[0]!] : []
   const marcoRaw = str(raw.marco)
   const marco = VALID_MARCO.includes(marcoRaw as MarcoOption)
     ? (marcoRaw as MarcoOption)
