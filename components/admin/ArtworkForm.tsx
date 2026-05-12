@@ -119,6 +119,7 @@ const SUBCATEGORIES: Record<string, Array<{ value: string; label: string }>> = {
     { value: "Puente",          label: "Puente" },
     { value: "Montaña",         label: "Montaña" },
     { value: "Bosque",          label: "Bosque" },
+    { value: "Bodegón",         label: "Bodegón" },
     { value: "Otro",            label: "Otro" },
   ],
   europea: [
@@ -130,11 +131,12 @@ const SUBCATEGORIES: Record<string, Array<{ value: string; label: string }>> = {
     { value: "Otro",            label: "Otro" },
   ],
   moderna: [
-    { value: "Abstracto",     label: "Abstracto" },
-    { value: "Geométrico",    label: "Geométrico" },
-    { value: "Expresionista", label: "Expresionista" },
-    { value: "Minimalista",   label: "Minimalista" },
-    { value: "Otro",          label: "Otro" },
+    { value: "Abstracto",                label: "Abstracto" },
+    { value: "Geométrico",               label: "Geométrico" },
+    { value: "Expresionista",            label: "Expresionista" },
+    { value: "Minimalista",              label: "Minimalista" },
+    { value: "Contemporánea decorativa", label: "Contemporánea decorativa" },
+    { value: "Otro",                     label: "Otro" },
   ],
 }
 

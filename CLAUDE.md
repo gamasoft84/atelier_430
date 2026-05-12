@@ -262,6 +262,7 @@ Supabase/Cloudinary necesitan las credenciales en `.env`
 | Comando | Hace |
 |---|---|
 | `npm run inspect:artwork -- <CODE>` | Imprime medidas, marco e imágenes registradas en BD para una obra (ej. `npm run inspect:artwork -- N-011`). Detecta `cloudinary_public_id` o URLs duplicadas. |
+| `npm run recode:artwork -- <CODE> [--to-category=<cat>] [--dry-run] [--yes]` | Recodifica una obra cuando su categoría cambió y el prefijo del code quedó inconsistente (ej. `E-009` que ahora es nacional → `N-XYZ`). Renombra los assets en Cloudinary, actualiza `artwork_images`, y actualiza `artworks.code`/`category`. **Usá `--dry-run` primero** para ver el plan. Soporta `--to-category=nacional` si la categoría en BD aún no se cambió. Después corré `cloudinary:purge-folders` para limpiar la carpeta vieja vacía. La URL pública `/catalogo/<código-viejo>` queda 404 (no crea redirect). |
 | `npm run generate:splash` | Regenera los splash screens de iOS desde `public/icon-master-1024x1024.png` hacia `public/splash/`. |
 | `npm run purge:dev` | Borra datos de prueba en Supabase + Cloudinary. **Usa `--dry-run` primero** para ver qué tocaría sin borrar. |
 | `npm run cloudinary:migrate -- --dry` | Lista qué imágenes en BD están en carpetas no canónicas (`tmp-*`, `IMP-*`) y mostraría a dónde se moverían. |
