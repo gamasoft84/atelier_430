@@ -153,32 +153,6 @@ export default function FilterSidebar({
         </div>
       </div>
 
-      {/* Formato en catálogo (mismo patrón que Marco) */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">
-          Formato
-        </p>
-        <div className="flex gap-2">
-          {FORMAT_BUTTONS.map((m) => {
-            const active = formatos.length === 1 && formatos[0] === m
-            return (
-              <button
-                key={m}
-                type="button"
-                onClick={() => updateParam("formato", active ? null : m)}
-                className={`flex-1 min-w-0 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
-                  active
-                    ? "border-gold-500 bg-gold-100 text-gold-500 font-medium"
-                    : "border-stone-200 text-stone-600 hover:border-stone-300"
-                }`}
-              >
-                {m === "horizontal" ? "Horizontal" : "Vertical"}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
       {/* Tamaño */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">
@@ -222,6 +196,32 @@ export default function FilterSidebar({
               {m} marco
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Formato en catálogo (mismo patrón que Marco) */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">
+          Formato
+        </p>
+        <div className="flex gap-2">
+          {FORMAT_BUTTONS.map((m) => {
+            const active = formatos.length === 1 && formatos[0] === m
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => updateParam("formato", active ? null : m)}
+                className={`flex-1 min-w-0 px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                  active
+                    ? "border-gold-500 bg-gold-100 text-gold-500 font-medium"
+                    : "border-stone-200 text-stone-600 hover:border-stone-300"
+                }`}
+              >
+                {m === "horizontal" ? "Horizontal" : "Vertical"}
+              </button>
+            )
+          })}
         </div>
       </div>
 
