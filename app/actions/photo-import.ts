@@ -6,6 +6,7 @@ import { normalizeImagesForCode } from "@/lib/cloudinary/normalize"
 import { classifyArtwork } from "@/lib/anthropic/services/artwork-classifier"
 import { generateArtworkContent } from "@/lib/anthropic/generate"
 import type { ArtworkCategory } from "@/types/artwork"
+import { fetchNextAvailableArtworkCode } from "@/lib/artwork-code"
 
 export interface PhotoImportSuccess {
   ok: true
@@ -18,26 +19,9 @@ export interface PhotoImportError {
 }
 export type PhotoImportResult = PhotoImportSuccess | PhotoImportError
 
-const CATEGORY_PREFIX: Record<ArtworkCategory, string> = {
-  religiosa: "R",
-  nacional:  "N",
-  europea:   "E",
-  moderna:   "M",
-}
-
 async function nextCode(category: ArtworkCategory): Promise<string> {
   const supabase = await createClient()
-  const prefix = CATEGORY_PREFIX[category]
-  const { data } = await supabase
-    .from("artworks")
-    .select("code")
-    .like("code", `${prefix}-%`)
-    .order("code", { ascending: false })
-    .limit(1)
-
-  if (!data || data.length === 0) return `${prefix}-001`
-  const last = parseInt(data[0].code.split("-")[1] ?? "0", 10)
-  return `${prefix}-${String(last + 1).padStart(3, "0")}`
+  return fetchNextAvailableArtworkCode(supabase, category)
 }
 
 export async function processOnePhoto(formData: FormData): Promise<PhotoImportResult> {

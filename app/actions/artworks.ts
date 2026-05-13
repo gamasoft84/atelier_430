@@ -7,35 +7,13 @@ import { normalizeStockQuantityForSave } from "@/lib/stock"
 import { normalizeImagesForCode } from "@/lib/cloudinary/normalize"
 import { destroyCloudinaryAsset } from "@/lib/cloudinary/admin"
 import type { UploadedImage } from "@/hooks/useImageUpload"
+import { fetchNextAvailableArtworkCode } from "@/lib/artwork-code"
 
 // ─── Code generation ──────────────────────────────────────────────────────
 
-const CATEGORY_PREFIX: Record<ArtworkCategory, string> = {
-  religiosa: "R",
-  nacional: "N",
-  europea: "E",
-  moderna: "M",
-}
-
 export async function generateArtworkCode(category: ArtworkCategory): Promise<string> {
   const supabase = await createClient()
-  const prefix = CATEGORY_PREFIX[category]
-
-  const { data } = await supabase
-    .from("artworks")
-    .select("code")
-    .like("code", `${prefix}-%`)
-    .order("code", { ascending: false })
-    .limit(1)
-
-  if (!data || data.length === 0) {
-    return `${prefix}-001`
-  }
-
-  const lastCode = data[0].code // e.g. "R-007"
-  const lastNum = parseInt(lastCode.split("-")[1] ?? "0", 10)
-  const next = String(lastNum + 1).padStart(3, "0")
-  return `${prefix}-${next}`
+  return fetchNextAvailableArtworkCode(supabase, category)
 }
 
 // ─── Create artwork ───────────────────────────────────────────────────────

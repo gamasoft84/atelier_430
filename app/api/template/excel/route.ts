@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import ExcelJS from "exceljs"
 import { createClient } from "@/lib/supabase/server"
+import { fetchNextAvailableArtworkCodeByPrefix } from "@/lib/artwork-code"
 import { EXCEL_COLUMN_DEFS } from "@/types/import"
 
 // ─── Colors ────────────────────────────────────────────────────────────────
@@ -265,17 +266,7 @@ export async function GET() {
   }
 
   const getNextCode = async (prefix: string): Promise<string> => {
-    const { data } = await supabase
-      .from("artworks")
-      .select("code")
-      .like("code", `${prefix}-%`)
-      .order("code", { ascending: false })
-      .limit(1)
-    const last = data?.[0]?.code
-    if (!last) return `${prefix}-001`
-    const lastNum = parseInt(last.split("-")[1] ?? "0", 10)
-    const next = String(lastNum + 1).padStart(3, "0")
-    return `${prefix}-${next}`
+    return fetchNextAvailableArtworkCodeByPrefix(supabase, prefix)
   }
 
   const [nextR, nextN, nextE, nextM] = await Promise.all([
