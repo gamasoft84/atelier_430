@@ -16,17 +16,41 @@ import {
   type ArtworkCreateDefaults,
 } from "@/lib/site-settings/artwork-create-defaults"
 
-const FormSchema = z.object({
-  category: z.enum(["religiosa", "nacional", "europea", "moderna"]),
-  subcategory: z.string().max(50).optional().default(""),
-  technique: z.string().max(50).optional().default(""),
-  artist: z.string().max(120).optional().default(""),
-  width_cm: z.coerce.number().min(1).max(500).optional(),
-  height_cm: z.coerce.number().min(1).max(500).optional(),
-  has_frame: z.coerce.boolean().optional(),
-  price: z.coerce.number().min(0).optional(),
-  original_price: z.coerce.number().min(0).optional(),
-})
+const FormSchema = z
+  .object({
+    category: z.enum(["religiosa", "nacional", "europea", "moderna"]),
+    subcategory: z.string().max(50).optional().default(""),
+    technique: z.string().max(50).optional().default(""),
+    artist: z.string().max(120).optional().default(""),
+    width_cm: z.coerce.number().min(1).max(500).optional(),
+    height_cm: z.coerce.number().min(1).max(500).optional(),
+    has_frame: z.coerce.boolean().optional(),
+    frame_outer_width_cm: z.coerce.number().min(1).max(500).optional(),
+    frame_outer_height_cm: z.coerce.number().min(1).max(500).optional(),
+    price: z.coerce.number().min(0).optional(),
+    original_price: z.coerce.number().min(0).optional(),
+  })
+  .superRefine((d, ctx) => {
+    if (!d.has_frame) return
+    const w = d.width_cm
+    const h = d.height_cm
+    const ow = d.frame_outer_width_cm
+    const oh = d.frame_outer_height_cm
+    if (typeof w === "number" && typeof ow === "number" && ow < w) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Con marco no puede ser menor que el ancho de la obra.",
+        path: ["frame_outer_width_cm"],
+      })
+    }
+    if (typeof h === "number" && typeof oh === "number" && oh < h) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Con marco no puede ser menor que el alto de la obra.",
+        path: ["frame_outer_height_cm"],
+      })
+    }
+  })
 
 export default function ArtworkCreateDefaultsSettings() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), [])
@@ -63,9 +87,12 @@ export default function ArtworkCreateDefaultsSettings() {
     setSaving(true)
     try {
       const parsed = FormSchema.parse(values)
+      const value = parsed.has_frame
+        ? parsed
+        : { ...parsed, frame_outer_width_cm: undefined, frame_outer_height_cm: undefined }
       const { error } = await supabase.from("site_settings").upsert({
         key: ARTWORK_CREATE_DEFAULTS_SETTING_KEY,
-        value: parsed,
+        value,
       })
       if (error) throw error
       toast.success("Configuración guardada")
@@ -177,7 +204,16 @@ export default function ArtworkCreateDefaultsSettings() {
           <p className="text-sm font-medium text-carbon-900">Tiene marco</p>
           <Select
             value={String(Boolean(values.has_frame))}
-            onValueChange={(v) => setValues((prev) => ({ ...prev, has_frame: v === "true" }))}
+            onValueChange={(v) => {
+              const has = v === "true"
+              setValues((prev) => ({
+                ...prev,
+                has_frame: has,
+                ...(has
+                  ? {}
+                  : { frame_outer_width_cm: undefined, frame_outer_height_cm: undefined }),
+              }))
+            }}
             disabled={loading}
           >
             <SelectTrigger>
@@ -213,6 +249,47 @@ export default function ArtworkCreateDefaultsSettings() {
           />
         </div>
       </div>
+
+      {values.has_frame ? (
+        <div className="space-y-3 rounded-lg border border-stone-200 bg-stone-50/60 p-4">
+          <p className="text-sm font-medium text-carbon-900">Medidas exteriores (con marco)</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-carbon-900">Ancho con marco (cm)</p>
+              <Input
+                type="number"
+                value={values.frame_outer_width_cm ?? ""}
+                onChange={(e) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    frame_outer_width_cm: e.target.value ? Number(e.target.value) : undefined,
+                  }))
+                }
+                placeholder="70"
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-carbon-900">Alto con marco (cm)</p>
+              <Input
+                type="number"
+                value={values.frame_outer_height_cm ?? ""}
+                onChange={(e) =>
+                  setValues((prev) => ({
+                    ...prev,
+                    frame_outer_height_cm: e.target.value ? Number(e.target.value) : undefined,
+                  }))
+                }
+                placeholder="90"
+                disabled={loading}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-stone-500">
+            Deben ser mayores o iguales al ancho y alto de la obra sin marco.
+          </p>
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
