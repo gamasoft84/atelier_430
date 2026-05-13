@@ -83,19 +83,57 @@ function toLayoutArtworks(items: ScaleCollectionClientItem[]): ScaleLayoutArtwor
   }))
 }
 
-const SILHOUETTE_SRC = "/escala-silueta-humana.svg"
+/**
+ * Ancho del viewBox en unidades (= cm): figura anatómica 50 cm de ancho × 170 cm de alto.
+ * Debe coincidir con el ancho del `viewBox` del SVG para escala 1:1 con las obras en el eje X.
+ */
+const HUMAN_SILHOUETTE_VIEWBOX_WIDTH_CM = 50
 
-/** Vector en `public/` (relleno sólido) para que la figura se vea nítida a cualquier zoom. */
-function HumanSilhouette({ className }: { className?: string }) {
+interface HumanReferenceSilhouetteProps {
+  humanHeightCm: number
+  basePxPerCm: number
+  userZoom: number
+}
+
+/**
+ * Silueta a escala: mismas unidades que `renderArtworkSlot` (basePxPerCm en layout + scale(userZoom)),
+ * así la altura en pantalla es humanHeightCm × effectivePxPerCm, igual que slot.heightCm × effectivePxPerCm.
+ */
+function HumanReferenceSilhouette({ humanHeightCm, basePxPerCm, userZoom }: HumanReferenceSilhouetteProps) {
+  const wPx = HUMAN_SILHOUETTE_VIEWBOX_WIDTH_CM * basePxPerCm
+  const hPx = humanHeightCm * basePxPerCm
+  const refMeters = `${(humanHeightCm / 100).toFixed(2)} m`
+
   return (
-    <img
-      src={SILHOUETTE_SRC}
-      alt=""
-      width={72}
-      height={210}
-      draggable={false}
-      className={`select-none object-contain object-bottom ${className ?? ""}`}
-    />
+    <div
+      className="relative inline-block shrink-0 select-none text-[#3a2f1f]"
+      style={{
+        width: wPx,
+        height: hPx,
+        transform: `scale(${userZoom})`,
+        transformOrigin: "bottom center",
+      }}
+    >
+      <div className="h-full w-full">
+        <svg
+          viewBox="0 0 50 170"
+          xmlns="http://www.w3.org/2000/svg"
+          className="block h-full w-full"
+          aria-label={`Figura humana de referencia ${refMeters}`}
+        >
+          <g fill="currentColor" opacity={0.72}>
+            <ellipse cx="25" cy="13" rx="8.5" ry="11" />
+            <path d="M22,24 L22,29 L28,29 L28,24 Z" />
+            <path d="M5,29 Q25,27 45,29 L38,68 Q41,78 43,88 L7,88 Q9,78 12,68 Z" />
+            <path d="M11,88 L23,88 L22,170 L12,170 Z" />
+            <path d="M27,88 L39,88 L38,170 L28,170 Z" />
+          </g>
+        </svg>
+      </div>
+      <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap text-xs tabular-nums text-stone-500">
+        {humanHeightCm} cm
+      </span>
+    </div>
   )
 }
 
@@ -238,28 +276,12 @@ export default function CollectionScaleFloor({
   }
 
   const humanLayoutWPx = humanFootprintCm * basePxPerCm
-  const humanLayoutHPx = humanHeightCm * basePxPerCm
   const humanRailOuterWPx = humanLayoutWPx * userZoom + HUMAN_RAIL_PADDING_X * 2
 
   const renderHumanFigure = () => {
     if (!humanSlot || humanSlot.kind !== "human") return null
     return (
-      <div
-        role="img"
-        aria-label={`Silueta de referencia de ${humanHeightCm} centímetros de altura`}
-        className="flex flex-col items-center justify-end rounded-lg border-2 border-orange-500 bg-white shadow-md ring-2 ring-orange-400/40"
-        style={{
-          width: humanLayoutWPx,
-          height: humanLayoutHPx,
-          transform: `scale(${userZoom})`,
-          transformOrigin: "bottom center",
-        }}
-      >
-        <HumanSilhouette className="h-[94%] w-auto max-w-[96%] drop-shadow-[0_2px_4px_rgba(28,25,23,0.35)]" />
-        <span className="mb-0.5 text-[9px] font-medium text-orange-950 tabular-nums leading-none">
-          {humanHeightCm} cm
-        </span>
-      </div>
+      <HumanReferenceSilhouette humanHeightCm={humanHeightCm} basePxPerCm={basePxPerCm} userZoom={userZoom} />
     )
   }
 
@@ -371,7 +393,7 @@ export default function CollectionScaleFloor({
         className="w-full overflow-hidden rounded-xl border border-stone-200 bg-[#FAF7F0] shadow-inner"
         role="presentation"
       >
-        <div className="flex min-w-0">
+        <div className="flex min-w-0 pb-7">
           <aside
             className="flex shrink-0 flex-col items-center justify-end border-r border-stone-300/90 bg-cream shadow-[inset_-6px_0_12px_-8px_rgba(15,15,15,0.06)]"
             style={{
@@ -429,7 +451,9 @@ export default function CollectionScaleFloor({
             style={{ width: Math.max(1, barLenPx) }}
             aria-hidden
           />
-          <span className="text-xs text-stone-600 tabular-nums">{barChoice.label}</span>
+          {barChoice.label ? (
+            <span className="text-xs text-stone-600 tabular-nums">{barChoice.label}</span>
+          ) : null}
         </div>
       </div>
     </div>
