@@ -293,7 +293,7 @@ export default function CollectionScaleFloor({
       <Link
         href={`/catalogo/${slot.code}`}
         title={hoverTitle}
-        className="absolute block overflow-hidden rounded-md border border-stone-300 bg-white shadow-sm outline-none ring-gold-500/40 focus-visible:ring-2"
+        className="absolute block overflow-hidden rounded-[2px] border border-stone-300 bg-white shadow-sm outline-none ring-gold-500/40 focus-visible:ring-2"
         style={{
           left: leftPx,
           bottom: 0,
