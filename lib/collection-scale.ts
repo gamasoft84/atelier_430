@@ -85,6 +85,16 @@ export function fitPixelsPerCm(
   return Math.min(maxPxPerCm, Math.max(minPxPerCm, raw))
 }
 
+/**
+ * Convierte centímetros del mundo real a píxeles en la vista a escala.
+ * `pxPerCm` debe ser el factor único en pantalla (p. ej. `basePxPerCm * userZoom`), el mismo
+ * para silueta, rectángulos de obra y barra gráfica — evita desfaces por `transform: scale` duplicado.
+ */
+export function cmToLayoutPx(cm: number, pxPerCm: number): number {
+  if (!Number.isFinite(cm) || !Number.isFinite(pxPerCm)) return 0
+  return cm * pxPerCm
+}
+
 /** Índices de slots que intersectan la ventana horizontal en espacio cm (más buffer). */
 export function visibleSlotIndices(
   slots: readonly FloorSlot[],

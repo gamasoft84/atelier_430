@@ -8,6 +8,7 @@ import { getCloudinaryUrl } from "@/lib/cloudinary/transform"
 import { pickScaleBarSegment } from "@/lib/collection-scale-bar"
 import {
   buildFloorSlots,
+  cmToLayoutPx,
   fitPixelsPerCm,
   maxSlotHeightCm,
   totalTrackWidthCm,
@@ -91,29 +92,20 @@ const HUMAN_SILHOUETTE_VIEWBOX_WIDTH_CM = 50
 
 interface HumanReferenceSilhouetteProps {
   humanHeightCm: number
-  basePxPerCm: number
-  userZoom: number
+  /** Factor único cm→px (debe ser `basePxPerCm * userZoom`, igual que las obras). */
+  pxPerCm: number
 }
 
 /**
- * Silueta a escala: mismas unidades que `renderArtworkSlot` (basePxPerCm en layout + scale(userZoom)),
- * así la altura en pantalla es humanHeightCm × effectivePxPerCm, igual que slot.heightCm × effectivePxPerCm.
+ * Silueta a escala: usa el mismo `pxPerCm` que los rectángulos de obra (sin `transform: scale` propio).
  */
-function HumanReferenceSilhouette({ humanHeightCm, basePxPerCm, userZoom }: HumanReferenceSilhouetteProps) {
-  const wPx = HUMAN_SILHOUETTE_VIEWBOX_WIDTH_CM * basePxPerCm
-  const hPx = humanHeightCm * basePxPerCm
+function HumanReferenceSilhouette({ humanHeightCm, pxPerCm }: HumanReferenceSilhouetteProps) {
+  const wPx = cmToLayoutPx(HUMAN_SILHOUETTE_VIEWBOX_WIDTH_CM, pxPerCm)
+  const hPx = cmToLayoutPx(humanHeightCm, pxPerCm)
   const refMeters = `${(humanHeightCm / 100).toFixed(2)} m`
 
   return (
-    <div
-      className="relative inline-block shrink-0 select-none text-[#3a2f1f]"
-      style={{
-        width: wPx,
-        height: hPx,
-        transform: `scale(${userZoom})`,
-        transformOrigin: "bottom center",
-      }}
-    >
+    <div className="relative block shrink-0 select-none text-[#3a2f1f]" style={{ width: wPx, height: hPx }}>
       <div className="h-full w-full">
         <svg
           viewBox="0 0 50 170"
@@ -130,7 +122,7 @@ function HumanReferenceSilhouette({ humanHeightCm, basePxPerCm, userZoom }: Huma
           </g>
         </svg>
       </div>
-      <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap text-xs tabular-nums text-stone-500">
+      <span className="pointer-events-none absolute inset-x-0 top-full z-10 mt-1 text-center text-xs tabular-nums text-stone-500">
         {humanHeightCm} cm
       </span>
     </div>
@@ -249,10 +241,10 @@ export default function CollectionScaleFloor({
     return () => el.removeEventListener("scroll", onScroll)
   }, [recomputeVisible])
 
-  const layoutW = scrollTotalWidthCm * basePxPerCm
-  const layoutH = Math.max(120, maxHeightCm * basePxPerCm)
-  const scaledW = layoutW * userZoom
-  const scaledH = layoutH * userZoom
+  /** Píxeles por cm en pantalla: un solo factor para silueta, obras y barra (evita desface por `scale` anidado). */
+  const pxPerCmFloor = effectivePxPerCm
+  const trackWidthPx = cmToLayoutPx(scrollTotalWidthCm, pxPerCmFloor)
+  const floorHeightPx = Math.max(120 * userZoom, maxHeightCm * pxPerCmFloor)
 
   const zoomIn = () => {
     setUserZoom((z) => clampUserZoom(basePxPerCm, z * ZOOM_FACTOR))
@@ -275,20 +267,19 @@ export default function CollectionScaleFloor({
     scrollRef.current?.scrollTo({ left: 0 })
   }
 
-  const humanLayoutWPx = humanFootprintCm * basePxPerCm
-  const humanRailOuterWPx = humanLayoutWPx * userZoom + HUMAN_RAIL_PADDING_X * 2
+  const humanRailOuterWPx = cmToLayoutPx(humanFootprintCm, pxPerCmFloor) + HUMAN_RAIL_PADDING_X * 2
 
   const renderHumanFigure = () => {
     if (!humanSlot || humanSlot.kind !== "human") return null
     return (
-      <HumanReferenceSilhouette humanHeightCm={humanHeightCm} basePxPerCm={basePxPerCm} userZoom={userZoom} />
+      <HumanReferenceSilhouette humanHeightCm={humanHeightCm} pxPerCm={pxPerCmFloor} />
     )
   }
 
   const renderArtworkSlot = (slot: FloorSlot) => {
-    const wPx = slot.widthCm * basePxPerCm
-    const hPx = slot.heightCm * basePxPerCm
-    const leftPx = (slot.xCm - humanFootprintCm - gapCm) * basePxPerCm
+    const wPx = cmToLayoutPx(slot.widthCm, pxPerCmFloor)
+    const hPx = cmToLayoutPx(slot.heightCm, pxPerCmFloor)
+    const leftPx = cmToLayoutPx(slot.xCm - humanFootprintCm - gapCm, pxPerCmFloor)
 
     const thumbPid = thumbById.get(slot.id) ?? null
     const imgSrc =
@@ -398,11 +389,13 @@ export default function CollectionScaleFloor({
             className="flex shrink-0 flex-col items-center justify-end border-r border-stone-300/90 bg-cream shadow-[inset_-6px_0_12px_-8px_rgba(15,15,15,0.06)]"
             style={{
               width: humanRailOuterWPx,
-              minHeight: scaledH,
+              minHeight: floorHeightPx,
             }}
           >
-            <span className="sr-only">Referencia humana fija en el borde izquierdo</span>
-            {renderHumanFigure()}
+            <div className="flex w-full min-w-0 flex-col items-center justify-end">
+              <span className="sr-only">Referencia humana fija en el borde izquierdo</span>
+              {renderHumanFigure()}
+            </div>
           </aside>
           <div
             ref={scrollRef}
@@ -414,21 +407,19 @@ export default function CollectionScaleFloor({
             <div
               className="flex flex-col"
               style={{
-                width: Math.max(scaledW, viewportInnerPx),
-                minHeight: scaledH,
+                width: Math.max(trackWidthPx, viewportInnerPx),
+                minHeight: floorHeightPx,
               }}
             >
               <div
                 className="flex w-full shrink-0 items-end justify-start"
-                style={{ height: scaledH }}
+                style={{ height: floorHeightPx }}
               >
                 <div
                   className="relative"
                   style={{
-                    width: layoutW,
-                    height: layoutH,
-                    transform: `scale(${userZoom})`,
-                    transformOrigin: "bottom left",
+                    width: trackWidthPx,
+                    height: floorHeightPx,
                   }}
                 >
                   {visible.map((i) => {
