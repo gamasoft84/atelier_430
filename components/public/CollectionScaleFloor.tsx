@@ -122,7 +122,10 @@ function HumanReferenceSilhouette({ humanHeightCm, pxPerCm }: HumanReferenceSilh
           </g>
         </svg>
       </div>
-      <span className="pointer-events-none absolute inset-x-0 top-full z-10 mt-1 text-center text-xs tabular-nums text-stone-500">
+      <span
+        className="pointer-events-none absolute inset-x-0 top-full z-10 text-center text-[11px] tabular-nums leading-none text-stone-500"
+        style={{ marginTop: 4 }}
+      >
         {humanHeightCm} cm
       </span>
     </div>
@@ -384,7 +387,7 @@ export default function CollectionScaleFloor({
         className="w-full overflow-hidden rounded-xl border border-stone-200 bg-[#FAF7F0] shadow-inner"
         role="presentation"
       >
-        <div className="flex min-w-0 pb-7">
+        <div className="flex min-w-0 pb-12">
           <aside
             className="flex shrink-0 flex-col items-center justify-end border-r border-stone-300/90 bg-cream shadow-[inset_-6px_0_12px_-8px_rgba(15,15,15,0.06)]"
             style={{
@@ -432,19 +435,23 @@ export default function CollectionScaleFloor({
             </div>
           </div>
         </div>
-        <div
-          className="flex shrink-0 items-center gap-3 border-t border-stone-200/80 px-4 py-2"
-          role="img"
-          aria-label={`Barra gráfica de escala, segmento de ${barChoice.segmentCm} centímetros`}
-        >
+        <div className="shrink-0 border-t border-stone-200/80 bg-[#FAF7F0] px-4 pt-6 pb-4">
           <div
-            className="h-0.5 shrink-0 rounded-full bg-stone-700"
-            style={{ width: Math.max(1, barLenPx) }}
-            aria-hidden
-          />
-          {barChoice.label ? (
-            <span className="text-xs text-stone-600 tabular-nums">{barChoice.label}</span>
-          ) : null}
+            role="img"
+            aria-label={`Barra gráfica de escala, segmento de ${barChoice.segmentCm} centímetros`}
+            className="max-w-full"
+          >
+            <div className="relative" style={{ width: Math.max(1, barLenPx) }} aria-hidden>
+              <div className="relative h-3 w-full">
+                <div className="absolute bottom-0 left-0 h-2.5 w-px bg-stone-700" />
+                <div className="absolute bottom-0 right-0 h-2.5 w-px bg-stone-700" />
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-stone-700" />
+              </div>
+            </div>
+            <p className="mt-2 text-left text-[11px] text-stone-500 tabular-nums leading-snug">
+              {barChoice.segmentCm === 100 ? "1 m" : "50 cm"}
+            </p>
+          </div>
         </div>
       </div>
     </div>
