@@ -190,6 +190,7 @@ export interface ScaleCollectionClientItem {
 /**
  * Obras disponibles con medidas para la vista a escala (piso + referencia humana).
  * Excluye filas sin ancho/alto válidos; `excludedWithoutDimensions` cuenta el resto de disponibles.
+ * Orden: mayor altura (`heightCm`) a menor; empate por código.
  */
 export async function getScaleCollectionData(): Promise<{
   items: ScaleCollectionClientItem[]
@@ -209,9 +210,7 @@ export async function getScaleCollectionData(): Promise<{
       .not("width_cm", "is", null)
       .not("height_cm", "is", null)
       .gt("width_cm", 0)
-      .gt("height_cm", 0)
-      .order("category", { ascending: true })
-      .order("code", { ascending: true }),
+      .gt("height_cm", 0),
   ])
 
   const totalAvailable = countRes.count ?? 0
@@ -247,6 +246,12 @@ export async function getScaleCollectionData(): Promise<{
       heightCm: r.height_cm,
       thumbnailPublicId: pid,
     }
+  })
+
+  items.sort((a, b) => {
+    const dh = b.heightCm - a.heightCm
+    if (dh !== 0) return dh
+    return a.code.localeCompare(b.code, "es", { sensitivity: "base" })
   })
 
   const excludedWithoutDimensions = Math.max(0, totalAvailable - items.length)
