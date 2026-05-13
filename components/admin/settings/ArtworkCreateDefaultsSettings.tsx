@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES } from "@/lib/constants"
+import { ARTWORK_SUBCATEGORY_OPTIONS } from "@/lib/artwork-subcategories"
 import {
   ARTWORK_CREATE_DEFAULTS_SETTING_KEY,
   DEFAULT_ARTWORK_CREATE_DEFAULTS,
@@ -89,7 +90,19 @@ export default function ArtworkCreateDefaultsSettings() {
           <p className="text-sm font-medium text-carbon-900">Categoría</p>
           <Select
             value={values.category}
-            onValueChange={(v) => setValues((prev) => ({ ...prev, category: v as ArtworkCreateDefaults["category"] }))}
+            onValueChange={(v) => {
+              const cat = v as ArtworkCreateDefaults["category"]
+              setValues((prev) => {
+                const opts = ARTWORK_SUBCATEGORY_OPTIONS[cat]
+                const cur = prev.subcategory ?? ""
+                const stillValid = opts.some((o) => o.value === cur)
+                return {
+                  ...prev,
+                  category: cat,
+                  subcategory: stillValid ? cur : (opts[0]?.value ?? ""),
+                }
+              })
+            }}
             disabled={loading}
           >
             <SelectTrigger>
@@ -107,12 +120,22 @@ export default function ArtworkCreateDefaultsSettings() {
 
         <div className="space-y-2">
           <p className="text-sm font-medium text-carbon-900">Subcategoría</p>
-          <Input
+          <Select
             value={values.subcategory ?? ""}
-            onChange={(e) => setValues((prev) => ({ ...prev, subcategory: e.target.value }))}
-            placeholder="Bodegón"
+            onValueChange={(v) => setValues((prev) => ({ ...prev, subcategory: v }))}
             disabled={loading}
-          />
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona" />
+            </SelectTrigger>
+            <SelectContent>
+              {ARTWORK_SUBCATEGORY_OPTIONS[values.category].map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

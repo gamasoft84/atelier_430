@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Separator } from "@/components/ui/separator"
 import ImageUploader, { type ImageUploaderHandle } from "@/components/admin/ImageUploader"
 import { createArtwork, updateArtwork } from "@/app/actions/artworks"
+import { ARTWORK_SUBCATEGORY_OPTIONS } from "@/lib/artwork-subcategories"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES } from "@/lib/constants"
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { Artwork } from "@/types/artwork"
@@ -99,47 +100,10 @@ const artworkSchema = z.object({
 
 type ArtworkFormValues = z.infer<typeof artworkSchema>
 
-// ─── Subcategory options ──────────────────────────────────────────────────
+// ─── Subcategory options (lib/artwork-subcategories) ──────────────────────
 
-const SUBCATEGORIES: Record<string, Array<{ value: string; label: string }>> = {
-  religiosa: [
-    { value: "virgen_guadalupe",   label: "Virgen de Guadalupe" },
-    { value: "virgen_guadalupe_tepeyac", label: "Virgen de Guadalupe (Tepeyac)" },
-    { value: "san_charbel",        label: "San Charbel" },
-    { value: "san_judas_tadeo",    label: "San Judas Tadeo" },
-    { value: "san_judas_tadeo_dorado_grande", label: "San Judas Tadeo (marco grande dorado)" },
-    { value: "san_miguel_arcangel",label: "San Miguel Arcángel" },
-    { value: "san_miguel_arcangel_dorado", label: "San Miguel Arcángel (marco grande dorado)" },
-    { value: "la_sagrada_familia", label: "La Sagrada Familia" },
-    { value: "la_ultima_cena",     label: "La Última Cena" },
-  ],
-  nacional: [
-    { value: "Paisaje rural",   label: "Paisaje rural" },
-    { value: "Paisaje marino",  label: "Paisaje marino" },
-    { value: "Paisaje urbano",  label: "Paisaje urbano" },
-    { value: "Puente",          label: "Puente" },
-    { value: "Montaña",         label: "Montaña" },
-    { value: "Bosque",          label: "Bosque" },
-    { value: "Bodegón",         label: "Bodegón" },
-    { value: "Otro",            label: "Otro" },
-  ],
-  europea: [
-    { value: "Paisaje clásico", label: "Paisaje clásico" },
-    { value: "Retrato",         label: "Retrato" },
-    { value: "Bodegón",         label: "Bodegón" },
-    { value: "Mitología",       label: "Mitología" },
-    { value: "Arquitectura",    label: "Arquitectura" },
-    { value: "Otro",            label: "Otro" },
-  ],
-  moderna: [
-    { value: "Abstracto",                label: "Abstracto" },
-    { value: "Geométrico",               label: "Geométrico" },
-    { value: "Expresionista",            label: "Expresionista" },
-    { value: "Minimalista",              label: "Minimalista" },
-    { value: "Contemporánea decorativa", label: "Contemporánea decorativa" },
-    { value: "Otro",                     label: "Otro" },
-  ],
-}
+const SUBCATEGORIES: Record<string, Array<{ value: string; label: string }>> =
+  ARTWORK_SUBCATEGORY_OPTIONS as Record<string, Array<{ value: string; label: string }>>
 
 const STEP_LABELS = ["Imágenes", "Datos básicos", "Contenido", "Precio", "Publicar"]
 

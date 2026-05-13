@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { normalizeSubcategoryForCategory } from "@/lib/artwork-subcategories"
 
 export const ARTWORK_CREATE_DEFAULTS_SETTING_KEY = "artwork_create_defaults" as const
 
@@ -31,8 +32,12 @@ export const DEFAULT_ARTWORK_CREATE_DEFAULTS: ArtworkCreateDefaults = {
 }
 
 export function parseArtworkCreateDefaults(value: unknown): ArtworkCreateDefaults {
-  if (!value || typeof value !== "object") return DEFAULT_ARTWORK_CREATE_DEFAULTS
+  if (!value || typeof value !== "object") {
+    return normalizeSubcategoryForCategory(DEFAULT_ARTWORK_CREATE_DEFAULTS)
+  }
   const parsed = ArtworkCreateDefaultsSchema.safeParse(value)
-  return parsed.success ? parsed.data : DEFAULT_ARTWORK_CREATE_DEFAULTS
+  return normalizeSubcategoryForCategory(
+    parsed.success ? parsed.data : DEFAULT_ARTWORK_CREATE_DEFAULTS,
+  )
 }
 
