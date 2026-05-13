@@ -448,9 +448,9 @@ export default function CollectionScaleFloor({
                 <div className="absolute bottom-0 left-0 right-0 h-px bg-stone-700" />
               </div>
             </div>
-            <p className="mt-2 text-left text-[11px] text-stone-500 tabular-nums leading-snug">
-              {barChoice.segmentCm === 100 ? "1 m" : "50 cm"}
-            </p>
+            {barChoice.segmentCm === 50 ? (
+              <p className="mt-2 text-left text-[11px] text-stone-500 tabular-nums leading-snug">50 cm</p>
+            ) : null}
           </div>
         </div>
       </div>
