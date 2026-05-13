@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import CollectionScaleFloorDynamic from "@/components/public/CollectionScaleFloorDynamic"
+import CollectionScaleFloor from "@/components/public/CollectionScaleFloor"
 import { getScaleCollectionData } from "@/lib/supabase/queries/public"
 import { SITE_NAME } from "@/lib/constants"
 
@@ -30,7 +30,7 @@ export default async function EscalaColeccionPage() {
         </p>
       </header>
 
-      <CollectionScaleFloorDynamic
+      <CollectionScaleFloor
         items={items}
         excludedWithoutDimensions={excludedWithoutDimensions}
         humanHeightCm={ESCALA_REFERENCE_HUMAN_CM}

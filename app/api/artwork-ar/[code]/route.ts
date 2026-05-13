@@ -2,47 +2,8 @@ import { NextResponse } from "next/server"
 import { buildPosterGlbBuffer } from "@/lib/ar/build-poster-glb"
 import { cloudinaryUrlForArTexture } from "@/lib/cloudinary/transform"
 import { getArtworkByCodeAnon } from "@/lib/supabase/queries/public"
-import type { ArtworkPublic } from "@/types/artwork"
 
 export const runtime = "nodejs"
-
-/**
- * Dimensiones físicas del plano AR en cm (se pasan a metros tal cual; ancho = X, alto = Y en muro).
- * - Si hay marco y existen medidas exteriores (`frame_outer_*`), usamos esas: la primary suele
- *   mostrar la pieza enmarcada y el tamaño en sala debe coincidir con el contorno visible.
- * - Si no, usamos `width_cm` / `height_cm` (obra / lienzo según lo capturado en admin como “Ancho/Alto”).
- */
-function pickPhysicalDimensionsCm(artwork: ArtworkPublic): {
-  widthCm: number
-  heightCm: number
-} | null {
-  const innerOk =
-    typeof artwork.width_cm === "number" &&
-    typeof artwork.height_cm === "number" &&
-    artwork.width_cm > 0 &&
-    artwork.height_cm > 0
-
-  const outerOk =
-    artwork.has_frame &&
-    typeof artwork.frame_outer_width_cm === "number" &&
-    typeof artwork.frame_outer_height_cm === "number" &&
-    artwork.frame_outer_width_cm > 0 &&
-    artwork.frame_outer_height_cm > 0
-
-  if (outerOk) {
-    return {
-      widthCm: artwork.frame_outer_width_cm ?? 0,
-      heightCm: artwork.frame_outer_height_cm ?? 0,
-    }
-  }
-  if (innerOk) {
-    return {
-      widthCm: artwork.width_cm ?? 0,
-      heightCm: artwork.height_cm ?? 0,
-    }
-  }
-  return null
-}
 
 function normalizeImageMime(headerMime: string | null, url: string): string {
   const h = headerMime?.split(";")[0]?.trim().toLowerCase()
@@ -92,15 +53,24 @@ export async function GET(
   let widthM: number
   let heightM: number
 
-  const physical = pickPhysicalDimensionsCm(artwork)
+  if (artwork.width_cm && artwork.height_cm) {
+    // If saved dimensions don't match the image orientation, swap them.
+    // This avoids generating a vertical poster from a horizontal photo when dimensions were entered reversed.
+    const dimAspect = artwork.width_cm / artwork.height_cm
+    const imgAspect =
+      primary.width && primary.height && primary.height > 0
+        ? primary.width / primary.height
+        : null
 
-  if (physical) {
-    // Usar siempre ancho/alto tal como están en BD (ancho = eje X en muro, alto = eje Y).
-    // No inferir swap desde la orientación del archivo de imagen: una pieza vertical (p. ej. 88×108 cm)
-    // suele fotografiarse en horizontal y el aspect ratio de la foto no coincide con el objeto físico;
-    // intercambiar por foto invertía altura y ancho en AR (bug reportado con obras verticales).
-    widthM = physical.widthCm / 100
-    heightM = physical.heightCm / 100
+    const shouldSwap =
+      imgAspect !== null &&
+      ((dimAspect < 1 && imgAspect > 1) || (dimAspect > 1 && imgAspect < 1))
+
+    const wCm = shouldSwap ? artwork.height_cm : artwork.width_cm
+    const hCm = shouldSwap ? artwork.width_cm : artwork.height_cm
+
+    widthM = wCm / 100
+    heightM = hCm / 100
   } else if (primary.width && primary.height && primary.height > 0) {
     const aspect = primary.width / primary.height
     heightM = 0.9
