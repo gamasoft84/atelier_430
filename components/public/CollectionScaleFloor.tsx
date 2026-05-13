@@ -83,19 +83,23 @@ function toLayoutArtworks(items: ScaleCollectionClientItem[]): ScaleLayoutArtwor
   }))
 }
 
-const SILHOUETTE_SRC = "/escala-silueta-humana.svg"
-
-/** Vector en `public/` (relleno sólido) para que la figura se vea nítida a cualquier zoom. */
+/** Silueta inline (mismo trazado que `public/escala-silueta-humana.svg`) para evitar hydration mismatch con `<img>`. */
 function HumanSilhouette({ className }: { className?: string }) {
   return (
-    <img
-      src={SILHOUETTE_SRC}
-      alt=""
-      width={72}
-      height={210}
-      draggable={false}
-      className={`select-none object-contain object-bottom ${className ?? ""}`}
-    />
+    <svg
+      className={`block h-auto w-auto max-h-full select-none ${className ?? ""}`}
+      viewBox="0 0 72 210"
+      fill="#292524"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <ellipse cx="36" cy="24" rx="17" ry="19" />
+      <path d="M36 42c-9 0-16 6-16 14v6h32v-6c0-8-7-14-16-14z" />
+      <rect x="24" y="60" width="24" height="44" rx="10" />
+      <path d="M24 68L9 116l9 4 13-38M48 68l15 48-9 4-13-38" />
+      <rect x="21" y="102" width="14" height="92" rx="7" />
+      <rect x="37" y="102" width="14" height="92" rx="7" />
+    </svg>
   )
 }
 
@@ -237,41 +241,49 @@ export default function CollectionScaleFloor({
     scrollRef.current?.scrollTo({ left: 0 })
   }
 
-  const humanLayoutWPx = humanFootprintCm * basePxPerCm
-  const humanLayoutHPx = humanHeightCm * basePxPerCm
+  const humanLayoutWPx = Math.max(1, humanFootprintCm * basePxPerCm)
+  const humanLayoutHPx = Math.max(1, humanHeightCm * basePxPerCm)
   const humanRailOuterWPx = humanLayoutWPx * userZoom + HUMAN_RAIL_PADDING_X * 2
 
   const renderHumanFigure = () => {
     if (!humanSlot || humanSlot.kind !== "human") return null
     return (
-      <div
-        role="img"
-        aria-label={`Silueta de referencia de ${humanHeightCm} centímetros de altura`}
-        className="flex flex-col items-center justify-end rounded-lg border-2 border-orange-500 bg-white shadow-md ring-2 ring-orange-400/40"
-        style={{
-          width: humanLayoutWPx,
-          height: humanLayoutHPx,
-          transform: `scale(${userZoom})`,
-          transformOrigin: "bottom center",
-        }}
-      >
-        <HumanSilhouette className="h-[94%] w-auto max-w-[96%] drop-shadow-[0_2px_4px_rgba(28,25,23,0.35)]" />
-        <span className="mb-0.5 text-[9px] font-medium text-orange-950 tabular-nums leading-none">
-          {humanHeightCm} cm
-        </span>
+      <div className="flex flex-col items-center justify-end gap-1 pb-0.5">
+        <div className="flex items-center justify-center rounded-[3px] border border-orange-500 bg-white px-2.5 py-1 shadow-sm">
+          <span
+            id="escala-human-height-label"
+            className="text-[9px] font-medium text-orange-950 tabular-nums leading-none"
+          >
+            {humanHeightCm} cm
+          </span>
+        </div>
+        <div
+          role="img"
+          aria-describedby="escala-human-height-label"
+          aria-label="Silueta de referencia humana de pie"
+          className="flex items-end justify-center"
+          style={{
+            width: humanLayoutWPx,
+            height: humanLayoutHPx,
+            transform: `scale(${userZoom})`,
+            transformOrigin: "bottom center",
+          }}
+        >
+          <HumanSilhouette className="h-[94%] w-auto max-w-[96%]" />
+        </div>
       </div>
     )
   }
 
   const renderArtworkSlot = (slot: FloorSlot) => {
-    const wPx = slot.widthCm * basePxPerCm
-    const hPx = slot.heightCm * basePxPerCm
+    const wPx = Math.max(1, slot.widthCm * basePxPerCm)
+    const hPx = Math.max(1, slot.heightCm * basePxPerCm)
     const leftPx = (slot.xCm - humanFootprintCm - gapCm) * basePxPerCm
 
     const thumbPid = thumbById.get(slot.id) ?? null
     const imgSrc =
       typeof thumbPid === "string" && thumbPid.length > 0
-        ? getCloudinaryUrl(thumbPid, "thumbnail")
+        ? getCloudinaryUrl(thumbPid, "scaleFloor")
         : null
 
     const hoverTitle = `${slot.title}\n${slot.widthCm} × ${slot.heightCm} cm`
@@ -280,7 +292,7 @@ export default function CollectionScaleFloor({
       <Link
         href={`/catalogo/${slot.code}`}
         title={hoverTitle}
-        className="absolute block overflow-hidden rounded-md border border-stone-300 bg-white shadow-sm outline-none ring-gold-500/40 focus-visible:ring-2"
+        className="absolute block overflow-hidden rounded-none border-0 bg-cream shadow-none outline-none ring-gold-500/40 focus-visible:ring-2"
         style={{
           left: leftPx,
           bottom: 0,
@@ -289,32 +301,32 @@ export default function CollectionScaleFloor({
         }}
         aria-label={`${slot.title}, código ${slot.code}, ${slot.widthCm} por ${slot.heightCm} centímetros`}
       >
-        <div className="relative h-full w-full">
-          {imgSrc ? (
+        {imgSrc ? (
+          <div className="relative h-full w-full">
             <Image
               src={imgSrc}
               alt=""
               fill
-              className="object-contain p-0.5"
+              className="object-contain bg-cream"
               sizes="200px"
               unoptimized
               loading="lazy"
             />
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 bg-stone-100 px-1 text-center">
-              <span className="font-mono text-[10px] font-semibold text-gold-600">{slot.code}</span>
-              <span className="text-[9px] leading-tight text-stone-500 line-clamp-2">{slot.title}</span>
-              <span className="text-[9px] font-medium text-stone-600 tabular-nums">Sin miniatura</span>
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-0.5 bg-stone-100/90 px-1 text-center">
+            <span className="font-mono text-[10px] font-semibold text-gold-600">{slot.code}</span>
+            <span className="text-[9px] leading-tight text-stone-500 line-clamp-2">{slot.title}</span>
+            <span className="text-[9px] font-medium text-stone-600 tabular-nums">Sin miniatura</span>
+          </div>
+        )}
       </Link>
     )
   }
 
   if (slots.length <= 1) {
     return (
-      <div className="rounded-xl border border-stone-200 bg-stone-50 px-6 py-12 text-center text-sm text-stone-600">
+      <div className="rounded-[4px] border border-stone-200 bg-stone-50 px-6 py-12 text-center text-sm text-stone-600">
         No hay obras disponibles con medidas para mostrar a escala.
         {excludedWithoutDimensions > 0 ? (
           <p className="mt-2 text-xs text-stone-500">
@@ -368,7 +380,7 @@ export default function CollectionScaleFloor({
       </p>
 
       <div
-        className="w-full overflow-hidden rounded-xl border border-stone-200 bg-[#FAF7F0] shadow-inner"
+        className="w-full overflow-hidden rounded-[4px] border border-stone-200 bg-[#FAF7F0] shadow-inner"
         role="presentation"
       >
         <div className="flex min-w-0">
@@ -425,7 +437,7 @@ export default function CollectionScaleFloor({
           aria-label={`Barra gráfica de escala, segmento de ${barChoice.segmentCm} centímetros`}
         >
           <div
-            className="h-0.5 shrink-0 rounded-full bg-stone-700"
+            className="h-0.5 shrink-0 rounded-[1px] bg-stone-700"
             style={{ width: Math.max(1, barLenPx) }}
             aria-hidden
           />

@@ -91,8 +91,8 @@ const TECHNIQUE_LABEL: Record<string, string> = {
 }
 
 const CATALOG_FORMAT_LABEL: Record<string, string> = {
-  horizontal: "Formato horizontal (catálogo)",
-  vertical:   "Formato vertical (catálogo)",
+  horizontal: "Formato horizontal",
+  vertical:   "Formato vertical",
 }
 
 // ─── Status badge ──────────────────────────────────────────────────────────

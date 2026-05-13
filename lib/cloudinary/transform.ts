@@ -1,15 +1,17 @@
 import { CLOUDINARY_CLOUD_NAME } from "@/lib/constants"
 
-export type ImageTransform = "thumbnail" | "card" | "detail" | "og"
+export type ImageTransform = "thumbnail" | "card" | "detail" | "og" | "scaleFloor"
 
 // c_limit: scale down without cropping (preserves full painting).
 // CSS object-cover/object-contain handles the visual crop.
 // f_auto: WebP/AVIF based on browser support.
+// scaleFloor: misma resolución que thumbnail; preset dedicado por si se ajusta recorte/pad solo aquí.
 const TRANSFORMS: Record<ImageTransform, string> = {
   thumbnail: "w_200,c_limit,q_auto:eco,f_auto",
   card:      "w_800,c_limit,q_auto:good,f_auto",
   detail:    "w_1200,c_limit,q_auto:good,f_auto",
   og:        "w_1200,h_630,c_fill,q_auto:good,f_auto",
+  scaleFloor: "w_200,c_limit,q_auto:eco,f_auto",
 }
 
 export function getCloudinaryUrl(
