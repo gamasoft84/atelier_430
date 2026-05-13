@@ -1,9 +1,11 @@
--- Texto plano de tags para búsqueda ilike en PostgREST (admin / listados).
--- Se mantiene en sync con la columna tags (TEXT[]).
+-- Texto derivado de tags (TEXT[]) para búsqueda ilike en PostgREST.
+-- array_to_string() no es IMMUTABLE → la expresión generada debe usar solo casts/coalesce inmutables.
+
+ALTER TABLE public.artworks DROP COLUMN IF EXISTS tags_search;
 
 ALTER TABLE public.artworks
-ADD COLUMN IF NOT EXISTS tags_search text
-GENERATED ALWAYS AS (COALESCE(array_to_string(tags, ' '), '')) STORED;
+ADD COLUMN tags_search text
+GENERATED ALWAYS AS (coalesce(tags::text, '')) STORED;
 
 COMMENT ON COLUMN public.artworks.tags_search IS
-  'Derivado de tags (solo lectura). Para filtros tipo ILIKE; no actualizar a mano.';
+  'Derivado de tags (solo lectura). Formato {tag1,tag2}; para ILIKE; no actualizar a mano.';
