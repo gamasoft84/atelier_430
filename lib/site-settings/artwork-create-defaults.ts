@@ -12,6 +12,8 @@ export const ArtworkCreateDefaultsSchema = z
     width_cm: z.number().int().min(1).max(500).optional(),
     height_cm: z.number().int().min(1).max(500).optional(),
     has_frame: z.boolean().optional().default(false),
+    frame_material: z.string().max(100).optional().default(""),
+    frame_color: z.string().max(100).optional().default(""),
     frame_outer_width_cm: z.number().int().min(1).max(500).optional(),
     frame_outer_height_cm: z.number().int().min(1).max(500).optional(),
     price: z.number().int().min(0).optional(),
@@ -29,6 +31,8 @@ export const DEFAULT_ARTWORK_CREATE_DEFAULTS: ArtworkCreateDefaults = {
   width_cm: 60,
   height_cm: 80,
   has_frame: false,
+  frame_material: "",
+  frame_color: "",
   price: 1000,
   original_price: 4560,
 }

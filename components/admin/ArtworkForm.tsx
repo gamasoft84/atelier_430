@@ -257,6 +257,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
             width_cm: defaults.width_cm,
             height_cm: defaults.height_cm,
             has_frame: defaults.has_frame,
+            frame_material: defaults.has_frame ? (defaults.frame_material ?? "") : "",
+            frame_color: defaults.has_frame ? (defaults.frame_color ?? "") : "",
             frame_outer_width_cm: defaults.has_frame ? (defaults.frame_outer_width_cm ?? null) : null,
             frame_outer_height_cm: defaults.has_frame ? (defaults.frame_outer_height_cm ?? null) : null,
             price: defaults.price,

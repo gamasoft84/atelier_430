@@ -27,6 +27,8 @@ const FormSchema = z
     has_frame: z.coerce.boolean().optional(),
     frame_outer_width_cm: z.coerce.number().min(1).max(500).optional(),
     frame_outer_height_cm: z.coerce.number().min(1).max(500).optional(),
+    frame_material: z.string().max(100).optional().default(""),
+    frame_color: z.string().max(100).optional().default(""),
     price: z.coerce.number().min(0).optional(),
     original_price: z.coerce.number().min(0).optional(),
   })
@@ -89,7 +91,13 @@ export default function ArtworkCreateDefaultsSettings() {
       const parsed = FormSchema.parse(values)
       const value = parsed.has_frame
         ? parsed
-        : { ...parsed, frame_outer_width_cm: undefined, frame_outer_height_cm: undefined }
+        : {
+            ...parsed,
+            frame_outer_width_cm: undefined,
+            frame_outer_height_cm: undefined,
+            frame_material: "",
+            frame_color: "",
+          }
       const { error } = await supabase.from("site_settings").upsert({
         key: ARTWORK_CREATE_DEFAULTS_SETTING_KEY,
         value,
@@ -211,7 +219,12 @@ export default function ArtworkCreateDefaultsSettings() {
                 has_frame: has,
                 ...(has
                   ? {}
-                  : { frame_outer_width_cm: undefined, frame_outer_height_cm: undefined }),
+                  : {
+                      frame_outer_width_cm: undefined,
+                      frame_outer_height_cm: undefined,
+                      frame_material: "",
+                      frame_color: "",
+                    }),
               }))
             }}
             disabled={loading}
@@ -252,7 +265,30 @@ export default function ArtworkCreateDefaultsSettings() {
 
       {values.has_frame ? (
         <div className="space-y-3 rounded-lg border border-stone-200 bg-stone-50/60 p-4">
-          <p className="text-sm font-medium text-carbon-900">Medidas exteriores (con marco)</p>
+          <p className="text-sm font-medium text-carbon-900">Marco</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-carbon-900">Material del marco</p>
+              <Input
+                value={values.frame_material ?? ""}
+                onChange={(e) =>
+                  setValues((prev) => ({ ...prev, frame_material: e.target.value }))
+                }
+                placeholder="madera, polirresina…"
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-carbon-900">Color del marco</p>
+              <Input
+                value={values.frame_color ?? ""}
+                onChange={(e) => setValues((prev) => ({ ...prev, frame_color: e.target.value }))}
+                placeholder="dorado, negro, natural…"
+                disabled={loading}
+              />
+            </div>
+          </div>
+          <p className="text-sm font-medium text-carbon-900 pt-1">Medidas exteriores (con marco)</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <p className="text-sm font-medium text-carbon-900">Ancho con marco (cm)</p>
