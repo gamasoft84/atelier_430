@@ -3,7 +3,6 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Minus, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getCloudinaryUrl } from "@/lib/cloudinary/transform"
 import { pickScaleBarSegment } from "@/lib/collection-scale-bar"
@@ -23,7 +22,35 @@ const MAX_PX_PER_CM = 3.2
 const BUFFER_CM = 100
 const ZOOM_FACTOR = 1.15
 /** Espacio lateral de la columna fija de referencia (px, sin zoom). */
-const HUMAN_RAIL_PADDING_X = 10
+const HUMAN_RAIL_PADDING_X = 18
+
+function ZoomIconMinus({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ZoomIconPlus({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 function clampUserZoom(basePxPerCm: number, zoom: number): number {
   if (!Number.isFinite(basePxPerCm) || basePxPerCm <= 0) return 1
@@ -56,34 +83,19 @@ function toLayoutArtworks(items: ScaleCollectionClientItem[]): ScaleLayoutArtwor
   }))
 }
 
-const SILHOUETTE_Y_SCALE = 170 / 164
+const SILHOUETTE_SRC = "/escala-silueta-humana.svg"
 
+/** Vector en `public/` (relleno sólido) para que la figura se vea nítida a cualquier zoom. */
 function HumanSilhouette({ className }: { className?: string }) {
   return (
-    <svg
-      className={className}
-      viewBox="0 0 48 170"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <g transform={`scale(1 ${SILHOUETTE_Y_SCALE})`}>
-        <ellipse cx="24" cy="18" rx="14" ry="16" className="fill-stone-600/90" />
-        <path
-          d="M24 34 L10 52 L14 54 L24 42 L34 54 L38 52 Z"
-          className="fill-stone-700/90"
-        />
-        <rect x="18" y="42" width="12" height="52" rx="4" className="fill-stone-700/90" />
-        <path
-          d="M18 70 L6 118 L12 120 L20 78 M30 78 L38 120 L44 118 L32 70"
-          className="stroke-stone-700 stroke-[5] stroke-linecap-round stroke-linejoin-round fill-none"
-        />
-        <path
-          d="M22 94 L18 156 L24 158 L30 156 L26 94"
-          className="fill-stone-700/90"
-        />
-      </g>
-    </svg>
+    <img
+      src={SILHOUETTE_SRC}
+      alt=""
+      width={72}
+      height={210}
+      draggable={false}
+      className={`select-none object-contain object-bottom ${className ?? ""}`}
+    />
   )
 }
 
@@ -91,7 +103,7 @@ export default function CollectionScaleFloor({
   items,
   excludedWithoutDimensions = 0,
   humanHeightCm = 170,
-  humanFootprintCm = 48,
+  humanFootprintCm = 66,
   gapCm = 12,
   horizontalPaddingPx = 24,
   introPieces,
@@ -235,7 +247,7 @@ export default function CollectionScaleFloor({
       <div
         role="img"
         aria-label={`Silueta de referencia de ${humanHeightCm} centímetros de altura`}
-        className="flex flex-col items-center justify-end rounded-lg border-2 border-gold-500/70 bg-white shadow-md ring-1 ring-gold-500/25"
+        className="flex flex-col items-center justify-end rounded-lg border-2 border-orange-500 bg-white shadow-md ring-2 ring-orange-400/40"
         style={{
           width: humanLayoutWPx,
           height: humanLayoutHPx,
@@ -243,8 +255,8 @@ export default function CollectionScaleFloor({
           transformOrigin: "bottom center",
         }}
       >
-        <HumanSilhouette className="h-[88%] w-auto max-w-[82%] drop-shadow-sm" />
-        <span className="mb-1 text-[10px] font-semibold text-carbon-900 tabular-nums">
+        <HumanSilhouette className="h-[94%] w-auto max-w-[96%] drop-shadow-[0_2px_4px_rgba(28,25,23,0.35)]" />
+        <span className="mb-0.5 text-[9px] font-medium text-orange-950 tabular-nums leading-none">
           {humanHeightCm} cm
         </span>
       </div>
@@ -268,7 +280,7 @@ export default function CollectionScaleFloor({
       <Link
         href={`/catalogo/${slot.code}`}
         title={hoverTitle}
-        className="absolute group block overflow-hidden rounded-md border border-stone-300 bg-white shadow-sm outline-none ring-gold-500/40 focus-visible:ring-2"
+        className="absolute block overflow-hidden rounded-md border border-stone-300 bg-white shadow-sm outline-none ring-gold-500/40 focus-visible:ring-2"
         style={{
           left: leftPx,
           bottom: 0,
@@ -278,9 +290,6 @@ export default function CollectionScaleFloor({
         aria-label={`${slot.title}, código ${slot.code}, ${slot.widthCm} por ${slot.heightCm} centímetros`}
       >
         <div className="relative h-full w-full">
-          <span className="pointer-events-none absolute left-0 right-0 top-0 z-10 bg-carbon-900/80 py-1 text-center text-[10px] font-medium text-cream opacity-0 transition-opacity group-hover:opacity-100">
-            Alto {slot.heightCm} cm
-          </span>
           {imgSrc ? (
             <Image
               src={imgSrc}
@@ -337,10 +346,10 @@ export default function CollectionScaleFloor({
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" variant="outline" size="sm" onClick={zoomOut} aria-label="Alejar">
-            <Minus className="h-4 w-4" />
+            <ZoomIconMinus className="h-4 w-4" />
           </Button>
           <Button type="button" variant="outline" size="sm" onClick={zoomIn} aria-label="Acercar">
-            <Plus className="h-4 w-4" />
+            <ZoomIconPlus className="h-4 w-4" />
           </Button>
           <Button type="button" variant="outline" size="sm" onClick={resetFit}>
             Ajustar a pantalla
