@@ -16,6 +16,7 @@ export interface Database {
           subcategory: string | null
           stock_quantity: number
           tags: string[] | null
+          tags_search: string
           technique: string | null
           catalog_format: "horizontal" | "vertical"
           width_cm: number | null

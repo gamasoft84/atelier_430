@@ -73,7 +73,7 @@ export default function ArtworksFilters({ sizeOptions }: { sizeOptions: string[]
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por título, código o ubicación en bodega…"
+          placeholder="Buscar por título, código, bodega o tags…"
           className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-stone-200 rounded-lg text-carbon-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 transition-colors"
         />
       </div>

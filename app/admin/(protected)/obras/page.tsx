@@ -118,8 +118,10 @@ export default async function ObrasPage(props: {
   }
 
   if (params.q?.trim()) {
-    const q = params.q.trim()
-    query = query.or(`title.ilike.%${q}%,code.ilike.%${q}%,location_in_storage.ilike.%${q}%`)
+    const q = params.q.trim().replace(/[%_]/g, "\\$&")
+    query = query.or(
+      `title.ilike.%${q}%,code.ilike.%${q}%,location_in_storage.ilike.%${q}%,tags_search.ilike.%${q}%`,
+    )
   }
   if (safeCategory) {
     query = query.eq("category", safeCategory)
