@@ -177,3 +177,78 @@ export async function getPreferPremiumInCatalog(): Promise<boolean> {
   }
   return true
 }
+
+export interface ScaleCollectionClientItem {
+  id: string
+  code: string
+  title: string
+  widthCm: number
+  heightCm: number
+  thumbnailPublicId: string | null
+}
+
+/**
+ * Obras disponibles con medidas para la vista a escala (piso + referencia humana).
+ * Excluye filas sin ancho/alto válidos; `excludedWithoutDimensions` cuenta el resto de disponibles.
+ */
+export async function getScaleCollectionData(): Promise<{
+  items: ScaleCollectionClientItem[]
+  excludedWithoutDimensions: number
+}> {
+  const supabase = await createClient()
+  const [countRes, preferPremium, sizedRes] = await Promise.all([
+    supabase.from("artworks").select("*", { count: "exact", head: true }).eq("status", "available"),
+    getPreferPremiumInCatalog(),
+    supabase
+      .from("artworks")
+      .select(
+        `id, code, title, width_cm, height_cm,
+         images:artwork_images(cloudinary_public_id, is_primary, is_premium, position)`
+      )
+      .eq("status", "available")
+      .not("width_cm", "is", null)
+      .not("height_cm", "is", null)
+      .gt("width_cm", 0)
+      .gt("height_cm", 0)
+      .order("category", { ascending: true })
+      .order("code", { ascending: true }),
+  ])
+
+  const totalAvailable = countRes.count ?? 0
+  const rows = sizedRes.data ?? []
+  if (sizedRes.error) {
+    return { items: [], excludedWithoutDimensions: Math.max(0, totalAvailable) }
+  }
+
+  const items: ScaleCollectionClientItem[] = rows.map((row) => {
+    const r = row as {
+      id: string
+      code: string
+      title: string
+      width_cm: number
+      height_cm: number
+      images: Array<{
+        cloudinary_public_id: string
+        is_primary: boolean | null
+        is_premium: boolean | null
+        position: number | null
+      }>
+    }
+    const img = selectShowcaseImage(r.images ?? [], preferPremium)
+    const pid =
+      typeof img?.cloudinary_public_id === "string" && img.cloudinary_public_id.length > 0
+        ? img.cloudinary_public_id
+        : null
+    return {
+      id: r.id,
+      code: r.code,
+      title: r.title,
+      widthCm: r.width_cm,
+      heightCm: r.height_cm,
+      thumbnailPublicId: pid,
+    }
+  })
+
+  const excludedWithoutDimensions = Math.max(0, totalAvailable - items.length)
+  return { items, excludedWithoutDimensions }
+}

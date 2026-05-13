@@ -15,6 +15,12 @@ export default function PublicHeaderNav() {
         Catálogo
       </Link>
       <Link
+        href="/escala-coleccion"
+        className="py-2 px-1 text-sm font-medium text-stone-600 hover:text-carbon-900 transition-colors"
+      >
+        Escala
+      </Link>
+      <Link
         href="/favoritos"
         className="py-2 px-1 text-sm font-medium text-stone-600 hover:text-carbon-900 transition-colors inline-flex items-center gap-1.5"
       >
