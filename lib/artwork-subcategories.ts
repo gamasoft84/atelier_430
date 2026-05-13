@@ -28,6 +28,7 @@ export const ARTWORK_SUBCATEGORY_OPTIONS: Record<
     { value: "Montaña", label: "Montaña" },
     { value: "Bosque", label: "Bosque" },
     { value: "Bodegón", label: "Bodegón" },
+    { value: "Hacienda colonial mexicana", label: "Hacienda colonial mexicana" },
     { value: "Otro", label: "Otro" },
   ],
   europea: [

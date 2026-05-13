@@ -50,7 +50,7 @@ Analiza la imagen adjunta y genera:
 
 3. **Tags** (5-8 palabras clave para SEO): conceptos visuales y temáticos en minúscula, sin hashtags.
 
-4. **Subcategoría**: elige la más adecuada según la categoría indicada. Para "religiosa" usa exactamente uno de estos slugs: virgen_guadalupe, virgen_guadalupe_tepeyac, san_charbel, san_judas_tadeo, san_judas_tadeo_dorado_grande, san_miguel_arcangel, san_miguel_arcangel_dorado, la_sagrada_familia, la_ultima_cena. Para "nacional": Paisaje rural, Paisaje marino, Paisaje urbano, Puente, Montaña, Bosque, Bodegón u Otro. Para "europea": Paisaje clásico, Retrato, Bodegón, Mitología, Arquitectura u Otro. Para "moderna": Abstracto, Geométrico, Expresionista, Minimalista, Contemporánea decorativa u Otro.
+4. **Subcategoría**: elige la más adecuada según la categoría indicada. Para "religiosa" usa exactamente uno de estos slugs: virgen_guadalupe, virgen_guadalupe_tepeyac, san_charbel, san_judas_tadeo, san_judas_tadeo_dorado_grande, san_miguel_arcangel, san_miguel_arcangel_dorado, la_sagrada_familia, la_ultima_cena. Para "nacional": Paisaje rural, Paisaje marino, Paisaje urbano, Puente, Montaña, Bosque, Bodegón, Hacienda colonial mexicana u Otro. Para "europea": Paisaje clásico, Retrato, Bodegón, Mitología, Arquitectura u Otro. Para "moderna": Abstracto, Geométrico, Expresionista, Minimalista, Contemporánea decorativa u Otro.
 
 5. **Sugerencia de precio** (solo si se proporcionó el costo de adquisición): propón tres niveles de precio en MXN basado en la tabla de referencia, el tamaño, la técnica, si tiene marco y la categoría. Los precios deben ser múltiplos de 50 y realistas para el mercado mexicano de decoración.
    - aggressive: precio mínimo para venta rápida (margen ≥ 2.5x costo si hay costo, o extremo inferior de tabla).
@@ -119,7 +119,7 @@ Tu única tarea es analizar la imagen y devolver un JSON de clasificación. Nada
 
 CATEGORÍAS PERMITIDAS (elige exactamente una):
 - "religiosa": imágenes sacras, vírgenes, santos, escenas bíblicas, ángeles, crucifijos
-- "nacional": paisajes mexicanos, naturaleza, campo, mar, montaña, ciudad (estilo óleo/realista)
+- "nacional": paisajes mexicanos, naturaleza, campo, mar, montaña, ciudad, haciendas coloniales (estilo óleo/realista)
 - "europea": reproducciones de maestros europeos clásicos, retratos clásicos, bodegones, mitología
 - "moderna": arte abstracto, geométrico, expresionista, minimalista, contemporáneo
 
@@ -129,7 +129,7 @@ Si category = "religiosa" (usa slug exacto):
 - "virgen_guadalupe", "virgen_guadalupe_tepeyac", "san_charbel", "san_judas_tadeo", "san_judas_tadeo_dorado_grande", "san_miguel_arcangel", "san_miguel_arcangel_dorado", "la_sagrada_familia", "la_ultima_cena"
 
 Si category = "nacional":
-- "Paisaje rural", "Paisaje marino", "Paisaje urbano", "Puente", "Montaña", "Bosque", "Bodegón"
+- "Paisaje rural", "Paisaje marino", "Paisaje urbano", "Puente", "Montaña", "Bosque", "Bodegón", "Hacienda colonial mexicana"
 - Si ninguna encaja, devuelve una descripción breve del tema (máx 3 palabras, en español)
 
 Si category = "europea":
