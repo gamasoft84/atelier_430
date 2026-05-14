@@ -1,8 +1,8 @@
-import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, ImageIcon, Pin } from "lucide-react"
 import { cn } from "@/lib/utils"
 import ArtworkActionsMenu from "@/components/admin/ArtworkActionsMenu"
+import ArtworksTableThumb from "@/components/admin/ArtworksTableThumb"
 import type { ArtworkCategory, ArtworkStatus } from "@/types/artwork"
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -234,20 +234,7 @@ export default function ArtworksTable({
                 <tr key={artwork.id} className="hover:bg-stone-50/60 transition-colors">
                   {/* Thumbnail */}
                   <td className="px-4 py-3">
-                    <div className="w-10 h-12 rounded bg-stone-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                      {img ? (
-                        <Image
-                          src={img.cloudinary_url}
-                          alt={artwork.title}
-                          width={40}
-                          height={50}
-                          className="object-cover w-full h-full"
-                          sizes="40px"
-                        />
-                      ) : (
-                        <ImageIcon size={14} className="text-stone-300" />
-                      )}
-                    </div>
+                    <ArtworksTableThumb src={img?.cloudinary_url ?? null} alt={artwork.title} />
                   </td>
 
                   {/* Code */}
