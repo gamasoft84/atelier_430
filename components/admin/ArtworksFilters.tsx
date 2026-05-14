@@ -20,7 +20,13 @@ const STATUS_LABELS: Record<string, string> = {
   draft: "Borrador",
 }
 
-export default function ArtworksFilters({ sizeOptions }: { sizeOptions: string[] }) {
+export default function ArtworksFilters({
+  artistOptions,
+  sizeOptions,
+}: {
+  artistOptions: string[]
+  sizeOptions: string[]
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -60,7 +66,9 @@ export default function ArtworksFilters({ sizeOptions }: { sizeOptions: string[]
   const activeCategory = searchParams.get("category") ?? ""
   const activeStatus = searchParams.get("status") ?? ""
   const activeSize = searchParams.get("size") ?? ""
-  const hasFilters = search || activeCategory || activeStatus || activeSize
+  const rawArtist = searchParams.get("artist") ?? ""
+  const activeArtist = artistOptions.includes(rawArtist) ? rawArtist : ""
+  const hasFilters = search || activeCategory || activeStatus || activeSize || activeArtist
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -73,7 +81,7 @@ export default function ArtworksFilters({ sizeOptions }: { sizeOptions: string[]
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por título, código, bodega o tags…"
+          placeholder="Buscar por título, código, autor, bodega o tags…"
           className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-stone-200 rounded-lg text-carbon-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 transition-colors"
         />
       </div>
@@ -100,6 +108,19 @@ export default function ArtworksFilters({ sizeOptions }: { sizeOptions: string[]
         {ARTWORK_STATUSES.map((s) => (
           <option key={s} value={s}>
             {STATUS_LABELS[s]}
+          </option>
+        ))}
+      </select>
+
+      <select
+        value={activeArtist}
+        onChange={(e) => updateParam("artist", e.target.value)}
+        className="text-sm bg-white border border-stone-200 rounded-lg px-3 py-2 text-carbon-900 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 transition-colors cursor-pointer max-w-[14rem]"
+      >
+        <option value="">Todos los autores</option>
+        {artistOptions.map((name) => (
+          <option key={name} value={name}>
+            {name}
           </option>
         ))}
       </select>

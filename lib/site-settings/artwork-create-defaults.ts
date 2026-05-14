@@ -11,7 +11,7 @@ export const ArtworkCreateDefaultsSchema = z
     artist: z.string().max(120).optional().default("F. Caltenco"),
     width_cm: z.number().int().min(1).max(500).optional(),
     height_cm: z.number().int().min(1).max(500).optional(),
-    has_frame: z.boolean().optional().default(false),
+    has_frame: z.coerce.boolean().optional().default(false),
     frame_material: z.string().max(100).optional().default(""),
     frame_color: z.string().max(100).optional().default(""),
     frame_outer_width_cm: z.number().int().min(1).max(500).optional(),

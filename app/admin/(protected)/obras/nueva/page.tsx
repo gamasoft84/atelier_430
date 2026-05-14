@@ -2,12 +2,26 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import ArtworkForm from "@/components/admin/ArtworkForm"
+import { createClient } from "@/lib/supabase/server"
+import {
+  ARTWORK_CREATE_DEFAULTS_SETTING_KEY,
+  parseArtworkCreateDefaults,
+} from "@/lib/site-settings/artwork-create-defaults"
 
 export const metadata: Metadata = {
   title: "Nueva obra",
 }
 
-export default function NuevaObraPage() {
+export default async function NuevaObraPage() {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", ARTWORK_CREATE_DEFAULTS_SETTING_KEY)
+    .maybeSingle()
+
+  const createDefaults = parseArtworkCreateDefaults(data?.value)
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
@@ -27,7 +41,7 @@ export default function NuevaObraPage() {
         <p className="text-sm text-stone-500 mt-1">Completa los datos para agregar una obra al inventario.</p>
       </div>
 
-      <ArtworkForm mode="create" />
+      <ArtworkForm mode="create" createDefaults={createDefaults} />
     </div>
   )
 }

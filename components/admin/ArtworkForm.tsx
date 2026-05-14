@@ -27,6 +27,7 @@ import {
   ARTWORK_CREATE_DEFAULTS_SETTING_KEY,
   DEFAULT_ARTWORK_CREATE_DEFAULTS,
   parseArtworkCreateDefaults,
+  type ArtworkCreateDefaults,
 } from "@/lib/site-settings/artwork-create-defaults"
 
 // ─── Schema ───────────────────────────────────────────────────────────────
@@ -137,9 +138,15 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 interface ArtworkFormProps {
   mode?: "create" | "edit"
   artwork?: Artwork
+  /** Defaults desde site_settings (servidor). Evita race con el cliente y precarga marco/material/color. */
+  createDefaults?: ArtworkCreateDefaults
 }
 
-export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormProps) {
+export default function ArtworkForm({
+  mode = "create",
+  artwork,
+  createDefaults: createDefaultsFromServer,
+}: ArtworkFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   // `from` recibe el querystring (ya url-encoded por la lista) que representa
@@ -160,7 +167,9 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
   const [priceFromAI, setPriceFromAI] = useState(false)
   const [isClassifying, setIsClassifying] = useState(false)
   const [classifyConfidence, setClassifyConfidence] = useState<number | null>(null)
-  const [createDefaultsLoaded, setCreateDefaultsLoaded] = useState(false)
+  const [createDefaultsLoaded, setCreateDefaultsLoaded] = useState(
+    () => mode === "create" && !artwork && createDefaultsFromServer !== undefined,
+  )
   // Subcategorías sugeridas por IA que no están en la lista predefinida
   const [extraSubcategories, setExtraSubcategories] = useState<
     Record<string, Array<{ value: string; label: string }>>
@@ -173,62 +182,79 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
     []
   )
 
+  const formDefaultValues = useMemo((): ArtworkFormValues => {
+    if (mode === "edit" && artwork) {
+      return {
+        title: artwork.title ?? "",
+        artist: artwork.artist ?? "",
+        description: artwork.description ?? "",
+        category: artwork.category,
+        subcategory: artwork.subcategory ?? "",
+        technique: artwork.technique ?? "",
+        catalog_format: artwork.catalog_format === "vertical" ? "vertical" : "horizontal",
+        width_cm: artwork.width_cm ?? undefined,
+        height_cm: artwork.height_cm ?? undefined,
+        has_frame: artwork.has_frame,
+        frame_material: artwork.frame_material ?? "",
+        frame_color: artwork.frame_color ?? "",
+        frame_outer_width_cm: artwork.frame_outer_width_cm ?? undefined,
+        frame_outer_height_cm: artwork.frame_outer_height_cm ?? undefined,
+        price: artwork.price ?? undefined,
+        original_price: artwork.original_price ?? undefined,
+        price_locked: artwork.price_locked ?? false,
+        cost: artwork.cost ?? undefined,
+        show_price: artwork.show_price ?? true,
+        status: artwork.status,
+        location_in_storage: artwork.location_in_storage ?? "",
+        admin_notes: artwork.admin_notes ?? "",
+        tags: artwork.tags?.join(", ") ?? "",
+        stock_quantity: artwork.stock_quantity ?? 1,
+      }
+    }
+
+    const cd = createDefaultsFromServer ?? DEFAULT_ARTWORK_CREATE_DEFAULTS
+    const has = Boolean(cd.has_frame)
+    return {
+      title: "",
+      artist: cd.artist ?? "",
+      description: "",
+      category: cd.category,
+      subcategory: cd.subcategory ?? "",
+      technique: cd.technique ?? "",
+      catalog_format: "horizontal",
+      width_cm: cd.width_cm,
+      height_cm: cd.height_cm,
+      has_frame: has,
+      frame_material: has ? (cd.frame_material ?? "") : "",
+      frame_color: has ? (cd.frame_color ?? "") : "",
+      frame_outer_width_cm: has ? cd.frame_outer_width_cm : undefined,
+      frame_outer_height_cm: has ? cd.frame_outer_height_cm : undefined,
+      price: cd.price,
+      original_price: cd.original_price,
+      price_locked: false,
+      cost: undefined,
+      show_price: true,
+      status: "available",
+      location_in_storage: "",
+      admin_notes: "",
+      tags: "",
+      stock_quantity: 1,
+    }
+  }, [mode, artwork, createDefaultsFromServer])
+
   const form = useForm<ArtworkFormValues, unknown, ArtworkFormValues>({
     resolver: zodResolver(artworkSchema) as Resolver<ArtworkFormValues, unknown, ArtworkFormValues>,
-    defaultValues: {
-      title: artwork?.title ?? "",
-      artist:
-        artwork?.artist ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.artist : ""),
-      description: artwork?.description ?? "",
-      category:
-        artwork?.category ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.category : "nacional"),
-      subcategory:
-        artwork?.subcategory ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.subcategory : ""),
-      technique:
-        artwork?.technique ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.technique : ""),
-      catalog_format:
-        artwork?.catalog_format === "vertical" ? "vertical" : "horizontal",
-      width_cm:
-        artwork?.width_cm ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.width_cm : undefined),
-      height_cm:
-        artwork?.height_cm ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.height_cm : undefined),
-      has_frame:
-        artwork?.has_frame ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.has_frame : false),
-      frame_material: artwork?.frame_material ?? "",
-      frame_color: artwork?.frame_color ?? "",
-      frame_outer_width_cm: artwork?.frame_outer_width_cm ?? undefined,
-      frame_outer_height_cm: artwork?.frame_outer_height_cm ?? undefined,
-      price:
-        artwork?.price ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.price : undefined),
-      original_price:
-        artwork?.original_price ??
-        (mode === "create" ? DEFAULT_ARTWORK_CREATE_DEFAULTS.original_price : undefined),
-      price_locked: artwork?.price_locked ?? false,
-      cost: artwork?.cost ?? undefined,
-      show_price: artwork?.show_price ?? true,
-      status: artwork?.status ?? "available",
-      location_in_storage: artwork?.location_in_storage ?? "",
-      admin_notes: artwork?.admin_notes ?? "",
-      tags: artwork?.tags?.join(", ") ?? "",
-      stock_quantity: artwork?.stock_quantity ?? 1,
-    },
+    defaultValues: formDefaultValues,
   })
 
   const watchCategory = form.watch("category")
   const watchHasFrame = form.watch("has_frame")
   const watchStatus = form.watch("status")
 
-  // Load configurable defaults for create mode (from `site_settings`)
+  // Load configurable defaults for create mode (solo si no vinieron del servidor)
   useEffect(() => {
     if (mode !== "create" || artwork) return
+    if (createDefaultsFromServer !== undefined) return
     if (createDefaultsLoaded) return
 
     let cancelled = false
@@ -276,7 +302,7 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
     return () => {
       cancelled = true
     }
-  }, [artwork, createDefaultsLoaded, form, mode])
+  }, [artwork, createDefaultsFromServer, createDefaultsLoaded, form, mode])
 
   useEffect(() => {
     if (watchCategory !== "religiosa") {
@@ -289,6 +315,8 @@ export default function ArtworkForm({ mode = "create", artwork }: ArtworkFormPro
     if (!watchHasFrame) {
       form.setValue("frame_outer_width_cm", null, { shouldDirty: false })
       form.setValue("frame_outer_height_cm", null, { shouldDirty: false })
+      form.setValue("frame_material", "", { shouldDirty: false })
+      form.setValue("frame_color", "", { shouldDirty: false })
     }
   }, [watchHasFrame, form])
 

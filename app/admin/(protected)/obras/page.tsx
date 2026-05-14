@@ -30,6 +30,7 @@ export default async function ObrasPage(props: {
     status?: string
     page?: string
     size?: string
+    artist?: string
     sort?: string
     dir?: string
   }>
@@ -80,6 +81,25 @@ export default async function ObrasPage(props: {
     return ah - bh
   })
 
+  const { data: artistRows } = await supabase
+    .from("artworks")
+    .select("artist")
+    .not("artist", "is", null)
+    .neq("artist", "")
+    .limit(2000)
+
+  const artistOptions = Array.from(
+    new Set(
+      (artistRows ?? [])
+        .map((r) => r.artist)
+        .filter((a): a is string => typeof a === "string" && a.trim().length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b, "es"))
+
+  const requestedArtist = params.artist?.trim()
+  const safeArtist =
+    requestedArtist && artistOptions.includes(requestedArtist) ? requestedArtist : undefined
+
   let query = supabase
     .from("artworks")
     .select(
@@ -120,7 +140,7 @@ export default async function ObrasPage(props: {
   if (params.q?.trim()) {
     const q = params.q.trim().replace(/[%_]/g, "\\$&")
     query = query.or(
-      `title.ilike.%${q}%,code.ilike.%${q}%,location_in_storage.ilike.%${q}%,tags_search.ilike.%${q}%`,
+      `title.ilike.%${q}%,code.ilike.%${q}%,artist.ilike.%${q}%,location_in_storage.ilike.%${q}%,tags_search.ilike.%${q}%`,
     )
   }
   if (safeCategory) {
@@ -131,6 +151,9 @@ export default async function ObrasPage(props: {
   }
   if (sizeWidth !== null && sizeHeight !== null) {
     query = query.eq("width_cm", sizeWidth).eq("height_cm", sizeHeight)
+  }
+  if (safeArtist) {
+    query = query.eq("artist", safeArtist)
   }
 
   const { data, count } = await query
@@ -169,7 +192,7 @@ export default async function ObrasPage(props: {
       </div>
 
       <Suspense fallback={<div className="h-10 rounded-lg bg-stone-100 animate-pulse" />}>
-        <ArtworksFilters sizeOptions={sizeOptions} />
+        <ArtworksFilters artistOptions={artistOptions} sizeOptions={sizeOptions} />
       </Suspense>
 
       <ArtworksTable
@@ -181,6 +204,7 @@ export default async function ObrasPage(props: {
           category: params.category,
           status: params.status,
           size: params.size,
+          artist: safeArtist,
           sort: safeSort,
           dir: safeDir,
         }}
