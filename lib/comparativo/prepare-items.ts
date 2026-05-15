@@ -34,16 +34,21 @@ export function prepareComparativoItems(
 ): ComparativoPreparedItem[] {
   const out: ComparativoPreparedItem[] = []
   for (const a of artworks) {
-    const dispRaw = getComparativoDisplayDimensionsCm(a)
-    const disp = orientComparativoCmPair(a, dispRaw.widthCm, dispRaw.heightCm)
-    if (disp.widthCm <= 0 || disp.heightCm <= 0) continue
     const showcase = selectShowcaseImage(a.images, preferPremium)
     const pid = typeof showcase?.cloudinary_public_id === "string" ? showcase.cloudinary_public_id.trim() : ""
     if (!pid) continue
+    const imgW = showcase?.width ?? null
+    const imgH = showcase?.height ?? null
+
+    const dispRaw = getComparativoDisplayDimensionsCm(a)
+    const disp = orientComparativoCmPair(dispRaw.widthCm, dispRaw.heightCm, imgW, imgH)
+    if (disp.widthCm <= 0 || disp.heightCm <= 0) continue
+
     const canvasRaw = orientComparativoCmPair(
-      a,
       typeof a.width_cm === "number" && a.width_cm > 0 ? a.width_cm : 0,
       typeof a.height_cm === "number" && a.height_cm > 0 ? a.height_cm : 0,
+      imgW,
+      imgH,
     )
     const frameRawW =
       typeof a.frame_outer_width_cm === "number" && a.frame_outer_width_cm > 0
@@ -55,7 +60,7 @@ export function prepareComparativoItems(
         : null
     const frameOriented =
       frameRawW != null && frameRawH != null
-        ? orientComparativoCmPair(a, frameRawW, frameRawH)
+        ? orientComparativoCmPair(frameRawW, frameRawH, imgW, imgH)
         : null
     out.push({
       code: a.code,

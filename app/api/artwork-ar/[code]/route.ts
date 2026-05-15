@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { buildPosterGlbBuffer } from "@/lib/ar/build-poster-glb"
+import { orientCmToMatchImage } from "@/lib/artwork/orient-cm-to-image"
 import { cloudinaryUrlForArTexture } from "@/lib/cloudinary/transform"
 import { getArtworkByCodeAnon } from "@/lib/supabase/queries/public"
 
@@ -54,23 +55,14 @@ export async function GET(
   let heightM: number
 
   if (artwork.width_cm && artwork.height_cm) {
-    // If saved dimensions don't match the image orientation, swap them.
-    // This avoids generating a vertical poster from a horizontal photo when dimensions were entered reversed.
-    const dimAspect = artwork.width_cm / artwork.height_cm
-    const imgAspect =
-      primary.width && primary.height && primary.height > 0
-        ? primary.width / primary.height
-        : null
-
-    const shouldSwap =
-      imgAspect !== null &&
-      ((dimAspect < 1 && imgAspect > 1) || (dimAspect > 1 && imgAspect < 1))
-
-    const wCm = shouldSwap ? artwork.height_cm : artwork.width_cm
-    const hCm = shouldSwap ? artwork.width_cm : artwork.height_cm
-
-    widthM = wCm / 100
-    heightM = hCm / 100
+    const { widthCm, heightCm } = orientCmToMatchImage(
+      artwork.width_cm,
+      artwork.height_cm,
+      primary.width,
+      primary.height,
+    )
+    widthM = widthCm / 100
+    heightM = heightCm / 100
   } else if (primary.width && primary.height && primary.height > 0) {
     const aspect = primary.width / primary.height
     heightM = 0.9
