@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Mail,
   BarChart3,
+  LayoutTemplate,
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { href: "/admin/ventas", label: "Ventas", icon: ShoppingBag },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/reportes", label: "Reportes", icon: BarChart3 },
+  { href: "/admin/comparativo", label: "Comparativo", icon: LayoutTemplate },
   { href: "/admin/configuracion", label: "Configuración", icon: Settings },
 ]
 

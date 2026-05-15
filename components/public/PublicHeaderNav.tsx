@@ -13,6 +13,9 @@ export default function PublicHeaderNav() {
       <Link href="/escala-coleccion" className={linkClass}>
         Escala
       </Link>
+      <Link href="/comparativo" className={linkClass}>
+        Comparativo
+      </Link>
       <PublicHeaderNavFavoritos />
     </nav>
   )
