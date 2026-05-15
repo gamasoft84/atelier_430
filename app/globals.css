@@ -238,6 +238,21 @@ body {
   max-width: 100%;
 }
 
+/* Export PNG: mostrar galería completa (sin recorte del viewport móvil) */
+#comparativo-editorial-board.comparativo-exporting {
+  overflow: visible !important;
+  width: max-content !important;
+  max-width: none !important;
+}
+
+#comparativo-editorial-board.comparativo-exporting .comparativo-board-inner,
+#comparativo-editorial-board.comparativo-exporting .comparativo-gallery-scroll,
+#comparativo-editorial-board.comparativo-exporting .comparativo-gallery-scroll-inner {
+  overflow: visible !important;
+  max-width: none !important;
+  width: max-content !important;
+}
+
 #comparativo-editorial-board .comparativo-gallery {
   margin-inline: auto;
 }

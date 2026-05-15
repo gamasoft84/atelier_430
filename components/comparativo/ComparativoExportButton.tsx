@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from "react"
 import { Download } from "lucide-react"
-import { toPng } from "html-to-image"
 import { Button } from "@/components/ui/button"
+import { exportComparativoBoardPng } from "@/lib/comparativo/export-png"
 
 interface ComparativoExportButtonProps {
   boardId: string
@@ -17,19 +17,15 @@ export default function ComparativoExportButton({
   const [busy, setBusy] = useState(false)
 
   const exportPng = useCallback(async () => {
-    const node = document.getElementById(boardId)
-    if (!node) return
     setBusy(true)
     try {
-      const dataUrl = await toPng(node, {
-        cacheBust: true,
-        pixelRatio: 2,
-        backgroundColor: "#f3efe8",
-      })
+      const dataUrl = await exportComparativoBoardPng(boardId)
       const a = document.createElement("a")
       a.href = dataUrl
       a.download = filename
+      document.body.appendChild(a)
       a.click()
+      a.remove()
     } catch {
       /* ignore */
     } finally {
