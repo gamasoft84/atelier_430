@@ -1,7 +1,8 @@
 import { buildComparativoImageUrl } from "@/lib/comparativo/image-url"
+import { getComparativoDisplayDimensionsCm } from "@/lib/comparativo/display-dimensions"
+import { orientComparativoCmPair } from "@/lib/comparativo/orientation"
 import { selectShowcaseImage } from "@/lib/images/select-showcase"
 import type { ArtworkPublic } from "@/types/artwork"
-import { getComparativoDisplayDimensionsCm } from "@/lib/comparativo/display-dimensions"
 
 export type ComparativoPreparedItem = {
   code: string
@@ -33,28 +34,40 @@ export function prepareComparativoItems(
 ): ComparativoPreparedItem[] {
   const out: ComparativoPreparedItem[] = []
   for (const a of artworks) {
-    const disp = getComparativoDisplayDimensionsCm(a)
+    const dispRaw = getComparativoDisplayDimensionsCm(a)
+    const disp = orientComparativoCmPair(a, dispRaw.widthCm, dispRaw.heightCm)
     if (disp.widthCm <= 0 || disp.heightCm <= 0) continue
     const showcase = selectShowcaseImage(a.images, preferPremium)
     const pid = typeof showcase?.cloudinary_public_id === "string" ? showcase.cloudinary_public_id.trim() : ""
     if (!pid) continue
-    const cw = typeof a.width_cm === "number" && a.width_cm > 0 ? a.width_cm : 0
-    const ch = typeof a.height_cm === "number" && a.height_cm > 0 ? a.height_cm : 0
-    const fw =
-      typeof a.frame_outer_width_cm === "number" && a.frame_outer_width_cm > 0 ? a.frame_outer_width_cm : null
-    const fh =
-      typeof a.frame_outer_height_cm === "number" && a.frame_outer_height_cm > 0 ? a.frame_outer_height_cm : null
+    const canvasRaw = orientComparativoCmPair(
+      a,
+      typeof a.width_cm === "number" && a.width_cm > 0 ? a.width_cm : 0,
+      typeof a.height_cm === "number" && a.height_cm > 0 ? a.height_cm : 0,
+    )
+    const frameRawW =
+      typeof a.frame_outer_width_cm === "number" && a.frame_outer_width_cm > 0
+        ? a.frame_outer_width_cm
+        : null
+    const frameRawH =
+      typeof a.frame_outer_height_cm === "number" && a.frame_outer_height_cm > 0
+        ? a.frame_outer_height_cm
+        : null
+    const frameOriented =
+      frameRawW != null && frameRawH != null
+        ? orientComparativoCmPair(a, frameRawW, frameRawH)
+        : null
     out.push({
       code: a.code,
       title: a.title,
       imageUrl: buildComparativoImageUrl(pid, disp.widthCm, disp.heightCm),
-      canvasWidthCm: cw,
-      canvasHeightCm: ch,
-      frameOuterWidthCm: fw,
-      frameOuterHeightCm: fh,
+      canvasWidthCm: canvasRaw.widthCm,
+      canvasHeightCm: canvasRaw.heightCm,
+      frameOuterWidthCm: frameOriented?.widthCm ?? null,
+      frameOuterHeightCm: frameOriented?.heightCm ?? null,
       displayWidthCm: disp.widthCm,
       displayHeightCm: disp.heightCm,
-      displaySource: disp.source,
+      displaySource: dispRaw.source,
       showPrice: a.show_price,
       priceMxn: typeof a.price === "number" ? a.price : null,
       techniqueLabel: formatTechnique(a.technique),
