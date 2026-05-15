@@ -16,6 +16,15 @@ function formatDims(w: number, h: number): string {
   return `${Math.round(w)} × ${Math.round(h)} cm`
 }
 
+function hasFrameDims(item: ComparativoPreparedItem): boolean {
+  return (
+    item.frameOuterWidthCm != null &&
+    item.frameOuterHeightCm != null &&
+    item.frameOuterWidthCm > 0 &&
+    item.frameOuterHeightCm > 0
+  )
+}
+
 interface ComparativoBoardProps {
   items: ComparativoPreparedItem[]
   copy: ComparativoEditorialCopy
@@ -57,6 +66,8 @@ function EditorialBoardCanvas({
   copy: ComparativoEditorialCopy
   maxDisplayPx: number
 }) {
+  const showFrameRow = items.some(hasFrameDims)
+
   return (
     <div
       id={COMPARATIVO_BOARD_ID}
@@ -88,7 +99,6 @@ function EditorialBoardCanvas({
                   style={{
                     width: wPx,
                     height: maxDisplayPx,
-                    maxWidth: "min(100%, 320px)",
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -113,31 +123,28 @@ function EditorialBoardCanvas({
 
         <div className="mt-5 flex items-start justify-center" style={{ gap: GAP_PX }}>
           {items.map((item, index) => {
-            const hasFrameDims =
-              item.frameOuterWidthCm != null &&
-              item.frameOuterHeightCm != null &&
-              item.frameOuterWidthCm > 0 &&
-              item.frameOuterHeightCm > 0
+            const withFrame = hasFrameDims(item)
             const colW = item.displayWidthCm * COMPARATIVO_PX_PER_CM
             return (
               <article
                 key={`${item.code}-meta`}
                 className="shrink-0 space-y-1 text-center"
-                style={{ width: colW, maxWidth: "min(100%, 320px)" }}
+                style={{ width: colW }}
               >
                 <p className="font-display text-lg text-carbon-900">
                   {String(index + 1).padStart(2, "0")}
                 </p>
-                <p className="font-display text-sm font-medium text-carbon-900">{item.title}</p>
                 <p className="text-[11px] text-stone-600">{item.techniqueLabel}</p>
                 {item.canvasWidthCm > 0 && item.canvasHeightCm > 0 ? (
                   <p className="text-[11px] text-stone-500">
                     Lienzo: {formatDims(item.canvasWidthCm, item.canvasHeightCm)}
                   </p>
                 ) : null}
-                {hasFrameDims ? (
-                  <p className="text-[11px] text-stone-500">
-                    Con marco: {formatDims(item.frameOuterWidthCm!, item.frameOuterHeightCm!)}
+                {showFrameRow ? (
+                  <p className="min-h-[1.375rem] text-[11px] leading-[1.375rem] text-stone-500">
+                    {withFrame
+                      ? `Con marco: ${formatDims(item.frameOuterWidthCm!, item.frameOuterHeightCm!)}`
+                      : "\u00a0"}
                   </p>
                 ) : null}
                 <p className="text-[10px] text-stone-400">
@@ -146,6 +153,7 @@ function EditorialBoardCanvas({
                 <p className="pt-1 font-display text-base font-semibold text-carbon-900">
                   {formatPrice(item)}
                 </p>
+                <p className="font-display text-sm font-medium text-carbon-900">{item.title}</p>
               </article>
             )
           })}
