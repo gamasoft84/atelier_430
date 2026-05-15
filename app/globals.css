@@ -234,12 +234,17 @@ body {
   width: 100%;
 }
 
+#comparativo-editorial-board .comparativo-gallery-scroll-inner {
+  max-width: 100%;
+}
+
 #comparativo-editorial-board .comparativo-gallery {
   margin-inline: auto;
 }
 
 #comparativo-editorial-board .comparativo-art-img {
   flex-shrink: 0;
+  object-fit: contain;
   filter: drop-shadow(0 24px 52px rgba(59, 46, 42, 0.15)) drop-shadow(0 8px 22px rgba(59, 46, 42, 0.08));
 }
 

@@ -101,37 +101,55 @@ function EditorialBoardCanvas({
           <p className="comparativo-header-tagline">{copy.tagline}</p>
         </header>
 
-        <div className="comparativo-gallery-scroll w-full overflow-x-auto">
-          <div className="comparativo-gallery mx-auto shrink-0" style={{ width: galleryW }}>
-            <div
-              className="flex items-end"
-              style={{ gap: GAP_PX, height: maxDisplayPx, width: galleryW }}
-            >
-              {items.map((item, index) => {
-                const wPx = item.displayWidthCm * COMPARATIVO_PX_PER_CM
-                const hPx = item.displayHeightCm * COMPARATIVO_PX_PER_CM
-                const withFrame = hasFrameDims(item)
-                const withCanvas = hasCanvasDims(item)
-                return (
-                  <div key={item.code} className="comparativo-piece shrink-0" style={{ width: wPx }}>
+        <div className="comparativo-gallery-scroll w-full">
+          <div
+            className="comparativo-gallery-scroll-inner overflow-x-auto pb-1"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <div className="comparativo-gallery mx-auto shrink-0" style={{ width: galleryW }}>
+              <div
+                className="comparativo-art-row flex items-end"
+                style={{ gap: GAP_PX, height: maxDisplayPx, width: galleryW }}
+              >
+                {items.map((item) => {
+                  const wPx = item.displayWidthCm * COMPARATIVO_PX_PER_CM
+                  const hPx = item.displayHeightCm * COMPARATIVO_PX_PER_CM
+                  return (
                     <div
-                      className="flex flex-col justify-end"
-                      style={{ height: maxDisplayPx, width: wPx }}
+                      key={item.code}
+                      className="comparativo-piece shrink-0"
+                      style={{ width: wPx, height: maxDisplayPx }}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        width={Math.round(wPx)}
-                        height={Math.round(hPx)}
-                        className="comparativo-art-img mx-auto block"
-                        style={{ width: wPx, height: hPx }}
-                        crossOrigin="anonymous"
-                      />
+                      <div className="flex h-full flex-col justify-end" style={{ width: wPx }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          width={Math.round(wPx)}
+                          height={Math.round(hPx)}
+                          className="comparativo-art-img mx-auto block"
+                          style={{ width: wPx, height: hPx }}
+                          crossOrigin="anonymous"
+                        />
+                      </div>
                     </div>
+                  )
+                })}
+              </div>
+
+              <div
+                className="comparativo-meta-row flex"
+                style={{ gap: GAP_PX, width: galleryW, marginTop: META_TOP_PX }}
+              >
+                {items.map((item, index) => {
+                  const wPx = item.displayWidthCm * COMPARATIVO_PX_PER_CM
+                  const withFrame = hasFrameDims(item)
+                  const withCanvas = hasCanvasDims(item)
+                  return (
                     <article
-                      className="comparativo-meta-col"
-                      style={{ width: wPx, marginTop: META_TOP_PX }}
+                      key={item.code}
+                      className="comparativo-meta-col shrink-0"
+                      style={{ width: wPx }}
                     >
                       <p className="comparativo-meta-index">
                         {String(index + 1).padStart(2, "0")}
@@ -154,9 +172,9 @@ function EditorialBoardCanvas({
                       ) : null}
                       <p className="comparativo-meta-price">{formatPrice(item)}</p>
                     </article>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
