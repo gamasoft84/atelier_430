@@ -24,7 +24,7 @@ export default function ComparativoExportButton({
       const dataUrl = await toPng(node, {
         cacheBust: true,
         pixelRatio: 2,
-        backgroundColor: "#f5f2eb",
+        backgroundColor: "#f3efe8",
       })
       const a = document.createElement("a")
       a.href = dataUrl
@@ -44,7 +44,7 @@ export default function ComparativoExportButton({
       size="sm"
       disabled={busy}
       onClick={() => void exportPng()}
-      className="gap-2 border-stone-300 bg-white"
+      className="gap-2 border-[#d4cdc3] bg-[#faf8f4] font-sans text-stone-600"
     >
       <Download className="size-4" aria-hidden />
       {busy ? "Generando PNG…" : "Descargar PNG"}

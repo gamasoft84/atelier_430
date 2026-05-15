@@ -33,9 +33,8 @@ export default function ComparativoView({
         </Link>
       </div>
 
-      <p className="text-xs text-stone-500 print:hidden">
-        Comparativo a escala ({codes.join(" · ")}). Las piezas más altas en centímetros se ven más
-        grandes; la escala usa marco cuando está registrado, si no, lienzo.
+      <p className="max-w-xl text-[11px] tracking-wide text-stone-400 print:hidden">
+        Comparativo a escala · {codes.join(" · ")}
       </p>
 
       <ComparativoBoard items={items} copy={copy} showExport={showExport} />

@@ -127,3 +127,201 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ——— Comparativo editorial (catálogo galería premium) ——— */
+#comparativo-editorial-board,
+#comparativo-editorial-board .comparativo-board-inner,
+#comparativo-editorial-board .comparativo-piece,
+#comparativo-editorial-board .comparativo-meta-col {
+  font-family: var(--font-comparativo), "Cormorant Garamond", Georgia, "Times New Roman", serif !important;
+}
+
+#comparativo-editorial-board {
+  --comparativo-espresso: #3b2e2a;
+  --comparativo-warm: #6e655d;
+  --comparativo-warm-muted: #8a8178;
+  --comparativo-gold: #9a8468;
+  --comparativo-gold-price: #8a6b3c;
+  --comparativo-linen: #f3efe8;
+  font-feature-settings: "kern" 1, "liga" 1;
+  color: var(--comparativo-espresso);
+  -webkit-font-smoothing: antialiased;
+}
+
+#comparativo-editorial-board.comparativo-linen-surface {
+  position: relative;
+  background-color: var(--comparativo-linen);
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 95% 55% at 50% -6%, rgba(255, 252, 247, 0.75), transparent 60%),
+    linear-gradient(168deg, rgba(255, 255, 255, 0.2) 0%, transparent 45%, rgba(59, 46, 42, 0.02) 100%);
+}
+
+#comparativo-editorial-board.comparativo-showroom-light::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(
+      118deg,
+      rgba(255, 252, 246, 0.58) 0%,
+      rgba(255, 252, 246, 0.1) 30%,
+      transparent 55%
+    ),
+    linear-gradient(125deg, transparent 55%, rgba(59, 46, 42, 0.04) 100%);
+}
+
+#comparativo-editorial-board.comparativo-showroom-light > * {
+  position: relative;
+  z-index: 1;
+}
+
+#comparativo-editorial-board .comparativo-header {
+  margin-bottom: 5rem;
+  text-align: center;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  #comparativo-editorial-board .comparativo-header {
+    margin-bottom: 5.75rem;
+  }
+}
+
+#comparativo-editorial-board .comparativo-ornament {
+  display: block;
+  color: var(--comparativo-gold);
+}
+
+#comparativo-editorial-board .comparativo-header-title {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding-left: 0.32em;
+  font-size: clamp(2rem, 3.5vw, 3.125rem);
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  line-height: 1.1;
+  text-align: center;
+  text-indent: 0.32em;
+  color: var(--comparativo-espresso);
+}
+
+#comparativo-editorial-board .comparativo-header-tagline {
+  display: block;
+  width: 100%;
+  margin: 1.15rem 0 0;
+  padding-left: 0.42em;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--comparativo-warm);
+}
+
+@media (min-width: 640px) {
+  #comparativo-editorial-board .comparativo-header-tagline {
+    font-size: 0.6875rem;
+  }
+}
+
+#comparativo-editorial-board .comparativo-gallery-scroll {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+#comparativo-editorial-board .comparativo-gallery {
+  margin-inline: auto;
+}
+
+#comparativo-editorial-board .comparativo-art-img {
+  flex-shrink: 0;
+  filter: drop-shadow(0 24px 52px rgba(59, 46, 42, 0.15)) drop-shadow(0 8px 22px rgba(59, 46, 42, 0.08));
+}
+
+#comparativo-editorial-board .comparativo-meta-col {
+  text-align: center;
+}
+
+#comparativo-editorial-board .comparativo-meta-index {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  color: var(--comparativo-espresso);
+}
+
+#comparativo-editorial-board .comparativo-meta-title {
+  margin: 0.45rem 0 0;
+  padding: 0;
+  font-size: 1.125rem;
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--comparativo-espresso);
+}
+
+#comparativo-editorial-board .comparativo-meta-line {
+  min-height: 1.35rem;
+  margin-top: 0.12rem;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.35rem;
+  letter-spacing: 0.04em;
+  color: var(--comparativo-warm-muted);
+}
+
+#comparativo-editorial-board .comparativo-meta-price {
+  margin-top: 0.75rem;
+  font-size: 1.3125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--comparativo-gold-price);
+}
+
+#comparativo-editorial-board .comparativo-footer {
+  margin-top: 5rem;
+  text-align: center;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  #comparativo-editorial-board .comparativo-footer {
+    margin-top: 5.75rem;
+  }
+}
+
+#comparativo-editorial-board .comparativo-footer-rule {
+  height: 1px;
+  max-width: 44rem;
+  margin: 0 auto 1.75rem;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--comparativo-gold) 38%, transparent) 12%,
+    color-mix(in srgb, var(--comparativo-gold) 38%, transparent) 88%,
+    transparent 100%
+  );
+}
+
+#comparativo-editorial-board .comparativo-footer-text {
+  display: block;
+  padding-left: 0.3em;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--comparativo-warm);
+}
+
+@media (min-width: 640px) {
+  #comparativo-editorial-board .comparativo-footer-text {
+    font-size: 0.6875rem;
+  }
+}

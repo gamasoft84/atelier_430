@@ -1,11 +1,14 @@
 import type { ComparativoPreparedItem } from "@/lib/comparativo/prepare-items"
 import type { ComparativoEditorialCopy } from "@/lib/supabase/queries/comparativo"
 import ComparativoExportButton from "@/components/comparativo/ComparativoExportButton"
+import ComparativoFlourish from "@/components/comparativo/ComparativoFlourish"
+import { comparativoSerif } from "@/components/comparativo/comparativo-font"
 import { COMPARATIVO_PX_PER_CM } from "@/lib/comparativo/scale"
 
 export const COMPARATIVO_BOARD_ID = "comparativo-editorial-board"
 
-const GAP_PX = 28
+const GAP_PX = 80
+const META_TOP_PX = 40
 
 function formatPrice(item: ComparativoPreparedItem): string {
   if (!item.showPrice || item.priceMxn == null) return "Privado"
@@ -25,6 +28,15 @@ function hasFrameDims(item: ComparativoPreparedItem): boolean {
   )
 }
 
+function hasCanvasDims(item: ComparativoPreparedItem): boolean {
+  return item.canvasWidthCm > 0 && item.canvasHeightCm > 0
+}
+
+function galleryWidthPx(items: ComparativoPreparedItem[]): number {
+  const widths = items.map((i) => i.displayWidthCm * COMPARATIVO_PX_PER_CM)
+  return widths.reduce((a, b) => a + b, 0) + GAP_PX * Math.max(0, items.length - 1)
+}
+
 interface ComparativoBoardProps {
   items: ComparativoPreparedItem[]
   copy: ComparativoEditorialCopy
@@ -40,19 +52,25 @@ export default function ComparativoBoard({
 }: ComparativoBoardProps) {
   const maxH = Math.max(...items.map((i) => i.displayHeightCm), 1)
   const maxDisplayPx = maxH * COMPARATIVO_PX_PER_CM
+  const galleryW = galleryWidthPx(items)
   const filename =
     exportFilename ??
     `atelier430-comparativo-${items.map((i) => i.code).join("-")}.png`.replace(/[^a-zA-Z0-9._-]+/g, "-")
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {showExport ? (
         <div className="flex justify-end print:hidden">
           <ComparativoExportButton boardId={COMPARATIVO_BOARD_ID} filename={filename} />
         </div>
       ) : null}
 
-      <EditorialBoardCanvas items={items} copy={copy} maxDisplayPx={maxDisplayPx} />
+      <EditorialBoardCanvas
+        items={items}
+        copy={copy}
+        maxDisplayPx={maxDisplayPx}
+        galleryW={galleryW}
+      />
     </div>
   )
 }
@@ -61,110 +79,94 @@ function EditorialBoardCanvas({
   items,
   copy,
   maxDisplayPx,
+  galleryW,
 }: {
   items: ComparativoPreparedItem[]
   copy: ComparativoEditorialCopy
   maxDisplayPx: number
+  galleryW: number
 }) {
+  const showCanvasRow = items.some(hasCanvasDims)
   const showFrameRow = items.some(hasFrameDims)
 
   return (
     <div
       id={COMPARATIVO_BOARD_ID}
-      className="overflow-x-auto rounded-xl border border-stone-200/80 bg-[#f5f2eb] px-6 py-10 shadow-sm sm:px-10 sm:py-12"
+      className={`${comparativoSerif.className} ${comparativoSerif.variable} comparativo-linen-surface comparativo-showroom-light comparativo-board-root w-full px-10 py-14 sm:px-16 sm:py-24`}
     >
-      <header className="mb-10 text-center">
-        <p className="font-display text-2xl font-semibold tracking-[0.35em] text-carbon-900 sm:text-3xl">
-          ATELIER 430
-        </p>
-        <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.28em] text-stone-600 sm:text-xs">
-          {copy.tagline}
-        </p>
-      </header>
+      <div className="comparativo-board-inner mx-auto flex w-full flex-col items-center">
+        <header className="comparativo-header w-full">
+          <h1 className="comparativo-header-title">ATELIER 430</h1>
+          <ComparativoFlourish className="comparativo-ornament mx-auto mt-5" />
+          <p className="comparativo-header-tagline">{copy.tagline}</p>
+        </header>
 
-      <div className="relative mx-auto w-fit max-w-full px-2">
-        {/* Misma línea inferior (a ras de piso); la más alta define el alto del bloque */}
-        <div className="relative" style={{ height: maxDisplayPx }}>
-          <div
-            className="flex justify-center"
-            style={{ gap: GAP_PX, height: maxDisplayPx }}
-          >
-            {items.map((item) => {
-              const wPx = item.displayWidthCm * COMPARATIVO_PX_PER_CM
-              const hPx = item.displayHeightCm * COMPARATIVO_PX_PER_CM
-              return (
-                <div
-                  key={item.code}
-                  className="flex shrink-0 flex-col justify-end"
-                  style={{
-                    width: wPx,
-                    height: maxDisplayPx,
-                  }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    width={Math.round(wPx)}
-                    height={Math.round(hPx)}
-                    className="block shrink-0 drop-shadow-[0_10px_28px_rgba(15,15,15,0.12)]"
-                    style={{ width: wPx, height: hPx }}
-                    crossOrigin="anonymous"
-                  />
-                </div>
-              )
-            })}
+        <div className="comparativo-gallery-scroll w-full overflow-x-auto">
+          <div className="comparativo-gallery mx-auto shrink-0" style={{ width: galleryW }}>
+            <div
+              className="flex items-end"
+              style={{ gap: GAP_PX, height: maxDisplayPx, width: galleryW }}
+            >
+              {items.map((item, index) => {
+                const wPx = item.displayWidthCm * COMPARATIVO_PX_PER_CM
+                const hPx = item.displayHeightCm * COMPARATIVO_PX_PER_CM
+                const withFrame = hasFrameDims(item)
+                const withCanvas = hasCanvasDims(item)
+                return (
+                  <div key={item.code} className="comparativo-piece shrink-0" style={{ width: wPx }}>
+                    <div
+                      className="flex flex-col justify-end"
+                      style={{ height: maxDisplayPx, width: wPx }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        width={Math.round(wPx)}
+                        height={Math.round(hPx)}
+                        className="comparativo-art-img mx-auto block"
+                        style={{ width: wPx, height: hPx }}
+                        crossOrigin="anonymous"
+                      />
+                    </div>
+                    <article
+                      className="comparativo-meta-col"
+                      style={{ width: wPx, marginTop: META_TOP_PX }}
+                    >
+                      <p className="comparativo-meta-index">
+                        {String(index + 1).padStart(2, "0")}
+                      </p>
+                      <h2 className="comparativo-meta-title">{item.title}</h2>
+                      <p className="comparativo-meta-line">{item.techniqueLabel}</p>
+                      {showCanvasRow ? (
+                        <p className="comparativo-meta-line">
+                          {withCanvas
+                            ? `Lienzo: ${formatDims(item.canvasWidthCm, item.canvasHeightCm)}`
+                            : "\u00a0"}
+                        </p>
+                      ) : null}
+                      {showFrameRow ? (
+                        <p className="comparativo-meta-line">
+                          {withFrame
+                            ? `Con marco: ${formatDims(item.frameOuterWidthCm!, item.frameOuterHeightCm!)}`
+                            : "\u00a0"}
+                        </p>
+                      ) : null}
+                      <p className="comparativo-meta-price">{formatPrice(item)}</p>
+                    </article>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-stone-400/55 to-transparent"
-            aria-hidden
-          />
         </div>
 
-        <div className="mt-5 flex items-start justify-center" style={{ gap: GAP_PX }}>
-          {items.map((item, index) => {
-            const withFrame = hasFrameDims(item)
-            const colW = item.displayWidthCm * COMPARATIVO_PX_PER_CM
-            return (
-              <article
-                key={`${item.code}-meta`}
-                className="shrink-0 space-y-1 text-center"
-                style={{ width: colW }}
-              >
-                <p className="font-display text-lg text-carbon-900">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <p className="text-[11px] text-stone-600">{item.techniqueLabel}</p>
-                {item.canvasWidthCm > 0 && item.canvasHeightCm > 0 ? (
-                  <p className="text-[11px] text-stone-500">
-                    Lienzo: {formatDims(item.canvasWidthCm, item.canvasHeightCm)}
-                  </p>
-                ) : null}
-                {showFrameRow ? (
-                  <p className="min-h-[1.375rem] text-[11px] leading-[1.375rem] text-stone-500">
-                    {withFrame
-                      ? `Con marco: ${formatDims(item.frameOuterWidthCm!, item.frameOuterHeightCm!)}`
-                      : "\u00a0"}
-                  </p>
-                ) : null}
-                <p className="text-[10px] text-stone-400">
-                  Escala según {item.displaySource === "frame" ? "marco" : "lienzo"}
-                </p>
-                <p className="pt-1 font-display text-base font-semibold text-carbon-900">
-                  {formatPrice(item)}
-                </p>
-                <p className="font-display text-sm font-medium text-carbon-900">{item.title}</p>
-              </article>
-            )
-          })}
-        </div>
+        <footer className="comparativo-footer w-full">
+          <div className="comparativo-footer-rule" aria-hidden />
+          <p className="comparativo-footer-text">{copy.footer}</p>
+          <ComparativoFlourish className="comparativo-ornament mx-auto mt-6" />
+        </footer>
       </div>
-
-      <footer className="mt-12 border-t border-stone-300/70 pt-6 text-center">
-        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-stone-600 sm:text-[11px]">
-          {copy.footer}
-        </p>
-      </footer>
     </div>
   )
 }
