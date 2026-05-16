@@ -36,7 +36,7 @@ function waitForImages(node: HTMLElement): Promise<void> {
 }
 
 function patchExportLayout(node: HTMLElement): () => void {
-  const targets: HTMLElement[] = [node]
+  const targets: HTMLElement[] = []
   for (const sel of [".comparativo-gallery-scroll-inner", ".comparativo-gallery"]) {
     const el = node.querySelector(sel)
     if (el instanceof HTMLElement) targets.push(el)
@@ -77,6 +77,7 @@ export async function exportComparativoBoardPng(
   if (scrollInner) scrollInner.scrollLeft = 0
 
   const restoreLayout = patchExportLayout(node)
+  node.classList.add(COMPARATIVO_EXPORTING_CLASS)
 
   try {
     await waitForLayout()

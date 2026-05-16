@@ -1,3 +1,5 @@
+import { normalizePublicUrl } from "@/lib/urls/normalize-public-url"
+
 export interface ArtworkWhatsAppMessageInput {
   code: string
   title: string
@@ -46,7 +48,10 @@ export function buildArtworkWhatsAppMessage(data: ArtworkWhatsAppMessageInput): 
     lines.push(`💰 $${data.price.toLocaleString("es-MX")} MXN`)
   }
 
-  lines.push(`🔗 ${data.pageUrl}`)
+  // URL en línea propia (sin emoji delante): WhatsApp a veces recorta la "h" de https://
+  lines.push(``)
+  lines.push(`Ver obra en el catálogo:`)
+  lines.push(normalizePublicUrl(data.pageUrl))
   lines.push(``)
   lines.push(`¿Sigue disponible?`)
 

@@ -20,6 +20,7 @@ const VALID_SORTS = new Set<string>([
   "size",
   "status",
   "price",
+  "original_price",
   "created_at",
 ])
 
@@ -53,7 +54,15 @@ export default async function ObrasPage(props: {
   const sizeHeight = safeSize ? Number(safeSize[2]) : null
 
   const safeSort = VALID_SORTS.has(params.sort ?? "")
-    ? (params.sort as "code" | "title" | "category" | "size" | "status" | "price" | "created_at")
+    ? (params.sort as
+        | "code"
+        | "title"
+        | "category"
+        | "size"
+        | "status"
+        | "price"
+        | "original_price"
+        | "created_at")
     : "created_at"
   const safeDir = params.dir === "asc" ? "asc" : "desc"
   const ascending = safeDir === "asc"
@@ -126,6 +135,9 @@ export default async function ObrasPage(props: {
       break
     case "price":
       query = query.order("price", { ascending, nullsFirst: false })
+      break
+    case "original_price":
+      query = query.order("original_price", { ascending, nullsFirst: false })
       break
     case "size":
       // Primary sort by width, then height (both nullable)

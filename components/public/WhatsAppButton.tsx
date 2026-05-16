@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { WHATSAPP_NUMBER, SITE_URL } from "@/lib/constants"
 import { trackWhatsAppClick } from "@/app/actions/tracking"
 import { buildArtworkWhatsAppMessage } from "@/lib/whatsapp/message"
+import { normalizePublicUrl } from "@/lib/urls/normalize-public-url"
 
 interface WhatsAppButtonProps {
   artworkId: string
@@ -34,7 +35,7 @@ export default function WhatsAppButton({
   const [pageUrl, setPageUrl] = useState(SITE_URL)
 
   useEffect(() => {
-    setPageUrl(window.location.href)
+    setPageUrl(normalizePublicUrl(window.location.href))
   }, [])
 
   if (!WHATSAPP_NUMBER) return null

@@ -26,6 +26,7 @@ import {
 // ─── Metadata ──────────────────────────────────────────────────────────────
 
 import { SITE_URL, SITE_NAME } from "@/lib/constants"
+import { artworkCatalogUrl } from "@/lib/urls/normalize-public-url"
 
 export async function generateMetadata({
   params,
@@ -198,7 +199,7 @@ export default async function ArtworkDetailPage({
         frameOuterWidthCm={artwork.frame_outer_width_cm}
         frameOuterHeightCm={artwork.frame_outer_height_cm}
         primaryImageUrl={showcaseImage?.cloudinary_url ?? null}
-        pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
+        pageUrl={artworkCatalogUrl(SITE_URL, artwork.code)}
       />
       <Breadcrumb category={artwork.category} title={artwork.title} />
 
@@ -358,7 +359,7 @@ export default async function ArtworkDetailPage({
                         : artwork.height_cm
                     }
                     artworkImageUrl={flatPrimaryImage.cloudinary_url}
-                    pageUrl={`${SITE_URL}/catalogo/${artwork.code}`}
+                    pageUrl={artworkCatalogUrl(SITE_URL, artwork.code)}
                   />
                   <p className="text-[11px] text-stone-400 leading-relaxed">
                     {artwork.has_frame && artwork.frame_outer_width_cm

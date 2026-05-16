@@ -21,6 +21,7 @@ import {
 } from "@/lib/photo-preview/scale"
 import { trackWhatsAppClick } from "@/app/actions/tracking"
 import { WHATSAPP_NUMBER } from "@/lib/constants"
+import { normalizePublicUrl } from "@/lib/urls/normalize-public-url"
 
 type Step = "upload" | "reference" | "position" | "share"
 
@@ -271,7 +272,13 @@ export default function PhotoPreviewDialog({
 
   const onShare = async () => {
     if (!shareFile) return
-    const text = `Mira cómo se vería esta obra en mi pared\n${title} (${artworkCode})\n${pageUrl}`
+    const text = [
+      "Mira cómo se vería esta obra en mi pared",
+      `${title} (${artworkCode})`,
+      "",
+      "Ver obra en el catálogo:",
+      normalizePublicUrl(pageUrl),
+    ].join("\n")
     if (
       typeof navigator !== "undefined" &&
       typeof navigator.share === "function" &&

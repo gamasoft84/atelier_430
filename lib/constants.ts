@@ -2,7 +2,16 @@ export const SITE_NAME = "Atelier 430"
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 export const SITE_DESCRIPTION = "430 piezas. Una sola colección. Arte curado, listo para tu hogar."
 
-export const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ""
+/** Dígitos para wa.me: 521 + 10 dígitos (México). Acepta 5515377335 o 5215515377335. */
+function normalizeWhatsAppNumber(raw: string | undefined): string {
+  const digits = (raw ?? "").replace(/\D/g, "")
+  if (!digits) return ""
+  if (digits.length === 13 && digits.startsWith("521")) return digits
+  if (digits.length === 10) return `521${digits}`
+  return digits
+}
+
+export const WHATSAPP_NUMBER = normalizeWhatsAppNumber(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER)
 export const WHATSAPP_DEFAULT_MESSAGE =
   process.env.NEXT_PUBLIC_WHATSAPP_DEFAULT_MESSAGE ?? "Hola Atelier 430, me interesa una obra"
 

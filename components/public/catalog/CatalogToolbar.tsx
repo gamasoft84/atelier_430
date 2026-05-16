@@ -5,11 +5,13 @@ import { useCallback, useTransition, useState, useEffect, useRef } from "react"
 import { Search, SlidersHorizontal, X } from "lucide-react"
 import type { SortOption } from "@/types/catalog"
 
+const SEARCH_DEBOUNCE_MS = 350
+
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "recientes",   label: "Más recientes" },
-  { value: "precio_asc",  label: "Precio: menor a mayor" },
+  { value: "recientes", label: "Más recientes" },
+  { value: "precio_asc", label: "Precio: menor a mayor" },
   { value: "precio_desc", label: "Precio: mayor a menor" },
-  { value: "tamano_asc",  label: "Tamaño: menor a mayor" },
+  { value: "tamano_asc", label: "Tamaño: menor a mayor" },
   { value: "tamano_desc", label: "Tamaño: mayor a menor" },
 ]
 
@@ -21,6 +23,11 @@ interface CatalogToolbarProps {
   /** Base path al limpiar filtros (respeta página de categoría). Default `/catalogo`. */
   clearFiltersHref?: string
   onMobileFilterToggle: () => void
+}
+
+function readUrlQ(): string {
+  if (typeof window === "undefined") return ""
+  return new URLSearchParams(window.location.search).get("q") ?? ""
 }
 
 export default function CatalogToolbar({
@@ -35,16 +42,16 @@ export default function CatalogToolbar({
   const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
   const [search, setSearch] = useState(currentQ)
-  const searchDebounceReady = useRef(false)
-
-  // Sync search input with URL param
-  useEffect(() => {
-    setSearch(currentQ)
-  }, [currentQ])
+  const inputRef = useRef<HTMLInputElement>(null)
+  const pendingQRef = useRef<string | null>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const skipInitialDebounce = useRef(true)
 
   const updateParam = useCallback(
     (key: string, value: string | null) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(
+        typeof window !== "undefined" ? window.location.search : searchParams.toString(),
+      )
       if (value) {
         params.set(key, value)
       } else {
@@ -52,26 +59,79 @@ export default function CatalogToolbar({
       }
       params.delete("page")
       startTransition(() => {
-        router.push(`?${params.toString()}`, { scroll: false })
+        router.replace(`?${params.toString()}`, { scroll: false })
       })
     },
-    [router, searchParams]
+    [router, searchParams],
   )
 
-  // Debounced search (no disparar al montar: evita router.push fantasma y listas vacías)
+  const commitQToUrl = useCallback(
+    (value: string) => {
+      const urlQ = readUrlQ()
+      if (value === urlQ) {
+        pendingQRef.current = null
+        return
+      }
+      pendingQRef.current = value
+      updateParam("q", value || null)
+    },
+    [updateParam],
+  )
+
+  const flushDebounce = useCallback(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
+  }, [])
+
+  // URL → input: solo sin foco; nunca pisar mientras escribes o borras
   useEffect(() => {
-    if (!searchDebounceReady.current) {
-      searchDebounceReady.current = true
+    if (inputRef.current === document.activeElement) return
+
+    if (pendingQRef.current !== null) {
+      if (currentQ === pendingQRef.current) {
+        pendingQRef.current = null
+      }
       return
     }
-    const id = setTimeout(() => {
-      updateParam("q", search || null)
-    }, 300)
-    return () => clearTimeout(id)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search])
+
+    setSearch(currentQ)
+  }, [currentQ])
+
+  // Input → URL (debounced)
+  useEffect(() => {
+    if (skipInitialDebounce.current) {
+      skipInitialDebounce.current = false
+      return
+    }
+
+    flushDebounce()
+
+    if (search === readUrlQ()) {
+      pendingQRef.current = null
+      return
+    }
+
+    debounceRef.current = setTimeout(() => {
+      commitQToUrl(search)
+      debounceRef.current = null
+    }, SEARCH_DEBOUNCE_MS)
+
+    return flushDebounce
+  }, [search, commitQToUrl, flushDebounce])
+
+  const handleSearchBlur = () => {
+    flushDebounce()
+    if (search !== readUrlQ()) {
+      commitQToUrl(search)
+    }
+  }
 
   const clearFilters = () => {
+    flushDebounce()
+    pendingQRef.current = null
+    setSearch("")
     startTransition(() => {
       router.push(clearFiltersHref, { scroll: false })
     })
@@ -86,32 +146,33 @@ export default function CatalogToolbar({
           className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
         />
         <input
+          ref={inputRef}
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onBlur={handleSearchBlur}
           placeholder="Buscar por título, código o categoría…"
           className="w-full pl-9 pr-4 py-2 text-sm border border-stone-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 transition-colors"
         />
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Result count */}
         <span className="text-sm text-stone-500 hidden sm:inline whitespace-nowrap">
           {total} {total === 1 ? "obra" : "obras"}
         </span>
 
-        {/* Sort dropdown */}
         <select
           value={currentSort}
           onChange={(e) => updateParam("orden", e.target.value)}
           className="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 cursor-pointer max-w-[9rem] sm:max-w-none"
         >
           {SORT_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
           ))}
         </select>
 
-        {/* Clear filters */}
         {hasFilters && (
           <button
             type="button"
@@ -123,7 +184,6 @@ export default function CatalogToolbar({
           </button>
         )}
 
-        {/* Mobile filter toggle */}
         <button
           type="button"
           onClick={onMobileFilterToggle}
@@ -137,7 +197,6 @@ export default function CatalogToolbar({
         </button>
       </div>
 
-      {/* Mobile result count */}
       <p className="text-sm text-stone-500 sm:hidden">
         {total} {total === 1 ? "obra encontrada" : "obras encontradas"}
       </p>

@@ -220,7 +220,13 @@ export default function ArtworksTable({
               <SortHeader label="Categoría" sortKey="category" params={currentParams} className="hidden md:table-cell w-28" />
               <SortHeader label="Tamaño" sortKey="size" params={currentParams} className="hidden md:table-cell w-24" />
               <SortHeader label="Estado" sortKey="status" params={currentParams} className="w-28" />
-              <th className="text-right px-4 py-3 font-medium text-stone-500 hidden lg:table-cell w-32">Precio anterior</th>
+              <SortHeader
+                label="Precio anterior"
+                sortKey="original_price"
+                params={currentParams}
+                align="right"
+                className="hidden lg:table-cell w-32"
+              />
               <SortHeader label="Precio" sortKey="price" params={currentParams} align="right" className="hidden sm:table-cell w-28" />
               <th className="text-right px-4 py-3 font-medium text-stone-500 w-20">Acciones</th>
             </tr>

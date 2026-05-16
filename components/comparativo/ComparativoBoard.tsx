@@ -95,7 +95,7 @@ function EditorialBoardCanvas({
   return (
     <div
       id={COMPARATIVO_BOARD_ID}
-      className={`${comparativoSerif.className} ${comparativoSerif.variable} comparativo-linen-surface comparativo-showroom-light comparativo-board-root w-full px-10 py-14 sm:px-16 sm:py-24`}
+      className={`${comparativoSerif.className} ${comparativoSerif.variable} comparativo-linen-surface comparativo-showroom-light comparativo-board-root w-full`}
     >
       <div className="comparativo-board-inner mx-auto flex w-full min-w-0 flex-col items-stretch">
         <header className="comparativo-header w-full shrink-0 self-stretch text-center">

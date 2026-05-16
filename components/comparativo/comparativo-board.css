@@ -21,6 +21,28 @@
   box-sizing: border-box;
 }
 
+#comparativo-editorial-board.comparativo-board-root {
+  padding-top: 3.5rem !important;
+  padding-bottom: 3.5rem !important;
+  padding-left: 4.5rem !important;
+  padding-right: 4.5rem !important;
+}
+
+@media (min-width: 640px) {
+  #comparativo-editorial-board.comparativo-board-root {
+    padding-top: 6rem !important;
+    padding-bottom: 6rem !important;
+    padding-left: 6rem !important;
+    padding-right: 6rem !important;
+  }
+}
+
+/* PNG: margen lateral extra para que las obras no peguen al borde */
+#comparativo-editorial-board.comparativo-exporting.comparativo-board-root {
+  padding-left: 7rem !important;
+  padding-right: 7rem !important;
+}
+
 #comparativo-editorial-board.comparativo-linen-surface {
   background-color: #f3efe8 !important;
   background-image:
