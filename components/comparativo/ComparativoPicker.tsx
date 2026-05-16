@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
@@ -96,30 +95,33 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
       {selected.length > 0 ? (
         <div className="space-y-2">
           <p className="text-xs font-medium text-stone-500">{selectionHint}</p>
-          <ul className="flex gap-3 overflow-x-auto pb-1">
+          <ul className="flex items-start gap-3 overflow-x-auto pb-1">
             {selected.map((s, i) => (
-              <li key={s.code} className="relative shrink-0">
+              <li key={s.code} className="w-20 shrink-0 flex-none">
                 <div className="relative h-24 w-20 overflow-hidden rounded-lg border-2 border-gold-500 bg-stone-100">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={s.thumbnailUrl}
                     alt={s.title}
-                    fill
-                    sizes="80px"
-                    className="object-cover"
+                    width={80}
+                    height={96}
+                    className="block h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
-                  <span className="absolute left-1 top-1 rounded bg-carbon-900/80 px-1 font-mono text-[10px] text-cream">
+                  <span className="absolute left-1 top-1 z-10 rounded bg-carbon-900/80 px-1 font-mono text-[10px] text-cream">
                     {String(i + 1).padStart(2, "0")}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => remove(s.code)}
+                    className="absolute -right-1 -top-1 z-20 rounded-full bg-carbon-900 p-0.5 text-cream shadow hover:bg-stone-700"
+                    aria-label={`Quitar ${s.code}`}
+                  >
+                    <X className="size-3" />
+                  </button>
                 </div>
-                <p className="mt-1 max-w-20 truncate font-mono text-[10px] text-gold-700">{s.code}</p>
-                <button
-                  type="button"
-                  onClick={() => remove(s.code)}
-                  className="absolute -right-1 -top-1 rounded-full bg-carbon-900 p-0.5 text-cream shadow hover:bg-stone-700"
-                  aria-label={`Quitar ${s.code}`}
-                >
-                  <X className="size-3" />
-                </button>
+                <p className="mt-1 truncate font-mono text-[10px] text-gold-700">{s.code}</p>
               </li>
             ))}
           </ul>
@@ -143,13 +145,14 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
                 "border-stone-200 bg-stone-50 hover:border-stone-300 disabled:opacity-50",
               )}
             >
-              <div className="relative aspect-[4/5] w-full">
-                <Image
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-stone-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={item.thumbnailUrl}
                   alt={item.title}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover transition-transform group-hover:scale-[1.02]"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
               <div className="border-t border-stone-100 bg-white px-2 py-2">
