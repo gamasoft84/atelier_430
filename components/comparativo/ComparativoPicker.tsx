@@ -95,9 +95,17 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
       {selected.length > 0 ? (
         <div className="space-y-2">
           <p className="text-xs font-medium text-stone-500">{selectionHint}</p>
-          <ul className="flex items-start gap-3 overflow-x-auto pb-1">
+          <ul className="flex items-start gap-3 overflow-x-auto pb-1 pt-1">
             {selected.map((s, i) => (
-              <li key={s.code} className="w-20 shrink-0 flex-none">
+              <li key={s.code} className="relative w-20 shrink-0 flex-none">
+                <button
+                  type="button"
+                  onClick={() => remove(s.code)}
+                  className="absolute -right-1.5 -top-1 z-30 flex size-5 items-center justify-center rounded-full bg-carbon-900 text-cream shadow-md ring-2 ring-cream hover:bg-stone-700"
+                  aria-label={`Quitar ${s.code}`}
+                >
+                  <X className="size-3" strokeWidth={2.5} />
+                </button>
                 <div className="relative h-24 w-20 overflow-hidden rounded-lg border-2 border-gold-500 bg-stone-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -112,14 +120,6 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
                   <span className="absolute left-1 top-1 z-10 rounded bg-carbon-900/80 px-1 font-mono text-[10px] text-cream">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => remove(s.code)}
-                    className="absolute -right-1 -top-1 z-20 rounded-full bg-carbon-900 p-0.5 text-cream shadow hover:bg-stone-700"
-                    aria-label={`Quitar ${s.code}`}
-                  >
-                    <X className="size-3" />
-                  </button>
                 </div>
                 <p className="mt-1 truncate font-mono text-[10px] text-gold-700">{s.code}</p>
               </li>
