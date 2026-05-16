@@ -2,6 +2,12 @@
  * Geometría pura para la vista "piso" a escala: posiciones en cm y culling por scroll.
  */
 
+/** Escala inicial en móvil: 1 cm ≈ 0.404 px (`effectivePxPerCm` al entrar). */
+export const COLLECTION_SCALE_MOBILE_DEFAULT_PX_PER_CM = 0.404
+
+/** Coincide con breakpoint `sm` de Tailwind. */
+export const COLLECTION_SCALE_MOBILE_MEDIA_QUERY = "(max-width: 639px)"
+
 export interface ScaleLayoutArtwork {
   id: string
   code: string

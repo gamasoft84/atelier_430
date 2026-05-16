@@ -2,13 +2,30 @@ export const SITE_NAME = "Atelier 430"
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 export const SITE_DESCRIPTION = "430 piezas. Una sola colección. Arte curado, listo para tu hogar."
 
-/** Dígitos para wa.me: 521 + 10 dígitos (México). Acepta 5515377335 o 5215515377335. */
-function normalizeWhatsAppNumber(raw: string | undefined): string {
+/** México móvil en wa.me: 521 + 10 dígitos (13 en total). */
+const WHATSAPP_E164_MX = /^521\d{10}$/
+
+/**
+ * Normaliza a dígitos para wa.me.
+ * Acepta `5515377335`, `5215515377335` o `+52 1 55 1537 7335`.
+ * Rechaza placeholders tipo `521XXXXXXXXXX` (quedan solo "521" y WhatsApp falla).
+ */
+export function normalizeWhatsAppNumber(raw: string | undefined): string {
   const digits = (raw ?? "").replace(/\D/g, "")
   if (!digits) return ""
-  if (digits.length === 13 && digits.startsWith("521")) return digits
-  if (digits.length === 10) return `521${digits}`
-  return digits
+
+  let candidate: string
+  if (digits.length === 10) {
+    candidate = `521${digits}`
+  } else if (digits.length === 13 && digits.startsWith("521")) {
+    candidate = digits
+  } else if (digits.length === 12 && digits.startsWith("52")) {
+    candidate = `521${digits.slice(2)}`
+  } else {
+    return ""
+  }
+
+  return WHATSAPP_E164_MX.test(candidate) ? candidate : ""
 }
 
 export const WHATSAPP_NUMBER = normalizeWhatsAppNumber(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER)

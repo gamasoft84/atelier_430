@@ -9,6 +9,8 @@ import { pickScaleBarSegment } from "@/lib/collection-scale-bar"
 import {
   buildFloorSlots,
   cmToLayoutPx,
+  COLLECTION_SCALE_MOBILE_DEFAULT_PX_PER_CM,
+  COLLECTION_SCALE_MOBILE_MEDIA_QUERY,
   fitPixelsPerCm,
   maxSlotHeightCm,
   totalTrackWidthCm,
@@ -142,6 +144,7 @@ export default function CollectionScaleFloor({
   introPieces,
 }: CollectionScaleFloorProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const mobileDefaultZoomAppliedRef = useRef(false)
   const layoutArtworks = useMemo(() => toLayoutArtworks(items), [items])
 
   const slots = useMemo(
@@ -228,6 +231,17 @@ export default function CollectionScaleFloor({
 
   useEffect(() => {
     setUserZoom((z) => clampUserZoom(basePxPerCm, z))
+  }, [basePxPerCm])
+
+  /** Móvil: zoom inicial para ~0.404 px/cm (una sola vez por visita). */
+  useEffect(() => {
+    if (basePxPerCm <= 0 || mobileDefaultZoomAppliedRef.current) return
+    if (typeof window === "undefined") return
+    if (!window.matchMedia(COLLECTION_SCALE_MOBILE_MEDIA_QUERY).matches) return
+
+    const targetZoom = COLLECTION_SCALE_MOBILE_DEFAULT_PX_PER_CM / basePxPerCm
+    setUserZoom(clampUserZoom(basePxPerCm, targetZoom))
+    mobileDefaultZoomAppliedRef.current = true
   }, [basePxPerCm])
 
   useEffect(() => {
