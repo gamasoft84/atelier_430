@@ -77,6 +77,11 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
         ? `${selected.length} de ${MIN} mínimo`
         : `${selected.length} de ${MAX}`
 
+  const stickyBarClass =
+    variant === "admin"
+      ? "top-0 z-30 border-stone-200/80 bg-white/95"
+      : "top-16 z-30 border-stone-200/80 bg-cream/95"
+
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -90,6 +95,31 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
           placeholder="Buscar por código o título…"
           className="pl-9"
         />
+      </div>
+
+      <div
+        className={cn(
+          "sticky -mx-1 flex flex-wrap gap-3 border-b px-1 py-3 backdrop-blur-sm sm:-mx-2 sm:px-2",
+          stickyBarClass,
+        )}
+      >
+        <Button
+          type="button"
+          onClick={openComparativo}
+          disabled={selected.length < MIN}
+          className="bg-gold-500 text-white hover:bg-gold-400"
+        >
+          Ver comparativo a escala
+        </Button>
+        {variant === "admin" ? (
+          <Button type="button" variant="outline" asChild>
+            <Link href="/admin/configuracion">Textos del comparativo</Link>
+          </Button>
+        ) : (
+          <Button type="button" variant="outline" asChild>
+            <Link href="/catalogo">Ir al catálogo</Link>
+          </Button>
+        )}
       </div>
 
       {selected.length > 0 ? (
@@ -169,26 +199,6 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
             : "No hay obras listas para comparativo en este momento."}
         </p>
       ) : null}
-
-      <div className="flex flex-wrap gap-3">
-        <Button
-          type="button"
-          onClick={openComparativo}
-          disabled={selected.length < MIN}
-          className="bg-gold-500 text-white hover:bg-gold-400"
-        >
-          Ver comparativo a escala
-        </Button>
-        {variant === "admin" ? (
-          <Button type="button" variant="outline" asChild>
-            <Link href="/admin/configuracion">Textos del comparativo</Link>
-          </Button>
-        ) : (
-          <Button type="button" variant="outline" asChild>
-            <Link href="/catalogo">Ir al catálogo</Link>
-          </Button>
-        )}
-      </div>
     </div>
   )
 }
