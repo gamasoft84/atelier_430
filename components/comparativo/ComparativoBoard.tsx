@@ -63,8 +63,12 @@ export default function ComparativoBoard({
     <div className="space-y-6">
       <ComparativoBoardMount />
       {showExport ? (
-        <div className="flex justify-end print:hidden">
-          <ComparativoExportButton boardId={COMPARATIVO_BOARD_ID} filename={filename} />
+        <div className="flex flex-wrap justify-end gap-2 print:hidden">
+          <ComparativoExportButton
+            boardId={COMPARATIVO_BOARD_ID}
+            codes={items.map((i) => i.code)}
+            filename={filename}
+          />
         </div>
       ) : null}
 
@@ -136,6 +140,9 @@ function EditorialBoardCanvas({
                             className="comparativo-art-img mx-auto block"
                             style={{ width: wPx, height: hPx }}
                             crossOrigin="anonymous"
+                            data-comparativo-pid={item.imagePublicId}
+                            data-comparativo-w-cm={item.displayWidthCm}
+                            data-comparativo-h-cm={item.displayHeightCm}
                           />
                         </div>
                       </div>

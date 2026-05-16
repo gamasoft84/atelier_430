@@ -7,6 +7,7 @@ import type { ArtworkPublic } from "@/types/artwork"
 export type ComparativoPreparedItem = {
   code: string
   title: string
+  imagePublicId: string
   imageUrl: string
   canvasWidthCm: number
   canvasHeightCm: number
@@ -65,7 +66,8 @@ export function prepareComparativoItems(
     out.push({
       code: a.code,
       title: a.title,
-      imageUrl: buildComparativoImageUrl(pid, disp.widthCm, disp.heightCm),
+      imagePublicId: pid,
+      imageUrl: buildComparativoImageUrl(pid, disp.widthCm, disp.heightCm, "screen"),
       canvasWidthCm: canvasRaw.widthCm,
       canvasHeightCm: canvasRaw.heightCm,
       frameOuterWidthCm: frameOriented?.widthCm ?? null,

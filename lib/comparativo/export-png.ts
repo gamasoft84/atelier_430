@@ -1,4 +1,5 @@
 import { toPng } from "html-to-image"
+import { buildComparativoImageUrl } from "@/lib/comparativo/image-url"
 
 export const COMPARATIVO_EXPORTING_CLASS = "comparativo-exporting"
 
@@ -33,6 +34,25 @@ function waitForImages(node: HTMLElement): Promise<void> {
         }),
     ),
   ).then(() => undefined)
+}
+
+/** Sustituye URLs de pantalla por derivadas de alta resolución antes de capturar. */
+function upgradeArtworkImagesForExport(board: HTMLElement): () => void {
+  const saved: { img: HTMLImageElement; src: string }[] = []
+  for (const img of board.querySelectorAll("img.comparativo-art-img")) {
+    if (!(img instanceof HTMLImageElement)) continue
+    const pid = img.dataset.comparativoPid
+    const wCm = Number(img.dataset.comparativoWCm)
+    const hCm = Number(img.dataset.comparativoHCm)
+    if (!pid || !Number.isFinite(wCm) || !Number.isFinite(hCm)) continue
+    saved.push({ img, src: img.src })
+    img.src = buildComparativoImageUrl(pid, wCm, hCm, "export")
+  }
+  return () => {
+    for (const { img, src } of saved) {
+      img.src = src
+    }
+  }
 }
 
 function patchExportLayout(node: HTMLElement): () => void {
@@ -77,6 +97,7 @@ export async function exportComparativoBoardPng(
   if (scrollInner) scrollInner.scrollLeft = 0
 
   const restoreLayout = patchExportLayout(node)
+  const restoreImages = upgradeArtworkImagesForExport(node)
   node.classList.add(COMPARATIVO_EXPORTING_CLASS)
 
   try {
@@ -98,6 +119,7 @@ export async function exportComparativoBoardPng(
       skipAutoScale: true,
     })
   } finally {
+    restoreImages()
     restoreLayout()
     node.classList.remove(COMPARATIVO_EXPORTING_CLASS)
   }
