@@ -5,7 +5,10 @@ import { Download, FileText } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { exportComparativoBoardPng } from "@/lib/comparativo/export-png"
-import { shareComparativoPdfViaWhatsApp } from "@/lib/comparativo/share-pdf-whatsapp"
+import {
+  downloadComparativoPdf,
+  shareComparativoPdfViaWhatsApp,
+} from "@/lib/comparativo/share-pdf-whatsapp"
 import { WHATSAPP_NUMBER } from "@/lib/constants"
 
 interface ComparativoExportButtonProps {
@@ -34,10 +37,8 @@ export default function ComparativoExportButton({
   filename = "atelier430-comparativo.png",
 }: ComparativoExportButtonProps) {
   const [busy, setBusy] = useState(false)
-  const [busyAction, setBusyAction] = useState<"png" | "whatsapp" | null>(null)
+  const [busyAction, setBusyAction] = useState<"png" | "pdf" | "whatsapp" | null>(null)
 
-  const pdfFilename = filename.replace(/\.png$/i, ".pdf")
-  const pdfHref = `/api/comparativo/pdf?obras=${encodeURIComponent(codes.join(","))}`
   const canShare = codes.length >= 3 && Boolean(WHATSAPP_NUMBER)
 
   const exportPng = useCallback(async () => {
@@ -58,6 +59,19 @@ export default function ComparativoExportButton({
       setBusyAction(null)
     }
   }, [boardId, filename])
+
+  const exportPdf = useCallback(async () => {
+    setBusy(true)
+    setBusyAction("pdf")
+    try {
+      await downloadComparativoPdf(codes)
+    } catch {
+      toast.error("No se pudo generar el PDF")
+    } finally {
+      setBusy(false)
+      setBusyAction(null)
+    }
+  }, [codes])
 
   const shareWhatsApp = useCallback(async () => {
     setBusy(true)
@@ -91,13 +105,11 @@ export default function ComparativoExportButton({
         variant="outline"
         size="sm"
         disabled={busy || codes.length < 3}
-        asChild
+        onClick={() => void exportPdf()}
         className="gap-2 border-[#d4cdc3] bg-[#faf8f4] font-sans text-stone-600"
       >
-        <a href={pdfHref} download={pdfFilename} target="_blank" rel="noopener noreferrer">
-          <FileText className="size-4" aria-hidden />
-          Descargar PDF
-        </a>
+        <FileText className="size-4" aria-hidden />
+        {busyAction === "pdf" ? "Generando PDF…" : "Descargar PDF"}
       </Button>
       {canShare ? (
         <Button

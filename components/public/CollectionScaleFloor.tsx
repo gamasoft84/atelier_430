@@ -26,6 +26,8 @@ const BUFFER_CM = 100
 const ZOOM_FACTOR = 1.15
 /** Espacio lateral de la columna fija de referencia (px, sin zoom). */
 const HUMAN_RAIL_PADDING_X = 18
+/** Etiqueta "170 cm" bajo la silueta (fuera del alto del SVG). */
+const HUMAN_HEIGHT_LABEL_PX = 18
 
 function ZoomIconMinus({ className }: { className?: string }) {
   return (
@@ -261,7 +263,8 @@ export default function CollectionScaleFloor({
   /** Píxeles por cm en pantalla: un solo factor para silueta, obras y barra (evita desface por `scale` anidado). */
   const pxPerCmFloor = effectivePxPerCm
   const trackWidthPx = cmToLayoutPx(scrollTotalWidthCm, pxPerCmFloor)
-  const floorHeightPx = Math.max(120 * userZoom, maxHeightCm * pxPerCmFloor)
+  const floorHeightPx =
+    cmToLayoutPx(maxHeightCm, pxPerCmFloor) + HUMAN_HEIGHT_LABEL_PX
 
   const zoomIn = () => {
     setUserZoom((z) => clampUserZoom(basePxPerCm, z * ZOOM_FACTOR))
@@ -357,7 +360,7 @@ export default function CollectionScaleFloor({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-stone-600 max-w-xl">
           {introPieces ? (
@@ -401,7 +404,7 @@ export default function CollectionScaleFloor({
         className="w-full overflow-hidden rounded-xl border border-stone-200 bg-[#FAF7F0] shadow-inner"
         role="presentation"
       >
-        <div className="flex min-w-0 pb-12">
+        <div className="flex min-w-0 pb-1">
           <aside
             className="flex shrink-0 flex-col items-center justify-end border-r border-stone-300/90 bg-cream shadow-[inset_-6px_0_12px_-8px_rgba(15,15,15,0.06)]"
             style={{
@@ -449,7 +452,7 @@ export default function CollectionScaleFloor({
             </div>
           </div>
         </div>
-        <div className="shrink-0 border-t border-stone-200/80 bg-[#FAF7F0] px-4 pt-6 pb-4">
+        <div className="shrink-0 border-t border-stone-200/80 bg-[#FAF7F0] px-4 pt-3 pb-3">
           <div
             role="img"
             aria-label={`Barra gráfica de escala, segmento de ${barChoice.segmentCm} centímetros`}

@@ -1,6 +1,5 @@
 import { WHATSAPP_NUMBER } from "@/lib/constants"
 import { buildComparativoWhatsAppMessage } from "@/lib/whatsapp/comparativo-message"
-import { normalizePublicUrl } from "@/lib/urls/normalize-public-url"
 
 function comparativoPdfFilename(codes: string[]): string {
   return `atelier430-comparativo-${codes.join("-")}.pdf`.replace(/[^a-zA-Z0-9._-]+/g, "-")
@@ -28,12 +27,9 @@ function canSharePdfFile(file: File): boolean {
   }
 }
 
-/**
- * Genera el PDF del comparativo y lo comparte por WhatsApp.
- * Móvil: hoja de compartir nativa con el PDF adjunto.
- * Escritorio: descarga el PDF y abre wa.me con el mensaje (el usuario adjunta el archivo).
- */
-export async function shareComparativoPdfViaWhatsApp(codes: string[]): Promise<void> {
+export async function fetchComparativoPdfBlob(
+  codes: string[],
+): Promise<{ blob: Blob; filename: string }> {
   if (codes.length < 3) {
     throw new Error("Se requieren al menos 3 obras")
   }
@@ -45,22 +41,29 @@ export async function shareComparativoPdfViaWhatsApp(codes: string[]): Promise<v
   }
 
   const blob = await res.blob()
-  const filename = comparativoPdfFilename(codes)
+  return { blob, filename: comparativoPdfFilename(codes) }
+}
+
+export async function downloadComparativoPdf(codes: string[]): Promise<void> {
+  const { blob, filename } = await fetchComparativoPdfBlob(codes)
+  downloadBlob(blob, filename)
+}
+
+/**
+ * Genera el PDF y lo comparte por WhatsApp.
+ * Móvil: solo el archivo PDF (sin URL en el mensaje).
+ * Escritorio: descarga el PDF y abre wa.me con texto sin enlaces.
+ */
+export async function shareComparativoPdfViaWhatsApp(codes: string[]): Promise<void> {
+  const { blob, filename } = await fetchComparativoPdfBlob(codes)
   const file = new File([blob], filename, { type: "application/pdf" })
-
-  const pageUrl =
-    typeof window !== "undefined"
-      ? normalizePublicUrl(window.location.href)
-      : normalizePublicUrl(`/comparativo?obras=${encodeURIComponent(codes.join(","))}`)
-
-  const text = buildComparativoWhatsAppMessage(codes, pageUrl)
+  const text = buildComparativoWhatsAppMessage(codes)
 
   if (canSharePdfFile(file)) {
     try {
       await navigator.share({
         files: [file],
         title: "Comparativo Atelier 430",
-        text,
       })
       return
     } catch (err) {
