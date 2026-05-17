@@ -12,22 +12,25 @@ export const metadata: Metadata = {
 export default async function AdminConfiguracionPage() {
   const groups = await getSizeGroups()
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-carbon-900">Configuración</h1>
-        <p className="text-sm text-stone-500 mt-1">
-          Ajustes del sitio y defaults del panel admin.
-        </p>
+    <div className="space-y-8">
+      <div className="mx-auto w-full max-w-3xl space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-carbon-900">Configuración</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Ajustes del sitio y defaults del panel admin.
+          </p>
+        </div>
+
+        <ArtworkCreateDefaultsSettings />
+
+        <CatalogImagePreference />
+
+        <ComparativoEditorialSettings />
       </div>
 
-      <ArtworkCreateDefaultsSettings />
-
-      <CatalogImagePreference />
-
-      <ComparativoEditorialSettings />
-
-      {/* Bulk pricing */}
-      <BulkPricingBySize groups={groups} />
+      <div className="mx-auto w-full max-w-7xl">
+        <BulkPricingBySize groups={groups} />
+      </div>
     </div>
   )
 }

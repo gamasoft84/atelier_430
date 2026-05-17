@@ -7,6 +7,7 @@ import type { Database } from "@/types/database"
 export type SizeGroup = {
   width_cm: number
   height_cm: number
+  has_frame: boolean
   total: number
   sold: number
   reserved: number
@@ -18,6 +19,10 @@ export type SizeGroup = {
   mixed_original_price: boolean
 }
 
+function groupKey(w: number, h: number, hasFrame: boolean): string {
+  return `${w}x${h}:${hasFrame ? "1" : "0"}`
+}
+
 export async function getSizeGroups(): Promise<SizeGroup[]> {
   const supabase = await createClient()
   const {
@@ -27,7 +32,7 @@ export async function getSizeGroups(): Promise<SizeGroup[]> {
 
   const { data, error } = await supabase
     .from("artworks")
-    .select("width_cm, height_cm, status, price_locked, price, original_price")
+    .select("width_cm, height_cm, has_frame, status, price_locked, price, original_price")
     .not("width_cm", "is", null)
     .not("height_cm", "is", null)
     .limit(2000)
@@ -39,6 +44,7 @@ export async function getSizeGroups(): Promise<SizeGroup[]> {
   for (const row of data as Array<{
     width_cm: number
     height_cm: number
+    has_frame: boolean
     status: string
     price_locked: boolean
     price: number | null
@@ -46,19 +52,20 @@ export async function getSizeGroups(): Promise<SizeGroup[]> {
   }>) {
     const w = row.width_cm
     const h = row.height_cm
-    const key = `${w}x${h}`
+    const hasFrame = Boolean(row.has_frame)
+    const key = groupKey(w, h, hasFrame)
 
     const g =
       map.get(key) ??
       {
         width_cm: w,
         height_cm: h,
+        has_frame: hasFrame,
         total: 0,
         sold: 0,
         reserved: 0,
         locked: 0,
         eligible: 0,
-        // Current reference values are computed ONLY from eligible artworks
         current_price: null,
         current_original_price: null,
         mixed_price: false,
@@ -77,7 +84,6 @@ export async function getSizeGroups(): Promise<SizeGroup[]> {
 
     if (eligible) g.eligible += 1
 
-    // Track current values ONLY among eligible artworks.
     if (eligible) {
       if (g.eligible === 1) {
         g.current_price = row.price ?? null
@@ -99,13 +105,15 @@ export async function getSizeGroups(): Promise<SizeGroup[]> {
 
   return [...map.values()].sort((a, b) => {
     if (a.width_cm !== b.width_cm) return a.width_cm - b.width_cm
-    return a.height_cm - b.height_cm
+    if (a.height_cm !== b.height_cm) return a.height_cm - b.height_cm
+    return Number(a.has_frame) - Number(b.has_frame)
   })
 }
 
 export async function applyBulkPriceForSize(input: {
   widthCm: number
   heightCm: number
+  hasFrame: boolean
   price: number | null
   originalPrice: number | null
   applyOriginalPrice: boolean
@@ -140,6 +148,7 @@ export async function applyBulkPriceForSize(input: {
     .update(updatePayload, { count: "exact" })
     .eq("width_cm", input.widthCm)
     .eq("height_cm", input.heightCm)
+    .eq("has_frame", input.hasFrame)
     .neq("status", "sold")
     .neq("status", "reserved")
     .eq("price_locked", false)
@@ -152,4 +161,3 @@ export async function applyBulkPriceForSize(input: {
 
   return { updated: count ?? 0 }
 }
-
