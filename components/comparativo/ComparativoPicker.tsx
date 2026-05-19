@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation"
 import { Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { browseComparativoArtworks } from "@/app/actions/comparativo"
+import ComparativoFilters from "@/components/comparativo/ComparativoFilters"
 import type { ComparativoPickerArtwork } from "@/lib/comparativo/picker-artworks"
+import {
+  EMPTY_COMPARATIVO_PICKER_FILTERS,
+  hasActiveComparativoPickerFilters,
+  type ComparativoPickerFilters,
+} from "@/types/comparativo-picker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -22,23 +28,27 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
   const router = useRouter()
   const [selected, setSelected] = useState<ComparativoPickerArtwork[]>([])
   const [query, setQuery] = useState("")
+  const [filters, setFilters] = useState<ComparativoPickerFilters>(
+    EMPTY_COMPARATIVO_PICKER_FILTERS,
+  )
   const [browse, setBrowse] = useState<ComparativoPickerArtwork[]>([])
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [pending, startTransition] = useTransition()
 
   const selectedCodes = useMemo(() => new Set(selected.map((s) => s.code)), [selected])
 
-  const loadBrowse = useCallback((q: string) => {
+  const loadBrowse = useCallback((q: string, f: ComparativoPickerFilters) => {
     startTransition(async () => {
-      const list = await browseComparativoArtworks(q)
+      const list = await browseComparativoArtworks(q, f)
       setBrowse(list)
     })
   }, [])
 
   useEffect(() => {
     const delay = query.trim() ? 280 : 0
-    const t = window.setTimeout(() => loadBrowse(query), delay)
+    const t = window.setTimeout(() => loadBrowse(query, filters), delay)
     return () => window.clearTimeout(t)
-  }, [query, loadBrowse])
+  }, [query, filters, loadBrowse])
 
   const gridItems = useMemo(
     () => browse.filter((item) => !selectedCodes.has(item.code)),
@@ -82,6 +92,11 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
       ? "top-0 z-30 border-stone-200/80 bg-white/95"
       : "top-16 z-30 border-stone-200/80 bg-cream/95"
 
+  const hasFilters = hasActiveComparativoPickerFilters(filters)
+  const emptyMessage = hasFilters || query.trim()
+    ? "Sin resultados con estos filtros. Prueba otra combinación o limpia los filtros."
+    : "No hay obras listas para comparativo en este momento."
+
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -92,10 +107,20 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por código o título…"
+          placeholder="Buscar por código, título o autor…"
           className="pl-9"
         />
       </div>
+
+      <ComparativoFilters
+        filters={filters}
+        onChange={setFilters}
+        mobileOpen={mobileFiltersOpen}
+        onMobileOpen={() => setMobileFiltersOpen(true)}
+        onMobileClose={() => setMobileFiltersOpen(false)}
+        resultCount={gridItems.length}
+        pending={pending}
+      />
 
       <div
         className={cn(
@@ -160,8 +185,6 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
         <p className="text-xs text-stone-500">{selectionHint}</p>
       )}
 
-      {pending ? <p className="text-xs text-stone-400">Cargando obras…</p> : null}
-
       {gridItems.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {gridItems.map((item) => (
@@ -193,11 +216,7 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
           ))}
         </div>
       ) : !pending ? (
-        <p className="text-sm text-stone-500">
-          {query.trim()
-            ? "Sin resultados con imagen y medidas. Prueba otro código o título."
-            : "No hay obras listas para comparativo en este momento."}
-        </p>
+        <p className="text-sm text-stone-500">{emptyMessage}</p>
       ) : null}
     </div>
   )
