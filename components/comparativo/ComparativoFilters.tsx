@@ -6,10 +6,13 @@ import { SlidersHorizontal, X } from "lucide-react"
 import { ARTWORK_CATEGORIES, ARTWORK_TECHNIQUES } from "@/lib/constants"
 import { ARTWORK_SIZE_LABEL } from "@/lib/artwork-size"
 import type { SizeOption, MarcoOption } from "@/types/catalog"
-import type { ArtworkCategory } from "@/types/artwork"
+import type { ArtworkCategory, CatalogFormat } from "@/types/artwork"
 import {
   EMPTY_COMPARATIVO_PICKER_FILTERS,
+  exactSizeKey,
+  formatExactSizeLabel,
   hasActiveComparativoPickerFilters,
+  type ComparativoExactSize,
   type ComparativoPickerFilters,
 } from "@/types/comparativo-picker"
 import { Button } from "@/components/ui/button"
@@ -34,6 +37,11 @@ const MARCO_OPTIONS: { value: MarcoOption; label: string }[] = [
   { value: "sin", label: "Sin marco" },
 ]
 
+const FORMAT_OPTIONS: { value: CatalogFormat; label: string }[] = [
+  { value: "horizontal", label: "Horizontal" },
+  { value: "vertical", label: "Vertical" },
+]
+
 interface ComparativoFiltersProps {
   filters: ComparativoPickerFilters
   onChange: (next: ComparativoPickerFilters) => void
@@ -42,6 +50,8 @@ interface ComparativoFiltersProps {
   onMobileClose: () => void
   resultCount?: number
   pending?: boolean
+  priceRange?: { min: number; max: number }
+  dimensionOptions?: ComparativoExactSize[]
 }
 
 function toggleInList<T>(list: T[], value: T): T[] {
@@ -56,6 +66,8 @@ export default function ComparativoFilters({
   onMobileClose,
   resultCount,
   pending,
+  priceRange = { min: 0, max: 10000 },
+  dimensionOptions = [],
 }: ComparativoFiltersProps) {
   const active = hasActiveComparativoPickerFilters(filters)
 
@@ -92,6 +104,36 @@ export default function ComparativoFilters({
   const setMarco = useCallback(
     (marco: MarcoOption | null) => {
       onChange({ ...filters, marco })
+    },
+    [filters, onChange],
+  )
+
+  const setFormato = useCallback(
+    (formato: CatalogFormat | null) => {
+      onChange({ ...filters, formato })
+    },
+    [filters, onChange],
+  )
+
+  const setMedida = useCallback(
+    (medida: ComparativoExactSize | null) => {
+      onChange({ ...filters, medida })
+    },
+    [filters, onChange],
+  )
+
+  const setPrecioMin = useCallback(
+    (raw: string) => {
+      const precio_min = raw ? Number(raw) || null : null
+      onChange({ ...filters, precio_min })
+    },
+    [filters, onChange],
+  )
+
+  const setPrecioMax = useCallback(
+    (raw: string) => {
+      const precio_max = raw ? Number(raw) || null : null
+      onChange({ ...filters, precio_max })
     },
     [filters, onChange],
   )
@@ -213,6 +255,96 @@ export default function ComparativoFilters({
             )
           })}
         </div>
+      </section>
+
+      {dimensionOptions.length > 0 ? (
+        <section>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-stone-400">
+            Medida exacta (lienzo)
+          </p>
+          <select
+            value={filters.medida ? exactSizeKey(filters.medida) : ""}
+            onChange={(e) => {
+              const key = e.target.value
+              if (!key) {
+                setMedida(null)
+                return
+              }
+              const found = dimensionOptions.find((d) => exactSizeKey(d) === key)
+              setMedida(found ?? null)
+            }}
+            className="w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm text-carbon-900 focus:border-gold-500 focus:outline-none"
+          >
+            <option value="">Todas las medidas</option>
+            {dimensionOptions.map((d) => (
+              <option key={exactSizeKey(d)} value={exactSizeKey(d)}>
+                {formatExactSizeLabel(d)}
+              </option>
+            ))}
+          </select>
+        </section>
+      ) : null}
+
+      <section>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-stone-400">
+          Orientación
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setFormato(null)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              filters.formato === null
+                ? "border-gold-500 bg-gold-500/10 text-carbon-900"
+                : "border-stone-200 bg-white text-stone-600 hover:border-stone-300",
+            )}
+          >
+            Todas
+          </button>
+          {FORMAT_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setFormato(filters.formato === value ? null : value)}
+              className={cn(
+                "flex-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                filters.formato === value
+                  ? "border-gold-500 bg-gold-500/10 text-carbon-900"
+                  : "border-stone-200 bg-white text-stone-600 hover:border-stone-300",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-stone-400">
+          Precio (MXN)
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder={String(priceRange.min)}
+            value={filters.precio_min ?? ""}
+            onChange={(e) => setPrecioMin(e.target.value)}
+            className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm focus:border-gold-500 focus:outline-none"
+          />
+          <span className="shrink-0 text-sm text-stone-300">—</span>
+          <input
+            type="number"
+            placeholder={String(priceRange.max)}
+            value={filters.precio_max ?? ""}
+            onChange={(e) => setPrecioMax(e.target.value)}
+            className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-sm focus:border-gold-500 focus:outline-none"
+          />
+        </div>
+        <p className="mt-1 text-xs text-stone-400">
+          Rango en catálogo: ${priceRange.min.toLocaleString("es-MX")} – $
+          {priceRange.max.toLocaleString("es-MX")}
+        </p>
       </section>
 
       {active ? (

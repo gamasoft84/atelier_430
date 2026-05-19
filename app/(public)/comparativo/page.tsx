@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 import ComparativoPicker from "@/components/comparativo/ComparativoPicker"
 import ComparativoView from "@/components/comparativo/ComparativoView"
 import { parseComparativoCodesParam } from "@/lib/comparativo/parse-codes"
@@ -38,7 +39,9 @@ export default async function ComparativoPublicPage({ searchParams }: PageProps)
         <h1 className="font-display text-2xl text-carbon-900 sm:text-3xl">Comparativo editorial</h1>
         <p className="mt-2 max-w-2xl text-sm text-stone-600">{hint}</p>
         <div className="mt-8">
-          <ComparativoPicker variant="public" />
+          <Suspense fallback={<p className="text-sm text-stone-500">Cargando selector…</p>}>
+            <ComparativoPicker variant="public" />
+          </Suspense>
         </div>
       </div>
     )
@@ -62,7 +65,9 @@ export default async function ComparativoPublicPage({ searchParams }: PageProps)
         </p>
         <p className="mt-2 font-mono text-xs text-stone-500">{parsed.codes.join(", ")}</p>
         <div className="mt-8">
-          <ComparativoPicker variant="public" />
+          <Suspense fallback={<p className="text-sm text-stone-500">Cargando selector…</p>}>
+            <ComparativoPicker variant="public" />
+          </Suspense>
         </div>
       </div>
     )

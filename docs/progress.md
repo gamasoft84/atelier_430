@@ -129,9 +129,8 @@
 - [x] `app/api/ai/classify-artwork/route.ts` — POST con auth + validación Zod
 - [x] ArtworkForm Step 1: botón "Pre-llenar con IA", badge de confianza verde/amarillo, loading state
 
-### Pendiente Fase 3
-- [ ] API route `/api/ai/generate-post` — genera posts para redes sociales
-- [ ] Modal generador de posts desde ficha de obra
+### Posts redes (movido a Fase 7)
+- Generador de posts: ver Fase 7 (`/api/ai/generate-post`, `SocialPostModal`)
 
 ---
 
@@ -175,9 +174,10 @@
 - [x] Animaciones Framer Motion: stagger 40ms por card, fade+slide entrada
 - [x] metadata base mejorada en root layout (metadataBase, OG, Twitter, robots)
 
-### Pendiente (post Fase 4)
-- [ ] Contador de vistas (incrementar views_count al entrar al detalle)
-- [ ] Contador de clicks de WhatsApp (incrementar whatsapp_clicks)
+### Tracking (completado)
+- [x] `app/actions/tracking.ts` — `trackArtworkView`, `trackWhatsAppClick` (RPC fire-and-forget)
+- [x] `components/public/ViewTracker.tsx` en detalle de obra
+- [x] `trackWhatsAppClick` en `WhatsAppButton`, `WhatsAppFloat` (con contexto de obra) y Photo Preview
 
 ---
 
@@ -270,11 +270,31 @@
 
 ---
 
+## Extras — Comparativo editorial y escala (2026-05) ✅
+
+### Comparativo (público `/comparativo` + admin `/admin/comparativo`)
+- [x] Selector visual compartido (`ComparativoPicker`) — 3–5 obras, barra sticky unificada (CTA + miniaturas)
+- [x] Lámina a escala (`ComparativoBoard`), export PNG/PDF, envío PDF por WhatsApp
+- [x] Filtros fase 1: categoría, marco, técnica, tamaño (lado mayor); drawer móvil
+- [x] Filtros fase 2: medida exacta (lienzo), orientación, precio; filtros en URL (`q`, `categoria`, `medida`, etc.)
+- [x] `types/comparativo-picker.ts` — parse/build URL
+- [x] Ajuste masivo de precios por tamaño + marco (`/admin/configuracion`)
+- [x] Imágenes premium vs primary (`is_premium`, `prefer_premium_in_catalog`)
+
+### Escala colección (`/escala-coleccion`)
+- [x] Piso a escala con zoom móvil por defecto (`CollectionScaleFloor`)
+
+### Operativo pendiente
+- [ ] `NEXT_PUBLIC_WHATSAPP_NUMBER` en Vercel (formato `521` + 10 dígitos)
+- [ ] Migraciones `009_artwork_images_is_premium.sql`, `010_site_settings_prefer_premium.sql` en Supabase si no aplicadas
+
+---
+
 ## Fase 9 — Pulido y deploy final ⏳
 
-- [ ] Animaciones Framer Motion
-- [ ] Optimización de imágenes
-- [ ] Testing en mobile
+- [x] Animaciones Framer Motion (catálogo, filtros comparativo)
+- [x] Sitemap y robots.txt
+- [ ] Optimización de imágenes (auditoría Lighthouse)
+- [ ] Testing en mobile sistemático
 - [ ] Dominio personalizado
 - [ ] Google Analytics
-- [ ] Sitemap y robots.txt

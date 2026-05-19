@@ -1,16 +1,21 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Search, X } from "lucide-react"
 import { toast } from "sonner"
-import { browseComparativoArtworks } from "@/app/actions/comparativo"
+import {
+  browseComparativoArtworks,
+  getComparativoFilterMeta,
+  type ComparativoFilterMeta,
+} from "@/app/actions/comparativo"
 import ComparativoFilters from "@/components/comparativo/ComparativoFilters"
 import type { ComparativoPickerArtwork } from "@/lib/comparativo/picker-artworks"
 import {
-  EMPTY_COMPARATIVO_PICKER_FILTERS,
+  buildComparativoPickerSearchParams,
   hasActiveComparativoPickerFilters,
+  parseComparativoPickerSearchParams,
   type ComparativoPickerFilters,
 } from "@/types/comparativo-picker"
 import { Button } from "@/components/ui/button"
@@ -26,14 +31,45 @@ interface ComparativoPickerProps {
 
 export default function ComparativoPicker({ variant = "public" }: ComparativoPickerProps) {
   const router = useRouter()
-  const [selected, setSelected] = useState<ComparativoPickerArtwork[]>([])
-  const [query, setQuery] = useState("")
-  const [filters, setFilters] = useState<ComparativoPickerFilters>(
-    EMPTY_COMPARATIVO_PICKER_FILTERS,
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const urlParsed = useMemo(
+    () => parseComparativoPickerSearchParams(searchParams),
+    [searchParams],
   )
+
+  const [selected, setSelected] = useState<ComparativoPickerArtwork[]>([])
+  const [query, setQuery] = useState(urlParsed.q)
+  const [filters, setFilters] = useState<ComparativoPickerFilters>(urlParsed.filters)
   const [browse, setBrowse] = useState<ComparativoPickerArtwork[]>([])
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [filterMeta, setFilterMeta] = useState<ComparativoFilterMeta | null>(null)
   const [pending, startTransition] = useTransition()
+  const skipUrlSync = useRef(false)
+
+  useEffect(() => {
+    getComparativoFilterMeta()
+      .then(setFilterMeta)
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (skipUrlSync.current) {
+      skipUrlSync.current = false
+      return
+    }
+    setQuery(urlParsed.q)
+    setFilters(urlParsed.filters)
+  }, [urlParsed])
+
+  useEffect(() => {
+    const built = buildComparativoPickerSearchParams(query, filters)
+    const next = built.toString()
+    const current = searchParams.toString()
+    if (next === current) return
+    skipUrlSync.current = true
+    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false })
+  }, [query, filters, pathname, router, searchParams])
 
   const selectedCodes = useMemo(() => new Set(selected.map((s) => s.code)), [selected])
 
@@ -122,6 +158,8 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
         onMobileClose={() => setMobileFiltersOpen(false)}
         resultCount={gridItems.length}
         pending={pending}
+        priceRange={filterMeta?.priceRange}
+        dimensionOptions={filterMeta?.dimensionOptions}
       />
 
       {/* Barra sticky unificada: acciones + contador + miniaturas */}

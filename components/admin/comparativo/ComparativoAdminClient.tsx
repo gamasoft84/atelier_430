@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import ComparativoPicker from "@/components/comparativo/ComparativoPicker"
 
 export default function ComparativoAdminClient() {
@@ -12,7 +13,9 @@ export default function ComparativoAdminClient() {
           (o lienzo si no hay marco registrado).
         </p>
       </div>
-      <ComparativoPicker variant="admin" />
+      <Suspense fallback={<p className="text-sm text-stone-500">Cargando selector…</p>}>
+        <ComparativoPicker variant="admin" />
+      </Suspense>
     </section>
   )
 }
