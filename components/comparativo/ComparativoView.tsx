@@ -2,6 +2,7 @@ import Link from "next/link"
 import ComparativoBoard from "@/components/comparativo/ComparativoBoard"
 import type { ComparativoPreparedItem } from "@/lib/comparativo/prepare-items"
 import type { ComparativoEditorialCopy } from "@/lib/supabase/queries/comparativo"
+import { cn } from "@/lib/utils"
 
 interface ComparativoViewProps {
   items: ComparativoPreparedItem[]
@@ -22,13 +23,19 @@ export default function ComparativoView({
 }: ComparativoViewProps) {
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 print:hidden">
+      <div className="flex flex-wrap items-center gap-y-1 print:hidden">
         {backHref ? (
-          <Link href={backHref} className="text-sm font-medium text-gold-600 hover:text-gold-500">
+          <Link href={backHref} className="pr-4 text-sm font-medium text-gold-600 hover:text-gold-500">
             ← {backLabel}
           </Link>
         ) : null}
-        <Link href="/comparativo" className="text-sm font-medium text-stone-500 hover:text-carbon-900">
+        <Link
+          href="/comparativo"
+          className={cn(
+            "text-sm font-medium text-stone-500 hover:text-carbon-900",
+            backHref && "border-l border-stone-200 pl-4",
+          )}
+        >
           Cambiar selección
         </Link>
       </div>

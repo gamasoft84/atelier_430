@@ -92,6 +92,8 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
       ? "top-0 z-30 border-stone-200/80 bg-white/95"
       : "top-16 z-30 border-stone-200/80 bg-cream/95"
 
+  const removeRingClass = variant === "admin" ? "ring-white" : "ring-cream"
+
   const hasFilters = hasActiveComparativoPickerFilters(filters)
   const emptyMessage = hasFilters || query.trim()
     ? "Sin resultados con estos filtros. Prueba otra combinación o limpia los filtros."
@@ -122,68 +124,74 @@ export default function ComparativoPicker({ variant = "public" }: ComparativoPic
         pending={pending}
       />
 
+      {/* Barra sticky unificada: acciones + contador + miniaturas */}
       <div
         className={cn(
-          "sticky -mx-1 flex flex-wrap gap-3 border-b px-1 py-3 backdrop-blur-sm sm:-mx-2 sm:px-2",
+          "sticky -mx-1 border-b px-1 backdrop-blur-sm sm:-mx-2 sm:px-2",
           stickyBarClass,
         )}
       >
-        <Button
-          type="button"
-          onClick={openComparativo}
-          disabled={selected.length < MIN}
-          className="bg-gold-500 text-white hover:bg-gold-400"
-        >
-          Ver comparativo a escala
-        </Button>
-        {variant === "admin" ? (
-          <Button type="button" variant="outline" asChild>
-            <Link href="/admin/configuracion">Textos del comparativo</Link>
-          </Button>
-        ) : (
-          <Button type="button" variant="outline" asChild>
-            <Link href="/catalogo">Ir al catálogo</Link>
-          </Button>
-        )}
-      </div>
+        <div className="space-y-3 py-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <Button
+              type="button"
+              onClick={openComparativo}
+              disabled={selected.length < MIN}
+              className="w-full bg-gold-500 text-white hover:bg-gold-400 sm:w-auto"
+            >
+              Ver comparativo a escala
+            </Button>
+            {variant === "admin" ? (
+              <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+                <Link href="/admin/configuracion">Textos del comparativo</Link>
+              </Button>
+            ) : (
+              <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+                <Link href="/catalogo">Ir al catálogo</Link>
+              </Button>
+            )}
+          </div>
 
-      {selected.length > 0 ? (
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-stone-500">{selectionHint}</p>
-          <ul className="flex items-start gap-3 overflow-x-auto pb-1 pt-1">
-            {selected.map((s, i) => (
-              <li key={s.code} className="relative w-20 shrink-0 flex-none">
-                <button
-                  type="button"
-                  onClick={() => remove(s.code)}
-                  className="absolute -right-1.5 -top-1 z-30 flex size-5 items-center justify-center rounded-full bg-carbon-900 text-cream shadow-md ring-2 ring-cream hover:bg-stone-700"
-                  aria-label={`Quitar ${s.code}`}
-                >
-                  <X className="size-3" strokeWidth={2.5} />
-                </button>
-                <div className="relative h-24 w-20 overflow-hidden rounded-lg border-2 border-gold-500 bg-stone-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={s.thumbnailUrl}
-                    alt={s.title}
-                    width={80}
-                    height={96}
-                    className="block h-full w-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <span className="absolute left-1 top-1 z-10 rounded bg-carbon-900/80 px-1 font-mono text-[10px] text-cream">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                </div>
-                <p className="mt-1 truncate font-mono text-[10px] text-gold-700">{s.code}</p>
-              </li>
-            ))}
-          </ul>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-stone-500">{selectionHint}</p>
+            {selected.length > 0 ? (
+              <ul className="-mx-1 flex items-start gap-3 overflow-x-auto px-1 pb-0.5 pt-1">
+                {selected.map((s, i) => (
+                  <li key={s.code} className="relative w-20 shrink-0 flex-none">
+                    <button
+                      type="button"
+                      onClick={() => remove(s.code)}
+                      className={cn(
+                        "absolute -right-1.5 -top-1 z-30 flex size-5 items-center justify-center rounded-full bg-carbon-900 text-cream shadow-md ring-2 hover:bg-stone-700",
+                        removeRingClass,
+                      )}
+                      aria-label={`Quitar ${s.code}`}
+                    >
+                      <X className="size-3" strokeWidth={2.5} />
+                    </button>
+                    <div className="relative h-24 w-20 overflow-hidden rounded-lg border-2 border-gold-500 bg-stone-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={s.thumbnailUrl}
+                        alt={s.title}
+                        width={80}
+                        height={96}
+                        className="block h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span className="absolute left-1 top-1 z-10 rounded bg-carbon-900/80 px-1 font-mono text-[10px] text-cream">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <p className="mt-1 truncate font-mono text-[10px] text-gold-700">{s.code}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </div>
-      ) : (
-        <p className="text-xs text-stone-500">{selectionHint}</p>
-      )}
+      </div>
 
       {gridItems.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
