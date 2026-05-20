@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { FileDown } from "lucide-react"
 import type { Metadata } from "next"
+import ArtworkDescription from "@/components/public/ArtworkDescription"
 import ArtworkGallery from "@/components/public/ArtworkGallery"
 import ArtworkSizeBadge from "@/components/public/ArtworkSizeBadge"
 import ArtworkARViewerIsland from "@/components/public/ArtworkARViewerIsland"
@@ -42,7 +43,8 @@ export async function generateMetadata({
 
   const ogImage = selectShowcaseImage(artwork.images, preferPremium)
   const url = `${SITE_URL}/catalogo/${code}`
-  const description = artwork.description ?? `${artwork.title} — ${SITE_NAME}`
+  const rawDescription = artwork.description ?? `${artwork.title} — ${SITE_NAME}`
+  const description = rawDescription.replace(/\s+/g, " ").trim()
 
   return {
     title: artwork.title,
@@ -305,9 +307,9 @@ export default async function ArtworkDetailPage({
           )}
 
           {/* Description */}
-          {artwork.description && (
-            <p className="text-sm text-stone-600 leading-relaxed">{artwork.description}</p>
-          )}
+          {artwork.description ? (
+            <ArtworkDescription text={artwork.description} />
+          ) : null}
 
           {/* Vista 3D / AR — siempre en ficha (evita ocultarla si vendida + imágenes vacías en edge); sin fotos solo aviso */}
           <section className="rounded-xl border border-stone-200/80 bg-stone-50/80 p-4 sm:p-5 space-y-3">

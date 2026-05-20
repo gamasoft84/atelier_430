@@ -1264,7 +1264,9 @@ export default function ArtworkForm({
                   </div>
                 </div>
                 {form.watch("description") && (
-                  <p className="text-sm text-stone-600 line-clamp-3">{form.watch("description")}</p>
+                  <p className="text-sm text-stone-600 line-clamp-3 whitespace-pre-line">
+                    {form.watch("description")}
+                  </p>
                 )}
               </div>
 
