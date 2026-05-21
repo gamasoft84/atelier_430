@@ -69,7 +69,7 @@ export default function ArtworksTableThumb({ src, alt }: ArtworksTableThumbProps
     <>
       <div
         ref={ref}
-        className="relative w-10 h-12 rounded bg-stone-100 overflow-hidden flex-shrink-0 flex items-center justify-center cursor-zoom-in"
+        className="relative h-24 w-20 rounded bg-stone-100 overflow-hidden flex-shrink-0 flex items-center justify-center cursor-zoom-in"
         onPointerEnter={() => {
           if (!hoverSrc) return
           setShow(true)
@@ -80,13 +80,13 @@ export default function ArtworksTableThumb({ src, alt }: ArtworksTableThumbProps
           <Image
             src={src}
             alt={alt}
-            width={40}
-            height={50}
+            width={80}
+            height={96}
             className="object-cover w-full h-full"
-            sizes="40px"
+            sizes="80px"
           />
         ) : (
-          <ImageIcon size={14} className="text-stone-300" />
+          <ImageIcon size={18} className="text-stone-300" />
         )}
       </div>
       {show && hoverSrc && typeof document !== "undefined"

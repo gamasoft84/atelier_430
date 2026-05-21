@@ -214,7 +214,7 @@ export default function ArtworksTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-100 bg-stone-50">
-              <th className="text-left px-4 py-3 font-medium text-stone-500 w-14">Img</th>
+              <th className="w-28 px-4 py-3 text-left font-medium text-stone-500">Img</th>
               <SortHeader label="Código" sortKey="code" params={currentParams} className="w-24" />
               <SortHeader label="Título" sortKey="title" params={currentParams} />
               <SortHeader label="Categoría" sortKey="category" params={currentParams} className="hidden md:table-cell w-28" />
