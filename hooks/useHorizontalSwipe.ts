@@ -30,7 +30,7 @@ export function useHorizontalSwipe(
 
   const onTouchEnd = useCallback(
     (e: React.TouchEvent) => {
-      if (!enabled || !touchStart.current) return
+      if (!enabled || !touchStart.current || e.changedTouches.length !== 1) return
       const t = e.changedTouches[0]
       const dx = t.clientX - touchStart.current.x
       const dy = t.clientY - touchStart.current.y

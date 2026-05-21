@@ -11,12 +11,89 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog"
+import ArtworkLightboxZoomImage from "@/components/public/ArtworkLightboxZoomImage"
+import {
+  GalleryImageLoader,
+  GalleryThumbnailPulse,
+  useImageLoadState,
+} from "@/components/public/GalleryImageLoader"
 import { useHorizontalSwipe } from "@/hooks/useHorizontalSwipe"
 import { cn } from "@/lib/utils"
 
 interface ArtworkGalleryProps {
   images: ArtworkImage[]
   title: string
+}
+
+function GalleryThumb({
+  img,
+  title,
+  index,
+  active,
+  onSelect,
+  dark = false,
+}: {
+  img: ArtworkImage
+  title: string
+  index: number
+  active: boolean
+  onSelect: () => void
+  dark?: boolean
+}) {
+  const load = useImageLoadState(img.cloudinary_public_id)
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "relative flex-shrink-0 overflow-hidden rounded-md border-2 transition-colors",
+        dark ? "h-14 w-11" : "h-20 w-16",
+        active
+          ? "border-gold-500"
+          : dark
+            ? "border-white/20 hover:border-white/40"
+            : "border-transparent hover:border-stone-300",
+      )}
+      aria-label={`Ver imagen ${index + 1}`}
+      aria-current={active ? "true" : undefined}
+    >
+      {dark ? (
+        load.loading ? (
+          <div className="absolute inset-0 z-[1] animate-pulse bg-white/10" aria-hidden />
+        ) : null
+      ) : (
+        <GalleryThumbnailPulse loading={load.loading} />
+      )}
+      {dark ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={getCloudinaryUrl(img.cloudinary_public_id, "thumbnail")}
+            alt=""
+            onLoad={load.onLoaded}
+            className={cn(
+              "h-full w-full object-cover transition-opacity duration-200",
+              load.loaded ? "opacity-100" : "opacity-0",
+            )}
+          />
+        </>
+      ) : (
+        <Image
+          src={getCloudinaryUrl(img.cloudinary_public_id, "thumbnail")}
+          alt={img.alt_text ?? `${title} ${index + 1}`}
+          fill
+          sizes="64px"
+          className={cn(
+            "object-cover transition-opacity duration-200",
+            load.loaded ? "opacity-100" : "opacity-0",
+          )}
+          unoptimized
+          onLoad={load.onLoaded}
+        />
+      )}
+    </button>
+  )
 }
 
 function isHorizontal(img: ArtworkImage): boolean {
@@ -35,6 +112,7 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
   )
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxZoomed, setLightboxZoomed] = useState(false)
   const active = sorted[activeIndex]
   const hasMany = sorted.length > 1
 
@@ -56,7 +134,15 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
   const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo])
 
   const mainSwipe = useHorizontalSwipe(goPrev, goNext, hasMany)
-  const lightboxSwipe = useHorizontalSwipe(goPrev, goNext, hasMany && lightboxOpen)
+  const lightboxSwipe = useHorizontalSwipe(
+    goPrev,
+    goNext,
+    hasMany && lightboxOpen && !lightboxZoomed,
+  )
+
+  useEffect(() => {
+    if (!lightboxOpen) setLightboxZoomed(false)
+  }, [lightboxOpen, activeIndex])
 
   useEffect(() => {
     if (!lightboxOpen) return
@@ -82,6 +168,8 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
   }
 
   const activeHorizontal = isHorizontal(active)
+  const mainImageKey = active.cloudinary_public_id
+  const mainImageLoad = useImageLoadState(mainImageKey)
 
   return (
     <div className="space-y-3">
@@ -104,18 +192,22 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
           aria-label={`Ampliar imagen ${activeIndex + 1} de ${sorted.length}. Desliza para cambiar de foto.`}
         >
           <span className="relative block h-full w-full overflow-hidden rounded-lg bg-stone-100">
+            <GalleryImageLoader loading={mainImageLoad.loading} />
             <Image
-              src={getCloudinaryUrl(active.cloudinary_public_id, "detail")}
+              src={getCloudinaryUrl(mainImageKey, "detail")}
               alt={active.alt_text ?? title}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className={cn(
-                "transition-transform duration-500 group-hover:scale-[1.02]",
+                "transition-[opacity,transform] duration-300 group-hover:scale-[1.02]",
                 activeHorizontal ? "object-contain" : "object-cover",
+                mainImageLoad.loaded ? "opacity-100" : "opacity-0",
               )}
               priority
               loading="eager"
               unoptimized
+              onLoad={mainImageLoad.onLoaded}
+              onLoadingComplete={mainImageLoad.onLoaded}
             />
           </span>
 
@@ -163,28 +255,14 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
       {hasMany ? (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {sorted.map((img, i) => (
-            <button
+            <GalleryThumb
               key={img.id}
-              type="button"
-              onClick={() => setActiveIndex(i)}
-              className={cn(
-                "relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-md border-2 transition-colors",
-                i === activeIndex
-                  ? "border-gold-500"
-                  : "border-transparent hover:border-stone-300",
-              )}
-              aria-label={`Ver imagen ${i + 1}`}
-              aria-current={i === activeIndex ? "true" : undefined}
-            >
-              <Image
-                src={getCloudinaryUrl(img.cloudinary_public_id, "thumbnail")}
-                alt={img.alt_text ?? `${title} ${i + 1}`}
-                fill
-                sizes="64px"
-                className="object-cover"
-                unoptimized
-              />
-            </button>
+              img={img}
+              title={title}
+              index={i}
+              active={i === activeIndex}
+              onSelect={() => setActiveIndex(i)}
+            />
           ))}
         </div>
       ) : null}
@@ -196,18 +274,18 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
             {title} — imagen {activeIndex + 1} de {sorted.length}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Vista ampliada. Desliza horizontalmente, usa las flechas del teclado o los botones para
-            cambiar de imagen.
+            Vista ampliada. Desliza para cambiar de foto, pellizca con dos dedos para acercar, o usa
+            las flechas del teclado.
           </DialogDescription>
 
           <div className="relative flex min-h-0 flex-1 flex-col">
             <button
               type="button"
               onClick={() => setLightboxOpen(false)}
-              className="absolute right-3 top-3 z-20 flex size-10 items-center justify-center rounded-full bg-white/10 text-cream transition-colors hover:bg-white/20"
+              className="absolute right-4 z-30 flex size-11 items-center justify-center rounded-full border border-white/10 bg-carbon-900/50 text-cream shadow-lg backdrop-blur-sm transition-colors hover:bg-white/15 active:scale-95 top-[calc(env(safe-area-inset-top,0px)+3.75rem)] sm:top-4"
               aria-label="Cerrar vista ampliada"
             >
-              <X className="size-5" />
+              <X className="size-5" strokeWidth={2.5} />
             </button>
 
             {hasMany ? (
@@ -231,17 +309,15 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
               </>
             ) : null}
 
-            <div
-              className="relative flex min-h-0 flex-1 touch-pan-y items-center justify-center px-14 py-16 sm:px-20"
-              onTouchStart={lightboxSwipe.onTouchStart}
-              onTouchEnd={lightboxSwipe.onTouchEnd}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 pb-2 pt-[calc(env(safe-area-inset-top,0px)+4.5rem)] sm:px-20 sm:pb-4 sm:pt-16">
+              <ArtworkLightboxZoomImage
+                key={active.id}
                 src={getCloudinaryUrl(active.cloudinary_public_id, "lightbox")}
                 alt={active.alt_text ?? title}
-                className="max-h-full max-w-full object-contain"
-                decoding="async"
+                onZoomedChange={setLightboxZoomed}
+                onTouchStart={lightboxSwipe.onTouchStart}
+                onTouchEnd={lightboxSwipe.onTouchEnd}
+                className="min-h-0 flex-1"
               />
             </div>
 
@@ -250,25 +326,15 @@ export default function ArtworkGallery({ images, title }: ArtworkGalleryProps) {
               {hasMany ? (
                 <div className="mt-3 flex justify-center gap-2 overflow-x-auto pb-1">
                   {sorted.map((img, i) => (
-                    <button
+                    <GalleryThumb
                       key={img.id}
-                      type="button"
-                      onClick={() => setActiveIndex(i)}
-                      className={cn(
-                        "relative h-14 w-11 flex-shrink-0 overflow-hidden rounded-md border-2 transition-colors",
-                        i === activeIndex
-                          ? "border-gold-500"
-                          : "border-white/20 hover:border-white/40",
-                      )}
-                      aria-label={`Imagen ${i + 1}`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={getCloudinaryUrl(img.cloudinary_public_id, "thumbnail")}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
+                      img={img}
+                      title={title}
+                      index={i}
+                      active={i === activeIndex}
+                      onSelect={() => setActiveIndex(i)}
+                      dark
+                    />
                   ))}
                 </div>
               ) : null}
