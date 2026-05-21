@@ -1,6 +1,6 @@
 import { CLOUDINARY_CLOUD_NAME } from "@/lib/constants"
 
-export type ImageTransform = "thumbnail" | "card" | "detail" | "og"
+export type ImageTransform = "thumbnail" | "card" | "detail" | "lightbox" | "og"
 
 // c_limit: scale down without cropping (preserves full painting).
 // CSS object-cover/object-contain handles the visual crop.
@@ -9,6 +9,7 @@ const TRANSFORMS: Record<ImageTransform, string> = {
   thumbnail: "w_200,c_limit,q_auto:eco,f_auto",
   card:      "w_800,c_limit,q_auto:good,f_auto",
   detail:    "w_1200,c_limit,q_auto:good,f_auto",
+  lightbox:  "w_1800,c_limit,q_auto:best,f_auto",
   og:        "w_1200,h_630,c_fill,q_auto:good,f_auto",
 }
 
