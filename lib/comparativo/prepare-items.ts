@@ -32,6 +32,7 @@ function formatTechnique(raw: string | null | undefined): string {
 export function prepareComparativoItems(
   artworks: ArtworkPublic[],
   preferPremium: boolean,
+  showPricesGlobally = true,
 ): ComparativoPreparedItem[] {
   const out: ComparativoPreparedItem[] = []
   for (const a of artworks) {
@@ -75,7 +76,7 @@ export function prepareComparativoItems(
       displayWidthCm: disp.widthCm,
       displayHeightCm: disp.heightCm,
       displaySource: dispRaw.source,
-      showPrice: a.show_price,
+      showPrice: showPricesGlobally && a.show_price,
       priceMxn: typeof a.price === "number" ? a.price : null,
       techniqueLabel: formatTechnique(a.technique),
     })

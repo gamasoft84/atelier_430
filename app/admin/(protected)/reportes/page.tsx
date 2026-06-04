@@ -36,6 +36,9 @@ type Agg = {
   stockSumPrice: number
   stockSumOriginal: number
   soldSum: number
+  /** Precios unitarios distintos en stock (por referencia). */
+  stockUnitPrices: Set<number>
+  stockUnitOriginals: Set<number>
 }
 
 function emptyAgg(): Agg {
@@ -47,7 +50,19 @@ function emptyAgg(): Agg {
     stockSumPrice: 0,
     stockSumOriginal: 0,
     soldSum: 0,
+    stockUnitPrices: new Set(),
+    stockUnitOriginals: new Set(),
   }
+}
+
+function formatUnitPrice(values: Set<number>): string {
+  if (values.size === 0) return "—"
+  const sorted = [...values].sort((a, b) => a - b)
+  if (sorted.length === 1) return money(sorted[0]!)
+  const lo = sorted[0]!
+  const hi = sorted[sorted.length - 1]!
+  if (lo === hi) return money(lo)
+  return `${money(lo)} – ${money(hi)}`
 }
 
 function applyRow(agg: Agg, r: ArtworkRow) {
@@ -62,8 +77,12 @@ function applyRow(agg: Agg, r: ArtworkRow) {
   } else if (isStock) {
     agg.stockSkuCount += 1
     agg.stockPieces += units
-    agg.stockSumPrice += (r.price ?? 0) * units
-    agg.stockSumOriginal += (r.original_price ?? 0) * units
+    const unitPrice = r.price ?? 0
+    const unitOriginal = r.original_price ?? 0
+    agg.stockSumPrice += unitPrice * units
+    agg.stockSumOriginal += unitOriginal * units
+    if (unitPrice > 0) agg.stockUnitPrices.add(unitPrice)
+    if (unitOriginal > 0) agg.stockUnitOriginals.add(unitOriginal)
   } else {
     agg.otherCount += 1
   }
@@ -137,15 +156,22 @@ export default async function AdminReportesPage() {
     .map(([subcategory, a]) => ({ subcategory, ...a }))
     .sort((a, b) => b.stockPieces - a.stockPieces || a.subcategory.localeCompare(b.subcategory))
 
-  const sumAgg = (acc: Agg, r: Agg): Agg => ({
-    soldCount: acc.soldCount + r.soldCount,
-    stockSkuCount: acc.stockSkuCount + r.stockSkuCount,
-    stockPieces: acc.stockPieces + r.stockPieces,
-    otherCount: acc.otherCount + r.otherCount,
-    stockSumPrice: acc.stockSumPrice + r.stockSumPrice,
-    stockSumOriginal: acc.stockSumOriginal + r.stockSumOriginal,
-    soldSum: acc.soldSum + r.soldSum,
-  })
+  const sumAgg = (acc: Agg, r: Agg): Agg => {
+    const next = {
+      soldCount: acc.soldCount + r.soldCount,
+      stockSkuCount: acc.stockSkuCount + r.stockSkuCount,
+      stockPieces: acc.stockPieces + r.stockPieces,
+      otherCount: acc.otherCount + r.otherCount,
+      stockSumPrice: acc.stockSumPrice + r.stockSumPrice,
+      stockSumOriginal: acc.stockSumOriginal + r.stockSumOriginal,
+      soldSum: acc.soldSum + r.soldSum,
+      stockUnitPrices: new Set(acc.stockUnitPrices),
+      stockUnitOriginals: new Set(acc.stockUnitOriginals),
+    }
+    for (const p of r.stockUnitPrices) next.stockUnitPrices.add(p)
+    for (const p of r.stockUnitOriginals) next.stockUnitOriginals.add(p)
+    return next
+  }
 
   const categorySubtotal = categoryRows.reduce(sumAgg, emptyAgg())
 
@@ -283,7 +309,8 @@ export default async function AdminReportesPage() {
         <div className="px-5 py-4 border-b border-stone-100">
           <h2 className="font-semibold text-carbon-900">Por dimensión (ancho × alto)</h2>
           <p className="text-sm text-stone-500 mt-1">
-            Ideal para ver ventas y stock por tamaño exacto (piezas en stock).
+            Ideal para ver ventas y stock por tamaño exacto. Precio unitario por referencia en
+            disponible; si hay varios precios en el mismo tamaño, se muestra el rango.
           </p>
         </div>
         <div className="overflow-x-auto">
@@ -294,6 +321,8 @@ export default async function AdminReportesPage() {
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Vendidas</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Suma ventas</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Piezas en stock</th>
+                <th className="text-right px-4 py-3 font-medium text-stone-500">Precio unit. remate</th>
+                <th className="text-right px-4 py-3 font-medium text-stone-500">Precio unit. tienda</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Total precio de remate</th>
                 <th className="text-right px-4 py-3 font-medium text-stone-500">Total precio tienda</th>
               </tr>
@@ -307,6 +336,12 @@ export default async function AdminReportesPage() {
                   <td className="px-4 py-3 text-right text-stone-700">{r.soldCount}</td>
                   <td className="px-4 py-3 text-right text-stone-600">{money(r.soldSum)}</td>
                   <td className="px-4 py-3 text-right text-stone-700">{r.stockPieces}</td>
+                  <td className="px-4 py-3 text-right text-green-800 whitespace-nowrap">
+                    {formatUnitPrice(r.stockUnitPrices)}
+                  </td>
+                  <td className="px-4 py-3 text-right text-stone-600 line-through whitespace-nowrap">
+                    {formatUnitPrice(r.stockUnitOriginals)}
+                  </td>
                   <td className="px-4 py-3 text-right font-semibold text-green-700">{money(r.stockSumPrice)}</td>
                   <td className="px-4 py-3 text-right text-stone-600 line-through">{money(r.stockSumOriginal)}</td>
                 </tr>
@@ -318,6 +353,8 @@ export default async function AdminReportesPage() {
                 <td className="px-4 py-3 text-right font-medium text-stone-700">{dimSubtotal.soldCount}</td>
                 <td className="px-4 py-3 text-right font-medium text-stone-600">{money(dimSubtotal.soldSum)}</td>
                 <td className="px-4 py-3 text-right font-medium text-stone-700">{dimSubtotal.stockPieces}</td>
+                <td className="px-4 py-3 text-right text-stone-400">—</td>
+                <td className="px-4 py-3 text-right text-stone-400">—</td>
                 <td className="px-4 py-3 text-right font-semibold text-green-700">{money(dimSubtotal.stockSumPrice)}</td>
                 <td className="px-4 py-3 text-right font-medium text-stone-700 line-through">{money(dimSubtotal.stockSumOriginal)}</td>
               </tr>

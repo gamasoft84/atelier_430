@@ -7,7 +7,7 @@ import {
   getComparativoArtworksByCodes,
   getComparativoEditorialCopy,
 } from "@/lib/supabase/queries/comparativo"
-import { getPreferPremiumInCatalog } from "@/lib/supabase/queries/public"
+import { getPreferPremiumInCatalog, getShowPrices } from "@/lib/supabase/queries/public"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -20,13 +20,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Códigos inválidos (3 a 5 obras)." }, { status: 400 })
   }
 
-  const [copy, preferPremium, artworks] = await Promise.all([
+  const [copy, preferPremium, showPrices, artworks] = await Promise.all([
     getComparativoEditorialCopy(),
     getPreferPremiumInCatalog(),
+    getShowPrices(),
     getComparativoArtworksByCodes(parsed.codes),
   ])
 
-  const items = prepareComparativoItems(artworks, preferPremium)
+  const items = prepareComparativoItems(artworks, preferPremium, showPrices)
   if (items.length < 3) {
     return NextResponse.json(
       { error: "No hay al menos 3 obras con imagen y medidas." },

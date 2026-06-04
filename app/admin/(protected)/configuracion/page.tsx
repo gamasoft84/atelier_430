@@ -3,6 +3,7 @@ import ArtworkCreateDefaultsSettings from "@/components/admin/settings/ArtworkCr
 import BulkPricingBySize from "@/components/admin/settings/BulkPricingBySize"
 import CatalogImagePreference from "@/components/admin/settings/CatalogImagePreference"
 import ComparativoEditorialSettings from "@/components/admin/settings/ComparativoEditorialSettings"
+import ShowPricesGloballySettings from "@/components/admin/settings/ShowPricesGloballySettings"
 import { getSizeGroups } from "@/app/actions/bulk-pricing"
 
 export const metadata: Metadata = {
@@ -22,6 +23,8 @@ export default async function AdminConfiguracionPage() {
         </div>
 
         <ArtworkCreateDefaultsSettings />
+
+        <ShowPricesGloballySettings />
 
         <CatalogImagePreference />
 

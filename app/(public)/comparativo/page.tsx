@@ -8,7 +8,7 @@ import {
   getComparativoArtworksByCodes,
   getComparativoEditorialCopy,
 } from "@/lib/supabase/queries/comparativo"
-import { getPreferPremiumInCatalog } from "@/lib/supabase/queries/public"
+import { getPreferPremiumInCatalog, getShowPrices } from "@/lib/supabase/queries/public"
 import { SITE_NAME } from "@/lib/constants"
 
 export const metadata: Metadata = {
@@ -47,13 +47,14 @@ export default async function ComparativoPublicPage({ searchParams }: PageProps)
     )
   }
 
-  const [copy, preferPremium, artworks] = await Promise.all([
+  const [copy, preferPremium, showPrices, artworks] = await Promise.all([
     getComparativoEditorialCopy(),
     getPreferPremiumInCatalog(),
+    getShowPrices(),
     getComparativoArtworksByCodes(parsed.codes),
   ])
 
-  const items = prepareComparativoItems(artworks, preferPremium)
+  const items = prepareComparativoItems(artworks, preferPremium, showPrices)
 
   if (items.length < 3) {
     return (
